@@ -1,0 +1,15 @@
+dependencies:
+  cache_directories:
+    - "~/.meteor"
+    - "/usr/local/bin"
+
+  override:
+    # download if meteor isn't already installed in the cache
+    - meteor || curl https://install.meteor.com | /bin/sh
+    - meteor npm install
+
+test:
+  override:
+    - meteor reset
+    - meteor test --full-app --once --driver-package dispatch:mocha-phantomjs
+    
