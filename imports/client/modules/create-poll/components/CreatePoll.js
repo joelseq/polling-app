@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function(props) {
+export default function () {
   return (
     <div>
       <h1>Create Poll!</h1>
