@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router'
 
 export default function () {
   return (
@@ -9,6 +10,7 @@ export default function () {
         on those tough choices in life like Panda or
         Lemongrass
       </p>
+      <button><Link to="/create">Create Poll</Link></button>
     </div>
   );
 }
