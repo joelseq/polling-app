@@ -23,5 +23,5 @@ We follow the Airbnb [JavaScript](https://github.com/airbnb/javascript) and [Rea
 ### CSS / SASS
 We use SASS and follow the [Airbnb CSS Guidelines](https://github.com/airbnb/css)
 
-[circleci]: https://circleci.com/gh/joelseq/poop
-[circleci-badge]: https://circleci.com/gh/joelseq/poop/tree/master.svg?style=svg&circle-token=78bd6f6db6c6c128d0a1b7e862f4488df56cd127
+[circleci]: https://circleci.com/gh/joelseq/polling-app
+[circleci-badge]: https://circleci.com/gh/joelseq/polling-app.svg?style=svg&circle-token=78bd6f6db6c6c128d0a1b7e862f4488df56cd127
