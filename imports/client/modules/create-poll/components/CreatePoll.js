@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
+import { Meteor } from 'meteor/meteor';
 import ReactDOM from 'react-dom';
 
-import { Polls } from '../../../../api/create-poll/CreatePoll.js';
-
+import '../../../main.js'
 
 class Poll extends Component {
 
@@ -17,7 +17,9 @@ class Poll extends Component {
 
     console.log( nameVal ); // for debugging 
 
-    // Polls.insert( nameVal ); // make database call
+    //Polls.insert( nameVal ); // make database call
+
+    Meteor.call('polls.insert', nameVal);
 
     // Reset form
     ReactDOM.findDOMNode( this.refs.questionInput ).value = "";
