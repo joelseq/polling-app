@@ -28,3 +28,4 @@ fortawesome:fontawesome
 service-configuration
 dispatch:mocha-phantomjs
 dispatch:phantomjs-tests@=0.0.5
+react-meteor-data

@@ -6,12 +6,12 @@ export const Polls = new Mongo.Collection('polls');
 
 Meteor.methods({
 
-  'polls.insert'( data ) {
-    check( data, String );
+  'polls.insert' ( data ) {
+    check( data, Object );
 
-    Polls.insert({
-      data
-    });
+    console.log( data );
+
+    Polls.insert( data );
 
   },
 
