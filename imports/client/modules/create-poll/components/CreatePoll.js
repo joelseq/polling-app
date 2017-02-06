@@ -4,7 +4,6 @@ import { Meteor } from 'meteor/meteor';
 import ReactDOM from 'react-dom';
 
 import '../../../main.js';
-import { Polls } from '../api/CreatePoll.js';
 
 class Poll extends Component {
 
