@@ -12,9 +12,7 @@ class PollPage extends Component {
   }
 
   renderPolls() {
-    let filteredPoll = this.props.polls;
-		console.log( this.props.polls );
-		console.log( this.props.params.pollId );
+		console.log( this.props.polls[0] );
   }
 
   render() {
@@ -33,8 +31,9 @@ PollPage.propTypes = {
   polls: PropTypes.array.isRequired,
 };
 
-export default createContainer(() => {
+export default createContainer(({ params }) => {
+  console.log( params.pollId );
   return {
-    polls: Polls.find({}, { sort: { createdAt: -1 } }).fetch(),
+    polls: Polls.find({ "_id" : new Mongo.ObjectID(params.pollId) }).fetch(),
   };
 }, PollPage);
