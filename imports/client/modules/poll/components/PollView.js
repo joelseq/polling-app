@@ -14,7 +14,18 @@ class PollPage extends Component {
 
   // TODO: Do the job of rendering the poll
   renderPolls() {
-		console.log( this.props.polls[0] );
+    if ( this.props.ready ) {
+      if ( this.props.polls[0] ) {
+        return this.props.polls[0].data.name;
+      } else {
+        return <h1>Poll not found!</h1>;
+      }
+
+    } else {
+
+      return "Loading!";
+
+    }
   }
 
   // Actual layout
@@ -39,9 +50,12 @@ PollPage.propTypes = {
 // (the unique url)
 export default createContainer(({ params }) => {
   console.log( params.pollId ); // TODO: remove this
+  const handle = Meteor.subscribe( 'polls' );
+  const ready = handle.ready();
 
   return { // Look in the database for an object with the same id as the 
            // unique url parameter
-    polls: Polls.find({ "_id" : new Mongo.ObjectID(params.pollId) }).fetch(),
+    ready,
+    polls: Polls.find({ "_id" : params.pollId }).fetch()
   };
 }, PollPage);
