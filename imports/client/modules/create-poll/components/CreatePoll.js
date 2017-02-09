@@ -3,7 +3,40 @@ import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import ReactDOM from 'react-dom';
 
+// import Option from './OptionClass.js'
 import '../../../main.js';
+
+var Option = React.createClass({
+	render() {
+		return(
+			<div>
+        <form className="new-type" id="poll-type">
+          <input type="text" ref="optionInput"
+          placeholder="Enter Option"></input>
+        </form>
+			</div>
+		)
+	}
+});
+
+
+var numChildren = 5;
+
+var Optional = React.createClass({
+		render () {
+		const children = [];
+
+		for (var i = 0; i < numChildren; i += 1) {
+		children.push(<Option number={i} />);
+		};
+
+		return (
+				<div>
+					{children}
+				</div>
+				);
+		},
+});
 
 class Poll extends Component {
 
@@ -48,6 +81,12 @@ class Poll extends Component {
 
   }
 
+
+  addOption(event) {
+	  this.numChildren = this.numChildren + 1;
+		ReactDOM.render( <Optional />, document.getElementById('newOption') );
+  }
+
   render() {
     return (
       <div>
@@ -62,6 +101,9 @@ class Poll extends Component {
             <input type="radio" name="choice" value="Traditional" />Traditional
             <input type="radio" name="choice" value="Weighted" />Weighted
         </form>
+				<Option />
+        <div id="newOption"></div>
+        <button onClick={this.addOption.bind(this)}>Add Option</button>
         <button type="submit" form="poll-creator" value="Submit">Submit</button>
       </div>
     );
