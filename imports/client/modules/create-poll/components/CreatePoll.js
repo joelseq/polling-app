@@ -3,14 +3,15 @@ import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import ReactDOM from 'react-dom';
 
-// import Option from './OptionClass.js'
 import '../../../main.js';
 
+
+// Small little class that defines the 
 var Option = React.createClass({
 	render() {
 		return(
 			<div>
-        <form className="new-type" id="poll-type">
+        <form className="optionClass" id="option">
           <input type="text" ref="optionInput"
           placeholder="Enter Option"></input>
         </form>
@@ -20,6 +21,7 @@ var Option = React.createClass({
 });
 
 
+// EXPERIMENTAL SHIT TRYING TO ADD OPTIONS DYNAMICALLY
 var numChildren = 5;
 var options = [];
 
@@ -38,7 +40,10 @@ var Optional = React.createClass({
 				);
 		},
 });
+// END EXPERIMENTAL SHIT
 
+
+// main class that exported is the class
 class Poll extends Component {
 
   // Handle poll submission to MongoDB
@@ -83,28 +88,39 @@ class Poll extends Component {
   }
 
 
+  // call to add an option
   addOption(event) {
 	  this.numChildren = this.numChildren + 1;
     options.push(<Option number={numChildren} />);
 		ReactDOM.render( <Optional />, document.getElementById('newOption') );
   }
 
+  // renders the entire poll- binding functions to buttons
   render() {
     return (
       <div>
         <h1>Here is a poll</h1>
+        // question
         <form className="new-poll" id="poll-creator" 
               onSubmit={this.submit.bind(this)}>
           <input type="text" ref="questionInput"
           placeholder="Enter Poll Name?"></input>
         </form>
+
         <h1>What type of poll?</h1>
+        // type of poll 
         <form className="new-type" id="poll-type">
             <input type="radio" name="choice" value="Traditional" />Traditional
             <input type="radio" name="choice" value="Weighted" />Weighted
         </form>
+
+        // initial option field
 				<Option />
+
+        // div to add options to poll
         <div id="newOption">{options}</div>
+
+        // buttons that call adding options or submitting poll
         <button onClick={this.addOption.bind(this)}>Add Option</button>
         <button type="submit" form="poll-creator" value="Submit">Submit</button>
       </div>
