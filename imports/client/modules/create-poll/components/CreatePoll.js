@@ -100,7 +100,6 @@ class Poll extends Component {
     return (
       <div>
         <h1>Here is a poll</h1>
-        // question
         <form className="new-poll" id="poll-creator" 
               onSubmit={this.submit.bind(this)}>
           <input type="text" ref="questionInput"
@@ -108,19 +107,15 @@ class Poll extends Component {
         </form>
 
         <h1>What type of poll?</h1>
-        // type of poll 
         <form className="new-type" id="poll-type">
             <input type="radio" name="choice" value="Traditional" />Traditional
             <input type="radio" name="choice" value="Weighted" />Weighted
         </form>
 
-        // initial option field
 				<Option />
 
-        // div to add options to poll
         <div id="newOption">{options}</div>
 
-        // buttons that call adding options or submitting poll
         <button onClick={this.addOption.bind(this)}>Add Option</button>
         <button type="submit" form="poll-creator" value="Submit">Submit</button>
       </div>
