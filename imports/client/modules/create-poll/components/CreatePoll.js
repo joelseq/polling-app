@@ -21,6 +21,7 @@ var Option = React.createClass({
 
 
 var numChildren = 5;
+var options = [];
 
 var Optional = React.createClass({
 		render () {
@@ -84,6 +85,7 @@ class Poll extends Component {
 
   addOption(event) {
 	  this.numChildren = this.numChildren + 1;
+    options.push(<Option number={numChildren} />);
 		ReactDOM.render( <Optional />, document.getElementById('newOption') );
   }
 
@@ -102,7 +104,7 @@ class Poll extends Component {
             <input type="radio" name="choice" value="Weighted" />Weighted
         </form>
 				<Option />
-        <div id="newOption"></div>
+        <div id="newOption">{options}</div>
         <button onClick={this.addOption.bind(this)}>Add Option</button>
         <button type="submit" form="poll-creator" value="Submit">Submit</button>
       </div>
