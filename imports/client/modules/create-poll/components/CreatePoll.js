@@ -22,24 +22,27 @@ var Option = React.createClass({
 
 
 // EXPERIMENTAL SHIT TRYING TO ADD OPTIONS DYNAMICALLY
-var numChildren = 5;
-var options = [];
-
-var Optional = React.createClass({
-		render () {
-		const children = [];
-
-		for (var i = 0; i < numChildren; i += 1) {
-		children.push(<Option number={i} />);
-		};
-
-		return (
-				<div>
-					{children}
-				</div>
-				);
-		},
-});
+var Page = React.createClass({ 
+   getInitialState : function(){
+   return{
+    items : [<Option/>,]
+   }
+  },
+  addClick : function(){
+   this.state.items.push(<Option/>);
+   this.forceUpdate();
+  
+  },
+  render : function(){
+   return(
+		<div>
+			{this.state.items.map(function(item){return <div className="bla-bla-class">{item}</div>})}
+			<br/>
+			<button onClick={this.addClick}>Add Option</button>
+		</div>
+		)
+  }
+ });
 // END EXPERIMENTAL SHIT
 
 
@@ -112,12 +115,10 @@ class Poll extends Component {
             <input type="radio" name="choice" value="Weighted" />Weighted
         </form>
 
-				<Option />
+				<Page/>
 
-        <div id="newOption">{options}</div>
-
-        <button onClick={this.addOption.bind(this)}>Add Option</button>
         <button type="submit" form="poll-creator" value="Submit">Submit</button>
+				<br/>
       </div>
     );
   }
