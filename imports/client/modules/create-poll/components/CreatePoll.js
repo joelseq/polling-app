@@ -1,4 +1,3 @@
-import { createContainer } from 'meteor/react-meteor-data';
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import ReactDOM from 'react-dom';
@@ -6,19 +5,20 @@ import ReactDOM from 'react-dom';
 import '../../../main.js';
 
 
-// Small little class that defines the 
-var Option = React.createClass({
-	render() {
-		return(
-			<div>
+// Small little class that defines the
+class Option extends React.Component {
+  render() {
+    return (
+      <div>
         <form className="optionClass" id="option">
-          <input type="text" ref="optionInput"
-          placeholder="Enter Option"></input>
+          <input
+            type="text" ref="optionInput" placeholder="Enter Option"
+          />
         </form>
-			</div>
-		)
-	}
-});
+      </div>
+    )
+  }
+};
 
 
 // EXPERIMENTAL SHIT TRYING TO ADD OPTIONS DYNAMICALLY
