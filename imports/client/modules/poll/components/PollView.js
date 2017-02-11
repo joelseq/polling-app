@@ -1,5 +1,4 @@
 import React, { Component, PropTypes } from 'react';
-import ReactDOM from 'react-dom';
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 
@@ -7,55 +6,56 @@ import { createContainer } from 'meteor/react-meteor-data';
 import { Polls } from '../../../../api/polling.js';
 
 // Component for a page that displays a poll
+// TODO Rework this UI!!!
 class PollPage extends Component {
-  constructor(props) {
-    super(props);
-  }
 
   // TODO: Do the job of rendering the poll
   renderPolls() {
-    if ( this.props.ready ) {
-      if ( this.props.polls[0] ) {
-        return this.props.polls[0].data.name;
+    let dataString = ''; // Initialize the variable that we will return
+    if (this.props.ready) { // Check if we have data and the poll exists
+      if (this.props.polls[0]) {
+        dataString = this.props.polls[0].data.name;
       } else {
-        return <h1>Poll not found!</h1>;
+        dataString = (<h1>Poll not found!</h1>);
       }
-
-    } else {
-
-      return "Loading!";
-
+    } else { // Not ready, then loading!
+      dataString = 'Loading!';
     }
+    return dataString;
   }
 
   // Actual layout
   render() {
     return (
       <div className="container">
-				<h1>HERE</h1>
-        <ul>
-          {this.renderPolls()}
-        </ul>
+        <h1>HERE</h1>
+        <h2>{this.renderPolls()}</h2>
       </div>
     );
   }
 }
 
 // A property containing the polls is required of the data.
+// This object is defined here by the style guidelines
 PollPage.propTypes = {
-  polls: PropTypes.array.isRequired,
+  polls: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.string.isOptional,
+    data: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+    }).isRequired,
+  })).isRequired,
+  ready: PropTypes.bool.isRequired,
 };
 
 // The real MVP; creates the PollPage container using the routing params
 // (the unique url)
 export default createContainer(({ params }) => {
-  console.log( params.pollId ); // TODO: remove this
-  const handle = Meteor.subscribe( 'polls' );
-  const ready = handle.ready();
+  const handle = Meteor.subscribe('polls'); // get the poll database
+  const ready = handle.ready(); // Check whether data is sent yet
 
-  return { // Look in the database for an object with the same id as the 
+  return { // Look in the database for an object with the same id as the
            // unique url parameter
     ready,
-    polls: Polls.find({ "_id" : params.pollId }).fetch()
+    polls: Polls.find({ _id: params.pollId }).fetch(),
   };
 }, PollPage);
