@@ -9,13 +9,9 @@ import '../../../main.js';
 class Option extends React.Component {
   render() {
     return (
-      <div>
-        <form className="optionClass" id="option">
           <input
             type="text" ref="optionInput" placeholder="Enter Option"
           />
-        </form>
-      </div>
     );
   }
 }
@@ -36,9 +32,15 @@ var Page = React.createClass({
   render : function(){
    return(
 		<div>
-			{this.state.items.map(function(item){return <div className="bla-bla-class">{item}</div>})}
-			<br/>
-			<button onClick={this.addClick}>Add Option</button>
+      <form>
+        {this.state.items.map(function(item, i){
+            return <div className="bla-bla-class" key={i}>{item}</div>
+            }
+         )}
+      </form>
+
+      <br/>
+      <button onClick={this.addClick}>Add Option</button>
 		</div>
 		)
   }
