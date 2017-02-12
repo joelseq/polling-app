@@ -16,9 +16,9 @@ class Option extends React.Component {
           />
         </form>
       </div>
-    )
+    );
   }
-};
+}
 
 
 // EXPERIMENTAL SHIT TRYING TO ADD OPTIONS DYNAMICALLY
@@ -65,37 +65,35 @@ class Poll extends Component {
     var val = '';
     var resetIndex = 0;
     //Loop through options and grab first one that is selected
-    for( var i = 0, length = types.length; i<length; i++ ) {
-        if( types[i].checked) {
-            val = types[i].value;
-            resetIndex = i;
-            break;
+    for(var i = 0, length = types.length; i<length; i = i + 1) {
+      if (types[i].checked) {
+          val = types[i].value;
+          resetIndex = i;
+          break;
         }
     }
 
-    //No option selected -- handle it here
-    if( val == '' ) {
-        //Do something
+    // No option selected -- handle it here
+    if (val === '') {
+        // Do something
     }
 
-    //Save selected option
-    const pollType = val
-    
+    // Save selected option
+    const pollType = val;
     // Generate dictionary to send to the backend from form elements
-    Meteor.call('polls.insert', { name: nameVal, type: pollType } );
+    Meteor.call('polls.insert', { name: nameVal, type: pollType });
 
     // Reset form
     types[resetIndex].checked = false;
-    ReactDOM.findDOMNode( this.refs.questionInput ).value = "";
+    ReactDOM.findDOMNode(this.refs.questionInput).value = '';
 
   }
 
-
   // call to add an option
   addOption(event) {
-	  this.numChildren = this.numChildren + 1;
-    options.push(<Option number={numChildren} />);
-		ReactDOM.render( <Optional />, document.getElementById('newOption') );
+    this.numChildren = this.numChildren + 1;
+    options.push(<Option number={this.numChildren} />);
+    ReactDOM.render(<Optional />, document.getElementById('newOption'));
   }
 
   // renders the entire poll- binding functions to buttons
@@ -103,22 +101,20 @@ class Poll extends Component {
     return (
       <div>
         <h1>Here is a poll</h1>
-        <form className="new-poll" id="poll-creator" 
-              onSubmit={this.submit.bind(this)}>
-          <input type="text" ref="questionInput"
-          placeholder="Enter Poll Name?"></input>
+        <form className="new-poll" id="poll-creator" onSubmit={this.submit.bind(this)}>
+          <input type="text" ref="questionInput" placeholder="Enter Poll Name?" />
         </form>
 
         <h1>What type of poll?</h1>
         <form className="new-type" id="poll-type">
-            <input type="radio" name="choice" value="Traditional" />Traditional
-            <input type="radio" name="choice" value="Weighted" />Weighted
+          <input type="radio" name="choice" value="Traditional" />Traditional
+          <input type="radio" name="choice" value="Weighted" />Weighted
         </form>
 
-				<Page/>
+        <Page />
 
         <button type="submit" form="poll-creator" value="Submit">Submit</button>
-				<br/>
+        <br />
       </div>
     );
   }
