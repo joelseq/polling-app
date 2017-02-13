@@ -5,7 +5,7 @@ export default function App({ children }) {
   return (
     <div>
       <Helmet
-        title="People Order Our Products"
+        title="SimPoll"
         titleTemplate="%s"
         meta={[
           { charset: 'utf-8' },
