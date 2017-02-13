@@ -1,6 +1,8 @@
 import React, { PropTypes } from 'react';
 import Helmet from 'react-helmet';
 
+import Header from './Header';
+
 export default function App({ children }) {
   return (
     <div>
@@ -19,6 +21,7 @@ export default function App({ children }) {
           },
         ]}
       />
+      <Header />
       {children}
     </div>
   );
