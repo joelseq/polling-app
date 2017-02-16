@@ -1,1 +1,1 @@
-import '../imports/api/polling.js';
+import '../imports/api/polls.js';

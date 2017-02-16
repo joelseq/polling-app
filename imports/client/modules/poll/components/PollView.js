@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 
 // Grab collection for polls
-import { Polls } from '../../../../api/polling.js';
+import { Polls } from '../../../../api/polls.js';
 
 // Component for a page that displays a poll
 // TODO Rework this UI!!!
