@@ -1,11 +1,13 @@
 import React, { PropTypes } from 'react';
 import Helmet from 'react-helmet';
 
+import Header from './Header';
+
 export default function App({ children }) {
   return (
     <div>
       <Helmet
-        title="People Order Our Products"
+        title="SimPoll"
         titleTemplate="%s"
         meta={[
           { charset: 'utf-8' },
@@ -19,6 +21,7 @@ export default function App({ children }) {
           },
         ]}
       />
+      <Header />
       {children}
     </div>
   );
