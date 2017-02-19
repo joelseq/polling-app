@@ -64,7 +64,7 @@ class UrlBox extends Component {
           className="toast-top-center"
         />
         <Grid>
-          <Panel><h4>{this.state.shareURL}</h4></Panel>
+          <Panel className="table-responsive"><h4>{this.state.shareURL}</h4></Panel>
 
           {/* TODO: Modify this UI so that the buttons are properly spaced by
             * adding custom css */ }
