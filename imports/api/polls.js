@@ -24,7 +24,7 @@ Meteor.methods({
     check(data, Object);
 
     // Database calls
-    Polls.insert({
+    return Polls.insert({
       data,
       createdAt: new Date(),
     });

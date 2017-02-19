@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
+import { withRouter, routerShape } from 'react-router';
 import {
   Grid,
   Button,
@@ -18,7 +19,7 @@ import '../../../main.js';
  * no props passed in to this component which is why propTypes and defaultProps
  * aren't specified.
  */
-export default class CreatePoll extends Component {
+class CreatePoll extends Component {
   constructor(props) {
     super(props);
 
@@ -110,8 +111,10 @@ export default class CreatePoll extends Component {
       this.setState({
         loading: false,
       });
-      // TODO: route the user to either the poll page or poll edit page
+
+      // route the user to either the poll page or poll edit page
       // after successful poll creation.
+      this.props.router.push(`/polls/${result}/edit`);
     });
 
     // When the DB is creating the poll, we disable the create button
@@ -246,3 +249,9 @@ export default class CreatePoll extends Component {
     );
   }
 }
+
+CreatePoll.propTypes = {
+  router: routerShape,
+};
+
+export default withRouter(CreatePoll);
