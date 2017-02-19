@@ -11,8 +11,10 @@ export default (
   <Route path="/" component={App}>
     <IndexRoute component={Main} />
     <Route path="create" component={CreatePoll} />
-    <Route path="polls/:pollId" component={PollPage} />
-    <Route path="polls/:pollId/edit" component={EditPoll} />
+    <Route path="polls">
+      <Route path=":pollId" component={PollPage} />
+      <Route path=":pollId/edit" component={EditPoll} />
+    </Route>
   </Route>
 
 );
