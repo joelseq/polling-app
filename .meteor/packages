@@ -27,5 +27,5 @@ service-configuration@1.0.11
 dispatch:mocha-phantomjs
 dispatch:phantomjs-tests@=0.0.5
 react-meteor-data
-aldeed:simple-schema
-aldeed:collection2
+aldeed:simple-schema        # Package to define schemas for collections
+aldeed:collection2          # Package to attach validation to collection methods
