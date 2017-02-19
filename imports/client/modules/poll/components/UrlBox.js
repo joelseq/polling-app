@@ -6,6 +6,10 @@ import {
   ToastMessage,
 } from 'react-toastr';
 import {
+  Row,
+  Col,
+  Panel,
+  Grid,
   Button,
   Jumbotron,
 } from 'react-bootstrap';
@@ -59,19 +63,28 @@ class UrlBox extends Component {
           ref={(comp) => { this.alert = comp; }}
           className="toast-top-center"
         />
-        <h2>{this.state.shareURL}</h2>
+        <Grid>
+          <Panel><h4>{this.state.shareURL}</h4></Panel>
 
-        {/* TODO: Modify this UI so that the buttons are properly spaced by
-          * adding custom css */ }
-        <CopyToClipboard text={this.state.shareURL} onCopy={this.onCopy}>
-          <Button bsStyle="primary" bsSize="large">Copy</Button>
-        </CopyToClipboard>
-        {' '}
-        <Button
-          bsStyle="primary"
-          bsSize="large"
-          onClick={this.voteRedirect}
-        > Vote</Button>
+          {/* TODO: Modify this UI so that the buttons are properly spaced by
+            * adding custom css */ }
+          <Row>
+            <Col md={2} mdOffset={4} xs={12}>
+              <CopyToClipboard text={this.state.shareURL} onCopy={this.onCopy}>
+                <Button bsStyle="primary" bsSize="medium" block>Copy</Button>
+              </CopyToClipboard>
+            </Col>
+            {' '}
+            <Col md={2} xs={12}>
+              <Button
+                bsStyle="primary"
+                bsSize="medium"
+                onClick={this.voteRedirect}
+                block
+              > View Poll</Button>
+            </Col>
+          </Row>
+        </Grid>
 
       </Jumbotron>
     );

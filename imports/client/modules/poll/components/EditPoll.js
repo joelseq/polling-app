@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {
+  PageHeader,
   Grid,
   Modal,
   Button,
@@ -42,7 +43,9 @@ export default class EditPoll extends Component {
   render() {
     return (
       <Grid>
-        <h1 className="text-center">Success! Here is your unique poll URL:</h1>
+        <PageHeader className="text-center">
+          Success! Here is your unique poll URL:
+        </PageHeader>
         <UrlBox />
         <Button bsStyle="primary" bsSize="large" onClick={this.pollNamePrompt}>
           Change Poll Name
