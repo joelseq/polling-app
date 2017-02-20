@@ -6,6 +6,13 @@ import { SimpleSchema } from 'meteor/aldeed:simple-schema';
 // Collection of all polls
 const Polls = new Mongo.Collection('polls');
 
+// Schema for Votes
+const VoteSchema = new SimpleSchema({
+  handle: { type: String },
+  password: { type: String, optional: true },
+  selectedOptions: { type: Object, blackbox: true },
+});
+
 // Schema for Polls
 const PollSchema = new SimpleSchema({
   name: { type: String },
@@ -14,7 +21,7 @@ const PollSchema = new SimpleSchema({
     type: Object,
     blackbox: true,
   },
-  votes: { type: [Object], optional: true },
+  votes: { type: [VoteSchema], optional: true },
   isPrivate: { type: Boolean },
   password: { type: String, optional: true },
   createdAt: { type: Date, defaultValue: new Date() },
@@ -22,6 +29,33 @@ const PollSchema = new SimpleSchema({
 
 // Automatically validate the schema for us
 Polls.attachSchema(PollSchema);
+
+/**
+ * Helper function to make sure that there is only
+ * 1 vote by a particular handle in the Poll object.
+ * This is for the sake of updating votes and ensuring
+ * that there is no duplication or malicious insertion
+ * happening.
+ *
+ * @param {Poll} pollObject
+ * @returns {Boolean} True if no duplicates, False if
+ * there are duplicates.
+ */
+export function voteHelper(pollObject) {
+  const handles = {};
+  let ret = true;
+
+  pollObject.votes.forEach((vote) => {
+    const { handle } = vote;
+
+    if (handles[handle] === true) {
+      ret = false;
+    }
+    handles[handle] = true;
+  });
+
+  return ret;
+}
 
 // Meteor methods are the secure way of making database calls
 // on the client, therefore we define an object of all the
@@ -37,6 +71,27 @@ Meteor.methods({
 
     // Database call
     return Polls.insert(poll);
+  },
+
+  // Update an existing poll in the database
+  'polls.vote': function votePoll(pollId, updatedPoll) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(updatedPoll, PollSchema);
+    check(pollId, String);
+
+    const { options, votes } = updatedPoll;
+
+    if (voteHelper(updatedPoll)) {
+      // Database call
+      return Polls.update(pollId, {
+        $set: {
+          options,
+          votes,
+        },
+      });
+    }
+    throw new Error('This handle already voted.');
   },
 
 });
