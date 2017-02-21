@@ -71,14 +71,13 @@ class UrlBox extends Component {
           <Row>
             <Col md={2} mdOffset={4} xs={12}>
               <CopyToClipboard text={this.state.shareURL} onCopy={this.onCopy}>
-                <Button bsStyle="primary" bsSize="medium" block>Copy</Button>
+                <Button bsStyle="primary" block>Copy</Button>
               </CopyToClipboard>
             </Col>
             {' '}
             <Col md={2} xs={12}>
               <Button
                 bsStyle="primary"
-                bsSize="medium"
                 onClick={this.voteRedirect}
                 block
               > View Poll</Button>
