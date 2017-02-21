@@ -12,8 +12,6 @@ import {
 } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-
-import Chart from 'chart.js';
 import Bar from 'react-chartjs/lib/bar';
 
 
@@ -227,7 +225,7 @@ class ViewPoll extends Component {
     // TODO Get rid of this when done with testing
     const chartData = {
       labels: ['a', 'b', 'c'],
-      datasets: [1, 2, 3]
+      datasets: [1, 2, 3],
     };
 
     return (
@@ -262,9 +260,8 @@ class ViewPoll extends Component {
             </Button>
           </form>
         </Row>
-        // TODO delete this when done with testing
         <div>
-          <Bar data={chartData}/>
+          <Bar data={chartData} />
         </div>
       </Grid>
     );
