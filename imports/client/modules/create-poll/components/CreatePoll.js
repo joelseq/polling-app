@@ -31,16 +31,20 @@ export default class CreatePoll extends Component {
     this.handleWeightedChange = this.handleWeightedChange.bind(this);
     this.handleOptionNameChange = this.handleOptionNameChange.bind(this);
     this.handleOptionSubmit = this.handleOptionSubmit.bind(this);
+    this.handlePasswordChange = this.handlePasswordChange.bind(this);
+    this.handlePrivateChange = this.handlePrivateChange.bind(this);
     this.handlePollCreate = this.handlePollCreate.bind(this);
     this.renderOptions = this.renderOptions.bind(this);
     this.removeOption = this.removeOption.bind(this);
 
     // This is the same as doing getInitialState but the ES6 way
     this.state = {
-      question: '',
-      weighted: false,
+      name: '',
+      isWeighted: false,
+      isPrivate: false,
       optionName: '',
-      options: [],
+      options: {},
+      password: '',
       loading: false,
     };
   }
@@ -48,20 +52,39 @@ export default class CreatePoll extends Component {
   // Handler for the question input
   handleQuestionChange(e) {
     this.setState({
-      question: e.target.value,
+      ...this.state,
+      name: e.target.value,
+    });
+  }
+
+  // Handler for the password input
+  handlePasswordChange(e) {
+    this.setState({
+      ...this.state,
+      password: e.target.value,
     });
   }
 
   // Handler for the weighted radio buttons
-  handleWeightedChange(weighted) {
+  handleWeightedChange(isWeighted) {
     this.setState({
-      weighted,
+      ...this.state,
+      isWeighted,
+    });
+  }
+
+  // Handler for the private radio buttons
+  handlePrivateChange(isPrivate) {
+    this.setState({
+      ...this.state,
+      isPrivate,
     });
   }
 
   // Handler for the option name change input
   handleOptionNameChange(e) {
     this.setState({
+      ...this.state,
       optionName: e.target.value,
     });
   }
@@ -70,14 +93,17 @@ export default class CreatePoll extends Component {
   handleOptionSubmit(e) {
     e.preventDefault();
 
+    const { optionName, options } = this.state;
+
     // Make sure the input isn't empty and the option hasn't already been added
     // TODO: Show a warning when the user is trying to add the same option twice
-    if (this.state.optionName.length > 0 && !this.state.options.includes(this.state.optionName)) {
-      const newOptions = this.state.options;
+    if (optionName.length > 0 && !(optionName in options)) {
+      const newOptions = { ...options };
 
-      newOptions.push(this.state.optionName);
+      newOptions[optionName] = 0;
 
       this.setState({
+        ...this.state,
         options: newOptions,
         optionName: '',
       });
@@ -87,21 +113,14 @@ export default class CreatePoll extends Component {
   // Handler for creating a poll
   handlePollCreate() {
     // Destructuring the state object
-    const { question, weighted, options } = this.state;
-
-    // This creates an array of objects to match the database schema for
-    // options. eg:
-    // {
-    //   option1: 0,
-    //   option2: 0,
-    //   ...
-    // }
-    const optionsSchema = options.map(option => ({ [`${option}`]: 0 }));
+    const { name, isWeighted, options, isPrivate, password } = this.state;
 
     Meteor.call('polls.insert', {
-      name: question,
-      isWeighted: weighted,
-      options: optionsSchema,
+      name,
+      isWeighted,
+      options,
+      isPrivate,
+      password,
     }, (err, result) => {
       if (err || !result) {
         // TODO: add proper error handling
@@ -136,7 +155,7 @@ export default class CreatePoll extends Component {
 
   // Helper function to render all the options
   renderOptions() {
-    return this.state.options.map(option => (
+    return Object.keys(this.state.options).map(option => (
       <Col key={option} className="CreatePoll__option" md={4} sm={6} xs={12}>
         <button
           onClick={() => this.removeOption(option)}
@@ -153,7 +172,7 @@ export default class CreatePoll extends Component {
     return (
       <Grid>
         <h1 className="text-center">Create a Poll</h1>
-        <form>
+        <form onSubmit={(e) => { e.preventDefault(); }}>
           <FormGroup controlId={'question'}>
             <ControlLabel>Question: </ControlLabel>
             {/* This component is now 'controlled'. Further reading:
@@ -168,28 +187,59 @@ export default class CreatePoll extends Component {
           </FormGroup>
           <FormGroup controlId={'weighted'}>
             <ControlLabel>Weighted?</ControlLabel>
+            <p className="CreatePoll__info">
+              Weighted: Votes for options can have weights ranging from 1 to 10 (both inclusive)
+            </p>
+            <p className="CreatePoll__info">
+              Unweighted: Votes for options are weighted equally
+            </p>
             {/* These radio buttons are now 'controlled' as well
               * Further reading: same link as above
               */}
             <Radio
               onChange={() => this.handleWeightedChange(true)}
-              checked={this.state.weighted}
+              checked={this.state.isWeighted}
             >
               Yes
             </Radio>
             <Radio
               onChange={() => this.handleWeightedChange(false)}
-              checked={!this.state.weighted}
+              checked={!this.state.isWeighted}
             >
               No
             </Radio>
           </FormGroup>
-          <p className="CreatePoll__info">
-            Weighted: Votes for options can have weights ranging from 1 to 10 (both inclusive)
-          </p>
-          <p className="CreatePoll__info">
-            Unweighted: Votes for options are weighted equally
-          </p>
+          <FormGroup controlId={'private'}>
+            <ControlLabel>Private?</ControlLabel>
+            <Radio
+              onChange={() => this.handlePrivateChange(true)}
+              checked={this.state.isPrivate}
+            >
+              Yes
+            </Radio>
+            <Radio
+              onChange={() => this.handlePrivateChange(false)}
+              checked={!this.state.isPrivate}
+            >
+              No
+            </Radio>
+          </FormGroup>
+          { this.state.isPrivate
+            ?
+              <FormGroup controlId={'password'}>
+                <ControlLabel>Password: </ControlLabel>
+                {/* This component is now 'controlled'. Further reading:
+                  * https://facebook.github.io/react/docs/forms.html
+                  */}
+                <FormControl
+                  onChange={this.handlePasswordChange}
+                  type="password"
+                  defaultValue={this.state.password}
+                  placeholder="Enter password for poll"
+                />
+              </FormGroup>
+            : null
+          }
         </form>
         <Row>
           <Col md={8} xs={10} mdOffset={2} xsOffset={1}>
