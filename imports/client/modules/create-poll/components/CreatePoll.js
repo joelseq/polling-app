@@ -186,6 +186,10 @@ class CreatePoll extends Component {
   }
 
   render() {
+    const { options, loading, name, isPrivate, password } = this.state;
+    const disabled = Object.keys(options).length < 2 || loading ||
+      !name || (isPrivate && !password);
+
     return (
       <Grid>
         <h1 className="text-center">Create a Poll</h1>
@@ -301,7 +305,7 @@ class CreatePoll extends Component {
                 className="margin-top"
                 bsStyle="primary"
                 block
-                disabled={Object.keys(this.state.options).length < 2 || this.state.loading}
+                disabled={disabled}
                 onClick={!this.state.loading ? this.handlePollCreate : null}
               >
                 Create
