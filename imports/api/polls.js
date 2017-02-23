@@ -114,4 +114,3 @@ Meteor.methods({
 });
 
 export default Polls; // Required by our lint styler
-
