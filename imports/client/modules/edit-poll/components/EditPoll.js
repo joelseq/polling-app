@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 import {
@@ -152,31 +152,29 @@ class EditPoll extends Component {
     this.setState({ showPollNameModal: false });
   }
 
-
   /* Function to remove an option from the options in state */
   removeOption(option) {
-
-    /* 
-     * From StackOverflow:
+    /* From StackOverflow:
      * Object.keys to list all properties in raw (the original data)
-     * Array.prototype.filter to select keys that are present in the 
+     * Array.prototype.filter to select keys that are present in the
      * allowed list
-     * Array.prototype.reduce to build a new object with only the 
+     * Array.prototype.reduce to build a new object with only the
      * allowed properties. */
     const newOptions = Object.keys(this.state.options)
-      .filter(opt => opt !== option )
+      .filter(opt => opt !== option)
       .reduce((obj, key) => {
-        obj[key] = this.state.options[key];
-        return obj;
+        const newObj = obj;
+        newObj[key] = this.state.options[key];
+        return newObj;
       }, {});
 
     this.setState({
       options: newOptions,
-    }); 
+    });
   }
 
   /* Helper function to render all the options, used elsewhere, bad style,
-   * however, this project is not going to be big enough to require us to 
+   * however, this project is not going to be big enough to require us to
    * separate this out into different component.
    */
   renderOptions() {
@@ -216,7 +214,8 @@ class EditPoll extends Component {
         </Well>
 
         {/* Using this modal to handle updating the poll information, but
-          * this UI may be changed as we move forward */ }
+          * this UI may be changed as we move forward 
+          * TODO: Move this into a separate component. */ }
         <Modal
           show={this.state.showPollNameModal}
           onHide={this.closePollNamePrompt}
@@ -244,7 +243,7 @@ class EditPoll extends Component {
             <ControlLabel>Add Options: </ControlLabel>
             { /* As I write this code, I have returned from a walk along the
                * coast, where I was comforted by the idea of the beauty of
-               * life, and that despite all conflict the water and the 
+               * life, and that despite all conflict the water and the
                * seagulls will be there. Despite what may come of me in the
                * years, those birds will continue to live and die as well.
                *
