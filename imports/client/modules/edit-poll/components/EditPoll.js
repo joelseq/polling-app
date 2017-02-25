@@ -214,7 +214,7 @@ class EditPoll extends Component {
         </Well>
 
         {/* Using this modal to handle updating the poll information, but
-          * this UI may be changed as we move forward 
+          * this UI may be changed as we move forward
           * TODO: Move this into a separate component. */ }
         <Modal
           show={this.state.showPollNameModal}
