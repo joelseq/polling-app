@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 import {
@@ -29,9 +29,9 @@ const propTypes = {
     isWeighted: React.PropTypes.bool, */
     // Name / Question of the poll
     name: React.PropTypes.string,
-    /* A hashmap of key = option and
+    // A hashmap of key = option and
     // value = amount of votes
-    options: React.PropTypes.object, */
+    options: React.PropTypes.object,
   }),
 };
 
@@ -62,9 +62,15 @@ class EditPoll extends Component {
     this.closePollNamePrompt = this.closePollNamePrompt.bind(this);
     this.handlePollNameChange = this.handlePollNameChange.bind(this);
     this.updatePoll = this.updatePoll.bind(this);
+    this.renderOptions = this.renderOptions.bind(this);
+    this.removeOption = this.removeOption.bind(this);
+    this.handleOptionNameChange = this.handleOptionNameChange.bind(this);
+    this.handleOptionSubmit = this.handleOptionSubmit.bind(this);
 
     this.state = {
       pollName: this.props.poll.name,
+      options: {},
+      optionName: '',
       showPollNameModal: false,
       error: '',
     };
@@ -75,6 +81,7 @@ class EditPoll extends Component {
   pollNamePrompt() {
     this.setState({ showPollNameModal: true });
     this.setState({ pollName: this.props.poll.name });
+    this.setState({ options: this.props.poll.options });
   }
 
   /* Here is a method for closing a poll name prompt for changing the poll name,
@@ -89,11 +96,41 @@ class EditPoll extends Component {
     this.setState({ pollName: e.target.value });
   }
 
+  /* Handler for the option name change input */
+  handleOptionNameChange(e) {
+    this.setState({
+      ...this.state,
+      optionName: e.target.value,
+    });
+  }
+
+
+  /* Handler for adding an option, in the modal window provided */
+  handleOptionSubmit(e) {
+    e.preventDefault();
+
+    const { optionName, options } = this.state;
+
+    // Make sure the input isn't empty and the option hasn't already been added
+    // TODO: Show a warning when the user is trying to add the same option twice
+    if (optionName.length > 0 && !(optionName in options)) {
+      const newOptions = { ...options };
+
+      newOptions[optionName] = 0;
+
+      this.setState({
+        ...this.state,
+        options: newOptions,
+        optionName: '',
+      });
+    }
+  }
+
   /* Handler for updating the poll in the database. Currently just updates the
    * poll's name, but can be easily modified to change the poll options if
    * needed */
   updatePoll() {
-    const { pollName } = this.state;
+    const { pollName, options } = this.state;
 
     if (!pollName) {
       this.setState({
@@ -108,10 +145,52 @@ class EditPoll extends Component {
     delete updatedPoll._id;
 
     updatedPoll.name = pollName;
+    updatedPoll.options = options;
 
-    Meteor.call('polls.changeName', this.props.poll._id, updatedPoll);
+    Meteor.call('polls.editPoll', this.props.poll._id, updatedPoll);
 
     this.setState({ showPollNameModal: false });
+  }
+
+
+  /* Function to remove an option from the options in state */
+  removeOption(option) {
+
+    /* 
+     * From StackOverflow:
+     * Object.keys to list all properties in raw (the original data)
+     * Array.prototype.filter to select keys that are present in the 
+     * allowed list
+     * Array.prototype.reduce to build a new object with only the 
+     * allowed properties. */
+    const newOptions = Object.keys(this.state.options)
+      .filter(opt => opt !== option )
+      .reduce((obj, key) => {
+        obj[key] = this.state.options[key];
+        return obj;
+      }, {});
+
+    this.setState({
+      options: newOptions,
+    }); 
+  }
+
+  /* Helper function to render all the options, used elsewhere, bad style,
+   * however, this project is not going to be big enough to require us to 
+   * separate this out into different component.
+   */
+  renderOptions() {
+    return Object.keys(this.state.options).map(option => (
+      <Col key={option} className="CreatePoll__option" md={4} sm={6} xs={12}>
+        <button
+          onClick={() => this.removeOption(option)}
+          className="CreatePoll__option-close-button"
+        >
+          &times;
+        </button>
+        <p>{option}</p>
+      </Col>
+    ));
   }
 
   render() {
@@ -160,6 +239,40 @@ class EditPoll extends Component {
                     />
                   </FormGroup>
                 </form>
+              </Col>
+            </Row>
+            <ControlLabel>Add Options: </ControlLabel>
+            { /* As I write this code, I have returned from a walk along the
+               * coast, where I was comforted by the idea of the beauty of
+               * life, and that despite all conflict the water and the 
+               * seagulls will be there. Despite what may come of me in the
+               * years, those birds will continue to live and die as well.
+               *
+               * We are always distracted by the trivial, but in our code,
+               * our craft, we embody the truth ever present in the world,
+               * just out of sight. */ }
+            <form onSubmit={this.handleOptionSubmit}>
+              <div className="CreatePoll__add-option">
+                <FormControl
+                  onChange={this.handleOptionNameChange}
+                  value={this.state.optionName}
+                  type="text"
+                  placeholder="Enter an option"
+                />
+                <Button
+                  className="CreatePoll__add-button"
+                  bsStyle="success"
+                  type="submit"
+                >
+                  Add Option
+                </Button>
+              </div>
+            </form>
+            <Row>
+              <Col xs={12}>
+                <Row>
+                  {this.renderOptions()}
+                </Row>
               </Col>
             </Row>
           </Modal.Body>
