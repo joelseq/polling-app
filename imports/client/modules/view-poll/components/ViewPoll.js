@@ -12,11 +12,10 @@ import {
 } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import Bar from 'react-chartjs/lib/bar';
 
 
 // Grabs chart from PollResults
-// import PollResults from '../../../poll-results/components/PollResults.js';
+import PollResults from '../../poll-results/components/PollResults.js';
 
 // Grab collection for polls
 import Polls, { voteHelper } from '../../../../api/polls.js';
@@ -261,7 +260,7 @@ class ViewPoll extends Component {
           </form>
         </Row>
         <div>
-          <Bar data={chartData} />
+          <PollResults />
         </div>
       </Grid>
     );
