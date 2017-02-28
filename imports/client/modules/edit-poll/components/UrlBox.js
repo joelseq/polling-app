@@ -43,6 +43,12 @@ class UrlBox extends Component {
     });
   }
 
+  closePoll() {
+    const pathName = window.location.pathname;
+    const pollIdSubstring = pathName.substring(7, pathName.lastIndexOf('/'));
+    console.log(pollIdSubstring);
+    Meteor.call('polls.closePoll', pollIdSubstring); 
+  }
   /* Use the router to redirect the user to the voting page, do so by grabbing
    * the preceding portion of the url pathname. A bit inefficient, but it
    * works, and was the easiest solution I found after spending an hour. */
@@ -69,7 +75,7 @@ class UrlBox extends Component {
           {/* TODO: Modify this UI so that the buttons are properly spaced by
             * adding custom css */ }
           <Row>
-            <Col md={2} mdOffset={4} xs={12}>
+            <Col md={2} mdOffset={3} xs={12}>
               <CopyToClipboard text={this.state.shareURL} onCopy={this.onCopy}>
                 <Button bsStyle="primary" block>Copy</Button>
               </CopyToClipboard>
@@ -81,6 +87,14 @@ class UrlBox extends Component {
                 onClick={this.voteRedirect}
                 block
               > View Poll</Button>
+            </Col> 
+            {' '}
+            <Col md={2} mdOffset={0} xs={12}>
+              <Button
+                bsStyle="primary"
+                onClick={this.closePoll}
+                block
+              > Close Poll</Button>
             </Col>
           </Row>
         </Grid>

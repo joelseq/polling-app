@@ -217,6 +217,11 @@ class ViewPoll extends Component {
       return <h4 className="text-center">Loading...</h4>;
     }
 
+    if (this.props.poll.isClosed) {
+      return <h4 className="text-center">um fuck you...</h4>;
+
+    }
+
     return (
       <Grid>
         <Row>
