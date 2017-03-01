@@ -219,7 +219,15 @@ class ViewPoll extends Component {
 
     if (this.props.poll.isClosed) {
       return <h4 className="text-center">um fuck you...</h4>;
+    }
 
+    if( this.props.poll.expiresAt.getTime() != (new Date( 0, 0, 0, 0, 0,0)).getTime()){ 
+
+         console.log("Not the default");
+         if( this.props.poll.expiresAt.getTime() < (new Date()).getTime() ) {
+      
+            return <h4 className="text-center">um fuck you...</h4>;
+         }
     }
 
     return (
