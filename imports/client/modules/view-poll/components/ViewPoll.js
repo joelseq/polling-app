@@ -260,7 +260,7 @@ class ViewPoll extends Component {
           </form>
         </Row>
         <div>
-          <PollResults />
+          <PollResults options={this.props.poll.options}/>
         </div>
       </Grid>
     );

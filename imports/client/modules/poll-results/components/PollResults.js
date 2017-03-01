@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import {Bar} from 'react-chartjs-2';
 
+// Component for bar chart displaying the results of the poll
 export default class PollResults extends Component {
   constructor(props) {
     super(props);
@@ -9,15 +10,17 @@ export default class PollResults extends Component {
   }
 
   render() {
-    const poll_options = this.props.options;
-    let chartOptions = [];
-    let chartData = [];
+    const poll_options = this.props.options; // options from poll collection
+    let chartOptions = []; // array of option names
+    let chartData = []; //
 
+    // Grabs names and values for each poll option from options hashmap
     for (var i = 0, keys = Object.keys(poll_options), ii = keys.length; i < ii; i++) {
       chartOptions.push(keys[i]);
       chartData.push(poll_options[keys[i]]);
     }
 
+    // chart containing the poll results
     var myChart = {
       data: {
           labels: chartOptions,
@@ -44,6 +47,7 @@ export default class PollResults extends Component {
       }
   	};
 
+    // layout of what is rendered
     return (
       <div>
         <Bar data={myChart.data} options={myChart.options} />
