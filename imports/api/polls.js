@@ -25,6 +25,8 @@ const PollSchema = new SimpleSchema({
   isPrivate: { type: Boolean },
   password: { type: String, optional: true },
   createdAt: { type: Date, defaultValue: new Date() },
+  isClosed: { type: Boolean, defaultValue: false },
+  //expiresAt: { type: Date, defaultValue: (null) )},
 });
 
 // Automatically validate the schema for us
@@ -72,6 +74,19 @@ Meteor.methods({
     // Database call
     return Polls.insert(poll);
   },
+
+  'polls.closePoll': function closePoll(pollId) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(pollId, String);
+
+      // Database call
+    return Polls.update(pollId, {
+      $set: {
+        isClosed: true,
+      },
+    });
+  },    
 
   // Update an existing poll in the database
   'polls.editPoll': function changeName(pollId, updatedPoll) {
