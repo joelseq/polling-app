@@ -11,12 +11,15 @@ import {
   Radio,
   Row,
   Col,
+	ButtonGroup,
 } from 'react-bootstrap';
 
 var moment = require('moment');
 
 import '../../../main.js';
 import '../../../../ui/react-datetime.css'
+
+import PopOver from './PopOver.js'
 
 /**
  * CreatePoll - component that handles the creation of polls. There are
@@ -129,8 +132,9 @@ class CreatePoll extends Component {
 
   // Handler for creating a poll
   handlePollCreate() {
+
     // Destructuring the state object
-    const { name, isWeighted, options, isPrivate, password, expiresAt } = this.state;
+    const { name, isWeighted, options, isPrivate, password, expiresAt, hasExpDate } = this.state;
 
     Meteor.call('polls.insert', {
       name,
@@ -169,6 +173,13 @@ class CreatePoll extends Component {
       ...this.state,
       expiresAt: expAt,
     });
+
+		if(!this.state.hasExpDate){
+			this.setState({
+				...this.state,
+				expiresAt: new Date(0, 0, 0, 0, 0, 0),
+			});
+		}
     
   }
 
@@ -183,6 +194,7 @@ class CreatePoll extends Component {
       options: newOptions,
     });
   }
+
 
   // Helper function to render all the options
   renderOptions() {
@@ -218,19 +230,37 @@ class CreatePoll extends Component {
             />
           </FormGroup>
           <Row>
-            <Col md={4}>
+            <Col md={4} className={"text-center col-xs-4"}>
               <FormGroup controlId={'weighted'}>
-                <ControlLabel>Weighted?</ControlLabel>
-                <p className="CreatePoll__info">
-                  Weighted: Votes for options can have weights ranging from 1 to 10 (both inclusive)
-                </p>
-                <p className="CreatePoll__info">
-                  Unweighted: Votes for options are weighted equally
-                </p>
-                {/* These radio buttons are now 'controlled' as well
-                  * Further reading: same link as above
-                  */}
-                <Radio
+							<ControlLabel>Poll Type</ControlLabel>
+							{' '}
+							<PopOver />
+							{/* These radio buttons are now 'controlled' as well
+								* Further reading: same link as above
+								*/}
+							<br />
+								<ButtonGroup className={"btn-group"}>
+									<Button 
+										onClick={() => this.handleWeightedChange(true)}
+										className={"btn center-block"}
+										bsStyle={ this.state.isWeighted
+											?
+											"success"
+											: ""
+										}
+									checked={this.state.isWeighted}
+									>Weighted</Button>
+									<Button
+										onClick={() => this.handleWeightedChange(false)}
+										className={"btn center-block"}
+										bsStyle={ !this.state.isWeighted
+											?
+											"success"
+											: ""
+										}
+									>Unweighted</Button>
+								</ButtonGroup>
+                {/*<Radio
                   onChange={() => this.handleWeightedChange(true)}
                   checked={this.state.isWeighted}
                 >
@@ -241,13 +271,19 @@ class CreatePoll extends Component {
                   checked={!this.state.isWeighted}
                 >
                   No
-                </Radio>
+                </Radio>*/}
               </FormGroup>
             </Col>
-            <Col md={4}>
+            <Col md={4} className={"text-center col-xs-4"}>
               <FormGroup controlId={'private'}>
-                <ControlLabel>Private?</ControlLabel>
-                <Radio
+                <ControlLabel>Poll Privacy</ControlLabel>
+								<Button 
+									className={"btn btn-primary center-block"}
+									bsStyle="success"
+									onClick={() => this.handlePrivateChange(!this.state.isPrivate)}
+								> {this.state.isPrivate ? "Make Poll Public" : "Make Poll Private"} 
+								</Button>
+                {/*<Radio
                   onChange={() => this.handlePrivateChange(true)}
                   checked={this.state.isPrivate}
                 >
@@ -258,7 +294,7 @@ class CreatePoll extends Component {
                   checked={!this.state.isPrivate}
                 >
                   No
-                </Radio>
+                </Radio>*/}
               </FormGroup>
               { this.state.isPrivate
                 ?
@@ -277,16 +313,20 @@ class CreatePoll extends Component {
                 : null
               }
             </Col>
-            <Col md={4}>
+            <Col md={4} className={"text-center col-xs-4"}>
+							<ControlLabel>Poll Termination</ControlLabel>
               <Button 
                 className={"btn btn-primary center-block"}
                 bsStyle="success"
                 onClick={() => this.handleExpDateChange(!this.state.hasExpDate)}
-              > Add Expiration date </Button>
+              > {this.state.hasExpDate ? "Remove Expiration Date" : "Add Expiration Date"} 
+							</Button>
               <br />
               { this.state.hasExpDate
                 ?
-                <Datetime onChange={this.handleDateChange} />
+                <Datetime onChange={this.handleDateChange} 
+											defaultValue={(date = new Date()).setDate(date.getDate() + 1)}
+								/>
                 : null
               }
             </Col>
