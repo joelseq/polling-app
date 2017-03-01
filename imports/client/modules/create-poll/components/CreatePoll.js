@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { withRouter, routerShape } from 'react-router';
-import { Datetime } from 'react-datetime';
+import Datetime from 'react-datetime';
 import {
   Grid,
   Button,
@@ -41,18 +41,20 @@ class CreatePoll extends Component {
     this.handlePollCreate = this.handlePollCreate.bind(this);
     this.renderOptions = this.renderOptions.bind(this);
     this.removeOption = this.removeOption.bind(this);
+    this.handleDateChange = this.handleDateChange.bind(this);
 
     // This is the same as doing getInitialState but the ES6 way
     this.state = {
       // might wanna move this
-      startDate: moment(),
       name: '',
       isWeighted: false,
       isPrivate: false,
+      hasExpDate: false,
       optionName: '',
       options: {},
       password: '',
       loading: false,
+      expiresAt: new Date(0, 0, 0, 0, 0, 0),
     };
   }
 
@@ -88,6 +90,14 @@ class CreatePoll extends Component {
     });
   }
 
+  // Handler for the show add exp date input
+  handleExpDateChange(hasExpDate) {
+    this.setState({
+      ...this.state,
+      hasExpDate,
+    });
+  }
+
   // Handler for the option name change input
   handleOptionNameChange(e) {
     this.setState({
@@ -120,7 +130,7 @@ class CreatePoll extends Component {
   // Handler for creating a poll
   handlePollCreate() {
     // Destructuring the state object
-    const { name, isWeighted, options, isPrivate, password } = this.state;
+    const { name, isWeighted, options, isPrivate, password, expiresAt } = this.state;
 
     Meteor.call('polls.insert', {
       name,
@@ -128,6 +138,7 @@ class CreatePoll extends Component {
       options,
       isPrivate,
       password,
+      expiresAt,
     }, (err, result) => {
       if (err || !result) {
         // TODO: add proper error handling
@@ -150,8 +161,15 @@ class CreatePoll extends Component {
     });
   }
 
-  handleDateChange() {
-    console.log("um ok")
+  handleDateChange(e) {
+    var expAt = e.toDate();
+    console.log(expAt);
+
+    this.setState({
+      ...this.state,
+      expiresAt: expAt,
+    });
+    
   }
 
   // Function to remove an option from the options in state
@@ -242,29 +260,37 @@ class CreatePoll extends Component {
                   No
                 </Radio>
               </FormGroup>
+              { this.state.isPrivate
+                ?
+                  <FormGroup controlId={'password'}>
+                    <ControlLabel>Password: </ControlLabel>
+                    {/* This component is now 'controlled'. Further reading:
+                      * https://facebook.github.io/react/docs/forms.html
+                      */}
+                    <FormControl
+                      onChange={this.handlePasswordChange}
+                      type="password"
+                      defaultValue={this.state.password}
+                      placeholder="Enter password for poll"
+                    />
+                  </FormGroup>
+                : null
+              }
             </Col>
             <Col md={4}>
-              <Datetime />
-              {/*selected={this.state.startDate}
-                  onChange={this.handleDateChange} */}
+              <Button 
+                className={"btn btn-primary center-block"}
+                bsStyle="success"
+                onClick={() => this.handleExpDateChange(!this.state.hasExpDate)}
+              > Add Expiration date </Button>
+              <br />
+              { this.state.hasExpDate
+                ?
+                <Datetime onChange={this.handleDateChange} />
+                : null
+              }
             </Col>
           </Row>
-          { this.state.isPrivate
-            ?
-              <FormGroup controlId={'password'}>
-                <ControlLabel>Password: </ControlLabel>
-                {/* This component is now 'controlled'. Further reading:
-                  * https://facebook.github.io/react/docs/forms.html
-                  */}
-                <FormControl
-                  onChange={this.handlePasswordChange}
-                  type="password"
-                  defaultValue={this.state.password}
-                  placeholder="Enter password for poll"
-                />
-              </FormGroup>
-            : null
-          }
         </form>
         <Row>
           <Col md={8} xs={10} mdOffset={2} xsOffset={1}>
