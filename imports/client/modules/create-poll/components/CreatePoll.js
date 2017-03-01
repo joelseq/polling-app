@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { withRouter, routerShape } from 'react-router';
+import { Datetime } from 'react-datetime';
 import {
   Grid,
   Button,
@@ -12,7 +13,10 @@ import {
   Col,
 } from 'react-bootstrap';
 
+var moment = require('moment');
+
 import '../../../main.js';
+import '../../../../ui/react-datetime.css'
 
 /**
  * CreatePoll - component that handles the creation of polls. There are
@@ -40,6 +44,8 @@ class CreatePoll extends Component {
 
     // This is the same as doing getInitialState but the ES6 way
     this.state = {
+      // might wanna move this
+      startDate: moment(),
       name: '',
       isWeighted: false,
       isPrivate: false,
@@ -144,6 +150,10 @@ class CreatePoll extends Component {
     });
   }
 
+  handleDateChange() {
+    console.log("um ok")
+  }
+
   // Function to remove an option from the options in state
   removeOption(option) {
     // This filters out the selected option to remove from the options in the
@@ -172,6 +182,7 @@ class CreatePoll extends Component {
   }
 
   render() {
+    // not sure what the right way 
     return (
       <Grid>
         <h1 className="text-center">Create a Poll</h1>
@@ -188,45 +199,56 @@ class CreatePoll extends Component {
               placeholder="Enter question for poll"
             />
           </FormGroup>
-          <FormGroup controlId={'weighted'}>
-            <ControlLabel>Weighted?</ControlLabel>
-            <p className="CreatePoll__info">
-              Weighted: Votes for options can have weights ranging from 1 to 10 (both inclusive)
-            </p>
-            <p className="CreatePoll__info">
-              Unweighted: Votes for options are weighted equally
-            </p>
-            {/* These radio buttons are now 'controlled' as well
-              * Further reading: same link as above
-              */}
-            <Radio
-              onChange={() => this.handleWeightedChange(true)}
-              checked={this.state.isWeighted}
-            >
-              Yes
-            </Radio>
-            <Radio
-              onChange={() => this.handleWeightedChange(false)}
-              checked={!this.state.isWeighted}
-            >
-              No
-            </Radio>
-          </FormGroup>
-          <FormGroup controlId={'private'}>
-            <ControlLabel>Private?</ControlLabel>
-            <Radio
-              onChange={() => this.handlePrivateChange(true)}
-              checked={this.state.isPrivate}
-            >
-              Yes
-            </Radio>
-            <Radio
-              onChange={() => this.handlePrivateChange(false)}
-              checked={!this.state.isPrivate}
-            >
-              No
-            </Radio>
-          </FormGroup>
+          <Row>
+            <Col md={4}>
+              <FormGroup controlId={'weighted'}>
+                <ControlLabel>Weighted?</ControlLabel>
+                <p className="CreatePoll__info">
+                  Weighted: Votes for options can have weights ranging from 1 to 10 (both inclusive)
+                </p>
+                <p className="CreatePoll__info">
+                  Unweighted: Votes for options are weighted equally
+                </p>
+                {/* These radio buttons are now 'controlled' as well
+                  * Further reading: same link as above
+                  */}
+                <Radio
+                  onChange={() => this.handleWeightedChange(true)}
+                  checked={this.state.isWeighted}
+                >
+                  Yes
+                </Radio>
+                <Radio
+                  onChange={() => this.handleWeightedChange(false)}
+                  checked={!this.state.isWeighted}
+                >
+                  No
+                </Radio>
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <FormGroup controlId={'private'}>
+                <ControlLabel>Private?</ControlLabel>
+                <Radio
+                  onChange={() => this.handlePrivateChange(true)}
+                  checked={this.state.isPrivate}
+                >
+                  Yes
+                </Radio>
+                <Radio
+                  onChange={() => this.handlePrivateChange(false)}
+                  checked={!this.state.isPrivate}
+                >
+                  No
+                </Radio>
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <Datetime />
+              {/*selected={this.state.startDate}
+                  onChange={this.handleDateChange} */}
+            </Col>
+          </Row>
           { this.state.isPrivate
             ?
               <FormGroup controlId={'password'}>
