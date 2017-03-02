@@ -161,6 +161,15 @@ class CreatePoll extends Component {
     });
   }
 
+  checkIfValid(currentDate, selectedDate) {
+    console.log("hit");
+    console.log(Datetime.moment());
+    if( selectedDate ) {
+       return currentDate.isAfter(Datetime.moment().subtract(1, 'day'));
+    }
+    return true;
+  }
+
   handleDateChange(e) {
     var expAt = e.toDate();
     console.log(expAt);
@@ -286,7 +295,7 @@ class CreatePoll extends Component {
               <br />
               { this.state.hasExpDate
                 ?
-                <Datetime onChange={this.handleDateChange} />
+                <Datetime onChange={this.handleDateChange} input={false} isValidDate={this.checkIfValid}/>
                 : null
               }
             </Col>
