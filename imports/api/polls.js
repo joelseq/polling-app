@@ -34,8 +34,7 @@ Polls.attachSchema(PollSchema);
  * Helper function to make sure that there is only
  * 1 vote by a particular handle in the Poll object.
  * This is for the sake of updating votes and ensuring
- * that there is no duplication or malicious insertion
- * happening.
+ * that there is no duplication or malicious insertion * happening.
  *
  * @param {Poll} pollObject
  * @returns {Boolean} True if no duplicates, False if
@@ -109,7 +108,43 @@ Meteor.methods({
         },
       });
     }
-    throw new Error('This handle already voted.');
+    throw new Meteor.Error('This handle already voted.');
+  },
+
+  'polls.checkPassAndHandle':
+  function checkPassAndHandle(data) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(data, Object);
+    const { pollId, otherHandle, pass } = data;
+    check(pollId, String);
+    check(otherHandle, String);
+    check(pass, String);
+
+    // Database call
+    if (Meteor.isServer) {
+      const poll = Polls.findOne(pollId);
+      let ret = true;
+
+      if (poll.votes) {
+        poll.votes.forEach((vote) => {
+          const { handle } = vote;
+          if (handle === otherHandle) {
+            ret = false;
+          }
+        });
+      }
+
+      if (!ret) {
+        throw new Meteor.Error(500, 'This handle already voted.');
+      }
+
+      if (poll.isPrivate) {
+        if (poll.password !== pass) {
+          throw new Meteor.Error(501, 'Password is invalid!');
+        }
+      }
+    }
   },
 
 });

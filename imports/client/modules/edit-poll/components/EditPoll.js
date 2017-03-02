@@ -6,6 +6,7 @@ import {
   FormGroup,
   ControlLabel,
   Col,
+  HelpBlock,
   Row,
   FormControl,
   PageHeader,
@@ -66,6 +67,8 @@ class EditPoll extends Component {
     this.removeOption = this.removeOption.bind(this);
     this.handleOptionNameChange = this.handleOptionNameChange.bind(this);
     this.handleOptionSubmit = this.handleOptionSubmit.bind(this);
+    this.getPollNameValidationState =
+      this.getPollNameValidationState.bind(this);
 
     this.state = {
       pollName: this.props.poll.name,
@@ -73,27 +76,28 @@ class EditPoll extends Component {
       optionName: '',
       showPollNameModal: false,
       error: '',
+      pollNameError: '',
+      optionError: '',
     };
   }
 
-  /* Here is a method for opening a poll name prompt for changing the poll name,
-   * but it is unclear whether this is the best option for this functionality */
-  pollNamePrompt() {
-    this.setState({ showPollNameModal: true });
-    this.setState({ pollName: this.props.poll.name });
-    this.setState({ options: this.props.poll.options });
-  }
+  /* Validate the length of the poll name to make sure it is not empty */
+  getPollNameValidationState() {
+    const length = this.state.pollName.length;
+    if (length > 0) return 'success';
+    else if (length === 0) return 'error';
 
-  /* Here is a method for closing a poll name prompt for changing the poll name,
-   * but it is unclear whether this is the best option for this functionality */
-  closePollNamePrompt() {
-    this.setState({ showPollNameModal: false });
+    return null;
   }
 
   /* Simple method for handling changing the state of the poll name on the
    * component */
   handlePollNameChange(e) {
-    this.setState({ pollName: e.target.value });
+    e.preventDefault();
+    this.setState({
+      pollName: e.target.value,
+      pollNameError: '',
+    });
   }
 
   /* Handler for the option name change input */
@@ -101,9 +105,9 @@ class EditPoll extends Component {
     this.setState({
       ...this.state,
       optionName: e.target.value,
+      optionError: '',
     });
   }
-
 
   /* Handler for adding an option, in the modal window provided */
   handleOptionSubmit(e) {
@@ -129,13 +133,20 @@ class EditPoll extends Component {
   /* Handler for updating the poll in the database. Currently just updates the
    * poll's name, but can be easily modified to change the poll options if
    * needed */
-  updatePoll() {
+  updatePoll(e) {
+    e.preventDefault();
     const { pollName, options } = this.state;
 
-    if (!pollName) {
-      this.setState({
-        error: 'Please enter a name',
-      });
+    if (pollName === '') {
+      this.setState({ pollNameError: 'No poll name provided!' });
+      return;
+    }
+
+    const optionNum = Object.keys(options).length;
+    if (optionNum < 2) {
+      this.setState({ optionError:
+        'Too few options specified, please add another before submitting!' });
+      return;
     }
 
     // Create a new Poll object to be saved
@@ -171,6 +182,22 @@ class EditPoll extends Component {
     this.setState({
       options: newOptions,
     });
+  }
+
+  /* Here is a method for opening a poll name prompt for changing the poll name,
+   * but it is unclear whether this is the best option for this functionality */
+  pollNamePrompt() {
+    this.setState({
+      pollName: this.props.poll.name,
+      options: this.props.poll.options,
+      showPollNameModal: true,
+    });
+  }
+
+  /* Here is a method for closing a poll name prompt for changing the poll name,
+   * but it is unclear whether this is the best option for this functionality */
+  closePollNamePrompt() {
+    this.setState({ showPollNameModal: false });
   }
 
   /* Helper function to render all the options, used elsewhere, bad style,
@@ -228,7 +255,9 @@ class EditPoll extends Component {
             <Row>
               <Col md={12} xs={12}>
                 <form onSubmit={this.updatePoll}>
-                  <FormGroup>
+                  <FormGroup
+                    validationState={this.getPollNameValidationState()}
+                  >
                     <ControlLabel>Question: </ControlLabel>
                     <FormControl
                       onChange={this.handlePollNameChange}
@@ -236,6 +265,8 @@ class EditPoll extends Component {
                       value={this.state.pollName}
                       placeholder="Enter question for poll"
                     />
+                    <FormControl.Feedback />
+                    <HelpBlock>{this.state.pollNameError}</HelpBlock>
                   </FormGroup>
                 </form>
               </Col>
@@ -266,6 +297,7 @@ class EditPoll extends Component {
                   Add Option
                 </Button>
               </div>
+              <HelpBlock>{this.state.optionError}</HelpBlock>
             </form>
             <Row>
               <Col xs={12}>

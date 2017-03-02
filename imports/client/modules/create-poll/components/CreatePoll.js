@@ -8,6 +8,7 @@ import {
   ControlLabel,
   FormControl,
   Radio,
+  HelpBlock,
   Row,
   Col,
 } from 'react-bootstrap';
@@ -36,6 +37,8 @@ class CreatePoll extends Component {
     this.handlePrivateChange = this.handlePrivateChange.bind(this);
     this.handlePollCreate = this.handlePollCreate.bind(this);
     this.renderOptions = this.renderOptions.bind(this);
+    this.getPollNameValidationState =
+      this.getPollNameValidationState.bind(this);
     this.removeOption = this.removeOption.bind(this);
 
     // This is the same as doing getInitialState but the ES6 way
@@ -47,7 +50,17 @@ class CreatePoll extends Component {
       options: {},
       password: '',
       loading: false,
+      pollNameError: '',
+      optionError: '',
     };
+  }
+
+  getPollNameValidationState() {
+    const length = this.state.name.length;
+    if (length > 0) return 'success';
+    else if (length === 0) return 'error';
+
+    return null;
   }
 
   // Handler for the question input
@@ -55,6 +68,7 @@ class CreatePoll extends Component {
     this.setState({
       ...this.state,
       name: e.target.value,
+      pollNameError: '',
     });
   }
 
@@ -107,6 +121,7 @@ class CreatePoll extends Component {
         ...this.state,
         options: newOptions,
         optionName: '',
+        optionError: '',
       });
     }
   }
@@ -115,6 +130,21 @@ class CreatePoll extends Component {
   handlePollCreate() {
     // Destructuring the state object
     const { name, isWeighted, options, isPrivate, password } = this.state;
+    if (name === '') {
+      this.setState({ pollNameError: 'No poll name provided!' });
+      return;
+    }
+
+    // Check for the correct number of options
+    const optionNum = Object.keys(options).length;
+    if (optionNum < 2) {
+      this.setState({ optionError:
+        'Too few options specified, please add another before submitting!' });
+      this.setState({
+        loading: false,
+      });
+      return;
+    }
 
     Meteor.call('polls.insert', {
       name,
@@ -125,11 +155,7 @@ class CreatePoll extends Component {
     }, (err, result) => {
       if (err || !result) {
         // TODO: add proper error handling
-        console.log('Something went wrong');
       }
-      this.setState({
-        loading: false,
-      });
 
       // route the user to either the poll page or poll edit page
       // after successful poll creation.
@@ -176,7 +202,10 @@ class CreatePoll extends Component {
       <Grid>
         <h1 className="text-center">Create a Poll</h1>
         <form onSubmit={(e) => { e.preventDefault(); }}>
-          <FormGroup controlId={'question'}>
+          <FormGroup
+            controlId={'question'}
+            validationState={this.getPollNameValidationState()}
+          >
             <ControlLabel>Question: </ControlLabel>
             {/* This component is now 'controlled'. Further reading:
               * https://facebook.github.io/react/docs/forms.html
@@ -187,6 +216,8 @@ class CreatePoll extends Component {
               value={this.state.question}
               placeholder="Enter question for poll"
             />
+            <FormControl.Feedback />
+            <HelpBlock>{this.state.pollNameError}</HelpBlock>
           </FormGroup>
           <FormGroup controlId={'weighted'}>
             <ControlLabel>Weighted?</ControlLabel>
@@ -270,6 +301,7 @@ class CreatePoll extends Component {
                   Add Option
                 </Button>
               </div>
+              <HelpBlock>{this.state.optionError}</HelpBlock>
             </form>
           </Col>
         </Row>
