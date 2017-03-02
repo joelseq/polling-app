@@ -12,11 +12,6 @@ import {
 } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import Bar from 'react-chartjs/lib/bar';
-
-
-// Grabs chart from PollResults
-// import PollResults from '../../../poll-results/components/PollResults.js';
 
 // Grab collection for polls
 import Polls, { voteHelper } from '../../../../api/polls.js';
@@ -222,12 +217,6 @@ class ViewPoll extends Component {
       return <h4 className="text-center">Loading...</h4>;
     }
 
-    // TODO Get rid of this when done with testing
-    const chartData = {
-      labels: ['a', 'b', 'c'],
-      datasets: [1, 2, 3],
-    };
-
     return (
       <Grid>
         <Row>
@@ -260,9 +249,6 @@ class ViewPoll extends Component {
             </Button>
           </form>
         </Row>
-        <div>
-          <Bar data={chartData} />
-        </div>
       </Grid>
     );
   }
