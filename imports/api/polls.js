@@ -74,6 +74,24 @@ Meteor.methods({
   },
 
   // Update an existing poll in the database
+  'polls.editPoll': function changeName(pollId, updatedPoll) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(updatedPoll, PollSchema);
+    check(pollId, String);
+
+    const { name, options } = updatedPoll;
+
+      // Database call
+    return Polls.update(pollId, {
+      $set: {
+        name,
+        options,
+      },
+    });
+  },
+
+  // Update an existing poll in the database
   'polls.vote': function votePoll(pollId, updatedPoll) {
     // Check if the vote object conforms with
     // the VoteSchema
