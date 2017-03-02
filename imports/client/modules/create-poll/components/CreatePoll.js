@@ -322,7 +322,7 @@ class CreatePoll extends Component {
                 : null
               }
             </Col>
-            <Col md={4} className={"text-center col-xs-4"}>
+            <Col md={4} className={"text-center container col-xs-4"}>
 							<ControlLabel>Poll Termination</ControlLabel>
               <Button 
                 className={"btn btn-primary center-block"}

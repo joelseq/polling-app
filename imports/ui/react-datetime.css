@@ -10,7 +10,7 @@
   position: absolute;
   width: 250px;
   padding: 4px;
-  margin-top: 1px;
+  margin: auto;
   z-index: 99999 !important;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0,0,0,.1);
