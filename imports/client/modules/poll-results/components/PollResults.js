@@ -1,58 +1,100 @@
 import React, { Component, PropTypes } from 'react';
-import {Bar} from 'react-chartjs-2';
+import { Meteor } from 'meteor/meteor';
+import { createContainer } from 'meteor/react-meteor-data';
+import {
+  Grid,
+  Row,
+  Col,
+  FormGroup,
+  FormControl,
+  Checkbox,
+  Button,
+} from 'react-bootstrap';
 
-// Component for bar chart displaying the results of the poll
-export default class PollResults extends Component {
+// Grabs chart from PollResults
+import PollChart from '../../poll-results/components/PollChart.js';
+
+// Grab collection for polls
+import Polls, { voteHelper } from '../../../../api/polls.js';
+
+// Prop Types for this Component
+const propTypes = {
+  // Poll object in DB from createContainer
+  poll: PropTypes.shape({
+    // Mongo ID for Poll
+    _id: PropTypes.string,
+    // Whether the poll is weighted
+    isWeighted: PropTypes.bool,
+    // Name / Question of the poll
+    name: PropTypes.string,
+    // A hashmap of key = option and
+    // value = amount of votes
+    options: PropTypes.object,
+  }),
+};
+
+class PollResults extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.toggleExtraInfo = this.toggleExtraInfo.bind(this);
+
+    this.state = {
+      showExtraInfo: false
+    };
   }
 
-  render() {
-    const poll_options = this.props.options; // options from poll collection
-    let chartOptions = []; // array of option names
-    let chartData = []; //
-
-    // Grabs names and values for each poll option from options hashmap
-    for (var i = 0, keys = Object.keys(poll_options), ii = keys.length; i < ii; i++) {
-      chartOptions.push(keys[i]);
-      chartData.push(poll_options[keys[i]]);
+  // allows the user to display and show extra voting info
+  toggleExtraInfo() {
+    // if true, switches to false
+    if (this.state.showExtraInfo) {
+      this.setState({
+        showExtraInfo: false,
+      });
     }
 
-    // chart containing the poll results
-    var myChart = {
-      data: {
-          labels: chartOptions,
-          datasets: [{
-              label: 'Number of Votes',
-              data: chartData,
-              backgroundColor:
-                  'rgba(255, 99, 132, 0.2)'
-              ,
-              borderColor:
-                  'rgba(255,99,132,1)'
-              ,
-              borderWidth: 1
-          }]
-      },
-      options: {
-          scales: {
-              yAxes: [{
-                  ticks: {
-                      beginAtZero:true
-                  }
-              }]
-          }
-      }
-  	};
+    // if false, toggles to true
+    else {
+      this.setState({
+        showExtraInfo: true,
+      });
+    }
+  }
 
-    // layout of what is rendered
+  // Layout of the page
+  render() {
+    // if there is no information to display
+    if (!this.props.poll) {
+      // TODO: add a nice loading animation here instead of this
+      return <h4 className="text-center">Loading...</h4>;
+    }
+
     return (
       <div>
-        <Bar data={myChart.data} options={myChart.options} />
+        <div>
+          <PollChart options={this.props.poll.options}/>
+        </div>
+        <Button>
+          View More
+        </Button>
+        { this.state.showExtraInfo
+          ?
+            <div>
+              {/* TODO Organize extra info here */}
+            </div>
+          : null
+        }
       </div>
     );
-
   }
 }
+
+PollResults.propTypes = propTypes;
+
+export default createContainer(({ params }) => {
+  Meteor.subscribe('polls'); // get the poll database
+
+  return {
+    poll: Polls.findOne(params.pollId),
+  };
+}, PollResults);

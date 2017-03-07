@@ -12,7 +12,7 @@ import {
 } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-
+import {withRouter, routerShape} from 'react-router';
 
 // Grabs chart from PollResults
 import PollResults from '../../poll-results/components/PollResults.js';
@@ -63,6 +63,7 @@ class ViewPoll extends Component {
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
     this.handleVoteSubmit = this.handleVoteSubmit.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
+    this.routeToResults = this.routeToResults.bind(this);
 
     this.state = {
       handle: '',
@@ -185,6 +186,10 @@ class ViewPoll extends Component {
     }
   }
 
+  routeToResults() {
+    this.props.router.push(`/polls/${this.props.poll._id}/results`);
+  }
+
   renderOptions() {
     const { options, isWeighted } = this.props.poll;
 
@@ -221,12 +226,6 @@ class ViewPoll extends Component {
       return <h4 className="text-center">Loading...</h4>;
     }
 
-    // TODO Get rid of this when done with testing
-    const chartData = {
-      labels: ['a', 'b', 'c'],
-      datasets: [1, 2, 3],
-    };
-
     return (
       <Grid>
         <Row>
@@ -254,14 +253,12 @@ class ViewPoll extends Component {
               bsStyle="success"
               type="submit"
               disabled={this.state.submitted}
+              onClick={this.routeToResults}
             >
               Vote
             </Button>
           </form>
         </Row>
-        <div>
-          <PollResults options={this.props.poll.options}/>
-        </div>
       </Grid>
     );
   }
@@ -278,4 +275,4 @@ export default createContainer(({ params }) => {
   return {
     poll: Polls.findOne(params.pollId),
   };
-}, ViewPoll);
+}, withRouter(ViewPoll));
