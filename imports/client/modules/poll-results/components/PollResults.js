@@ -74,16 +74,20 @@ class PollResults extends Component {
         <div>
           <PollChart options={this.props.poll.options}/>
         </div>
-        <Button>
-          View More
-        </Button>
         { this.state.showExtraInfo
           ?
             <div>
               {/* TODO Organize extra info here */}
+              <p>This should show up</p>
             </div>
           : null
         }
+        <Button
+          bsStyle="success"
+          onClick={this.toggleExtraInfo}
+        >
+          View More
+        </Button>
       </div>
     );
   }

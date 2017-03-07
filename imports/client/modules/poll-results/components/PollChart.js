@@ -50,7 +50,7 @@ export default class PollChart extends Component {
     // layout of what is rendered
     return (
       <div>
-        <Bar data={myChart.data} options={myChart.options} />
+        <Bar data={pollBarChart.data} options={pollBarChart.options} width="600px" height="200px"/>
       </div>
     );
 
