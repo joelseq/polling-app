@@ -24,6 +24,7 @@ const PollSchema = new SimpleSchema({
   votes: { type: [VoteSchema], optional: true },
   isPrivate: { type: Boolean },
   password: { type: String, optional: true },
+  editPassword: { type: String, optional: true },
   createdAt: { type: Date, defaultValue: new Date() },
 });
 
@@ -43,7 +44,6 @@ Polls.attachSchema(PollSchema);
 export function voteHelper(pollObject) {
   const handles = {};
   let ret = true;
-
   pollObject.votes.forEach((vote) => {
     const { handle } = vote;
 
@@ -73,13 +73,27 @@ Meteor.methods({
   },
 
   // Update an existing poll in the database
-  'polls.editPoll': function changeName(pollId, updatedPoll) {
+  'polls.editPoll': function changeName(pollId, updatedPoll, inputPass) {
     // Check if the vote object conforms with
     // the VoteSchema
     check(updatedPoll, PollSchema);
     check(pollId, String);
+    check(inputPass, String);
 
     const { name, options } = updatedPoll;
+
+    // check to make sure that we are not updating the poll without proper
+    // credentials
+    if (Meteor.isServer) {
+      const poll = Polls.findOne(pollId);
+      // check if poll's edit password exists
+      if (poll.editPassword) {
+        if (poll.editPassword !== inputPass) {
+          throw new Meteor.Error(501,
+            'An error occured, the password given is invalid, please reload the page!');
+        }
+      }
+    }
 
       // Database call
     return Polls.update(pollId, {
@@ -109,6 +123,27 @@ Meteor.methods({
       });
     }
     throw new Meteor.Error('This handle already voted.');
+  },
+
+  'polls.checkEditPass':
+  function checkEditPass(pollId, inputPass) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(pollId, String);
+    check(inputPass, String);
+
+    // Database call
+    if (Meteor.isServer) {
+      const poll = Polls.findOne(pollId);
+
+      if (poll.editPassword) {
+        if (poll.editPassword !== inputPass) {
+          throw new Meteor.Error(501, 'Password is invalid!');
+        }
+      }
+    }
+
+    return true;
   },
 
   'polls.checkPassAndHandle':

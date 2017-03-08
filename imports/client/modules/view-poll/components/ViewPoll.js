@@ -126,11 +126,9 @@ class ViewPoll extends Component {
 
     const { handle, password, selectedOptions } = this.state;
 
-    if (!handle) {
-      this.setState({
-        error: 'Please enter a handle',
-      });
-    } else if (Object.keys(selectedOptions).length < 1) {
+    this.checkHandle(e);
+
+    if (Object.keys(selectedOptions).length < 1) {
       this.setState({
         error: 'Please vote on one of the options',
       });
@@ -210,6 +208,7 @@ class ViewPoll extends Component {
             } else if (err.error === 501) {
               this.setState({ passValidError: err.reason });
             }
+            this.setState({ showHandleModal: true });
           } else {
             this.setState({ showHandleModal: false });
           }
