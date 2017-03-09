@@ -4,6 +4,7 @@ import { Route, IndexRoute } from 'react-router';
 import App from './modules/core/components/App';
 import Main from './modules/main/components/Main';
 import CreatePoll from './modules/create-poll/components/CreatePoll';
+import EditPoll from './modules/edit-poll/components/EditPoll';
 import ViewPoll from './modules/view-poll/components/ViewPoll';
 import PollResults from './modules/poll-results/components/PollResults';
 
@@ -14,6 +15,8 @@ export default (
     <Route path="polls/">
       <Route path=":pollId" component={ViewPoll}/>
       <Route path=":pollId/results" component={PollResults}/>
+      <Route path=":pollId" component={ViewPoll} />
+      <Route path=":pollId/edit" component={EditPoll} />
     </Route>
   </Route>
 );

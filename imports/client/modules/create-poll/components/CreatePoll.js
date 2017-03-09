@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
+import { withRouter, routerShape } from 'react-router';
 import {
   Grid,
   Button,
@@ -7,6 +8,7 @@ import {
   ControlLabel,
   FormControl,
   Radio,
+  HelpBlock,
   Row,
   Col,
 } from 'react-bootstrap';
@@ -18,7 +20,7 @@ import '../../../main.js';
  * no props passed in to this component which is why propTypes and defaultProps
  * aren't specified.
  */
-export default class CreatePoll extends Component {
+class CreatePoll extends Component {
   constructor(props) {
     super(props);
 
@@ -35,7 +37,10 @@ export default class CreatePoll extends Component {
     this.handlePrivateChange = this.handlePrivateChange.bind(this);
     this.handlePollCreate = this.handlePollCreate.bind(this);
     this.renderOptions = this.renderOptions.bind(this);
+    this.getPollNameValidationState =
+      this.getPollNameValidationState.bind(this);
     this.removeOption = this.removeOption.bind(this);
+    this.handleEditPassChange = this.handleEditPassChange.bind(this);
 
     // This is the same as doing getInitialState but the ES6 way
     this.state = {
@@ -46,7 +51,26 @@ export default class CreatePoll extends Component {
       options: {},
       password: '',
       loading: false,
+      pollNameError: '',
+      optionError: '',
+      editPass: '',
     };
+  }
+
+  getPollNameValidationState() {
+    const length = this.state.name.length;
+    if (length > 0) return 'success';
+    else if (length === 0) return 'error';
+
+    return null;
+  }
+
+  // Handler for the edit pass input
+  handleEditPassChange(e) {
+    this.setState({
+      ...this.state,
+      editPass: e.target.value,
+    });
   }
 
   // Handler for the question input
@@ -54,6 +78,7 @@ export default class CreatePoll extends Component {
     this.setState({
       ...this.state,
       name: e.target.value,
+      pollNameError: '',
     });
   }
 
@@ -106,6 +131,7 @@ export default class CreatePoll extends Component {
         ...this.state,
         options: newOptions,
         optionName: '',
+        optionError: '',
       });
     }
   }
@@ -113,7 +139,23 @@ export default class CreatePoll extends Component {
   // Handler for creating a poll
   handlePollCreate() {
     // Destructuring the state object
-    const { name, isWeighted, options, isPrivate, password } = this.state;
+    const { name, isWeighted, options, isPrivate, password, editPass } =
+      this.state;
+    if (name === '') {
+      this.setState({ pollNameError: 'No poll name provided!' });
+      return;
+    }
+
+    // Check for the correct number of options
+    const optionNum = Object.keys(options).length;
+    if (optionNum < 2) {
+      this.setState({ optionError:
+        'Too few options specified, please add another before submitting!' });
+      this.setState({
+        loading: false,
+      });
+      return;
+    }
 
     Meteor.call('polls.insert', {
       name,
@@ -121,16 +163,15 @@ export default class CreatePoll extends Component {
       options,
       isPrivate,
       password,
+      editPassword: editPass,
     }, (err, result) => {
       if (err || !result) {
         // TODO: add proper error handling
-        console.log('Something went wrong');
       }
-      this.setState({
-        loading: false,
-      });
-      // TODO: route the user to either the poll page or poll edit page
+
+      // route the user to either the poll page or poll edit page
       // after successful poll creation.
+      this.props.router.push(`/polls/${result}/edit`);
     });
 
     // When the DB is creating the poll, we disable the create button
@@ -173,7 +214,10 @@ export default class CreatePoll extends Component {
       <Grid>
         <h1 className="text-center">Create a Poll</h1>
         <form onSubmit={(e) => { e.preventDefault(); }}>
-          <FormGroup controlId={'question'}>
+          <FormGroup
+            controlId={'question'}
+            validationState={this.getPollNameValidationState()}
+          >
             <ControlLabel>Question: </ControlLabel>
             {/* This component is now 'controlled'. Further reading:
               * https://facebook.github.io/react/docs/forms.html
@@ -184,6 +228,20 @@ export default class CreatePoll extends Component {
               value={this.state.question}
               placeholder="Enter question for poll"
             />
+            <FormControl.Feedback />
+          </FormGroup>
+          <FormGroup
+            controlId={'editPass'}
+          >
+            <HelpBlock>{this.state.pollNameError}</HelpBlock>
+            <ControlLabel>Administration Password: </ControlLabel>
+            <FormControl
+              onChange={this.handleEditPassChange}
+              type="text"
+              value={this.state.editPass}
+              placeholder="Enter password for the poll's edit page (optional)"
+            />
+            <FormControl.Feedback />
           </FormGroup>
           <FormGroup controlId={'weighted'}>
             <ControlLabel>Weighted?</ControlLabel>
@@ -267,6 +325,7 @@ export default class CreatePoll extends Component {
                   Add Option
                 </Button>
               </div>
+              <HelpBlock>{this.state.optionError}</HelpBlock>
             </form>
           </Col>
         </Row>
@@ -296,3 +355,9 @@ export default class CreatePoll extends Component {
     );
   }
 }
+
+CreatePoll.propTypes = {
+  router: routerShape,
+};
+
+export default withRouter(CreatePoll);
