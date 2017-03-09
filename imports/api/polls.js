@@ -26,7 +26,8 @@ const PollSchema = new SimpleSchema({
   password: { type: String, optional: true },
   createdAt: { type: Date, defaultValue: new Date() },
   isClosed: { type: Boolean, defaultValue: false },
-  expiresAt: { type: Date, defaultValue: new Date(0, 0, 0, 0, 0, 0 )},
+  isTimed: {type: Boolean, defaultValue: false },
+  expiresAt: { type: Date, defaultValue: new Date()},
 });
 
 // Automatically validate the schema for us

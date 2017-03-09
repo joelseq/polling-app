@@ -49,7 +49,7 @@ class CreatePoll extends Component {
       name: '',
       isWeighted: false,
       isPrivate: false,
-      hasExpDate: false,
+      isTimed: false,
       optionName: '',
       options: {},
       password: '',
@@ -91,10 +91,10 @@ class CreatePoll extends Component {
   }
 
   // Handler for the show add exp date input
-  handleExpDateChange(hasExpDate) {
+  handleExpDateChange(isTimed) {
     this.setState({
       ...this.state,
-      hasExpDate,
+      isTimed,
     });
   }
 
@@ -130,7 +130,7 @@ class CreatePoll extends Component {
   // Handler for creating a poll
   handlePollCreate() {
     // Destructuring the state object
-    const { name, isWeighted, options, isPrivate, password, expiresAt } = this.state;
+    const { name, isWeighted, options, isPrivate, password, isTimed, expiresAt } = this.state;
 
     Meteor.call('polls.insert', {
       name,
@@ -138,6 +138,7 @@ class CreatePoll extends Component {
       options,
       isPrivate,
       password,
+      isTimed,
       expiresAt,
     }, (err, result) => {
       if (err || !result) {
@@ -161,13 +162,18 @@ class CreatePoll extends Component {
     });
   }
 
+  //Function to blank out invalid dates (past days) for the user
+  //calender input
   checkIfValid(currentDate, selectedDate) {
-    console.log("hit");
-    console.log(Datetime.moment());
-    if( selectedDate ) {
-       return currentDate.isAfter(Datetime.moment().subtract(1, 'day'));
+    
+    //If the user has selected a day then check if their time is valid
+    //as well
+    if( selectedDate && !(selectedDate.isAfter(Datetime.moment()))) {
+      return currentDate.isAfter(Datetime.moment());
     }
-    return true;
+   
+    //Otherwise just blank out any days before the current date
+    return currentDate.isAfter(Datetime.moment().subtract(1, 'day'));
   }
 
   handleDateChange(e) {
@@ -286,14 +292,14 @@ class CreatePoll extends Component {
                 : null
               }
             </Col>
-            <Col md={4}>
+            <Col md={4} className={"text-center container col-xs-4"}>
               <Button 
                 className={"btn btn-primary center-block"}
                 bsStyle="success"
-                onClick={() => this.handleExpDateChange(!this.state.hasExpDate)}
+                onClick={() => this.handleExpDateChange(!this.state.isTimed)}
               > Add Expiration date </Button>
               <br />
-              { this.state.hasExpDate
+              { this.state.isTimed
                 ?
                 <Datetime onChange={this.handleDateChange} input={false} isValidDate={this.checkIfValid}/>
                 : null
