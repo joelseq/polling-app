@@ -155,12 +155,6 @@ class ViewPoll extends Component {
         selectedOptions,
       };
 
-      // Map over all the user's selectedOptions and update
-      // the scores for each option in the Poll
-      Object.keys(selectedOptions).forEach((option) => {
-        updatedPoll.options[option] += selectedOptions[option];
-      });
-
       if (!updatedPoll.votes) {
         updatedPoll.votes = [];
       }
@@ -169,6 +163,12 @@ class ViewPoll extends Component {
 
       // Client side check to make sure no duplicate votes
       if (voteHelper(updatedPoll)) {
+        // Map over all the user's selectedOptions and update
+        // the scores for each option in the Poll
+        Object.keys(selectedOptions).forEach((option) => {
+          updatedPoll.options[option] += selectedOptions[option];
+        });
+
         // Meteor method with a callback for server-side validation of no duplicates.
         Meteor.call('polls.vote', this.props.poll._id, updatedPoll, (err) => {
           if (err) {
@@ -178,6 +178,12 @@ class ViewPoll extends Component {
 
             // If there was an error, remove the last element to avoid bugs
             updatedPoll.votes.pop();
+
+            // Map over all the user's selectedOptions and update
+            // the scores for each option in the Poll to undo changes
+            Object.keys(selectedOptions).forEach((option) => {
+              updatedPoll.options[option] -= selectedOptions[option];
+            });
           } else {
             this.setState({
               submitted: true,
