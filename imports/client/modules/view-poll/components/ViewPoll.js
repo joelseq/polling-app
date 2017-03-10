@@ -68,7 +68,6 @@ class ViewPoll extends Component {
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
     this.handleVoteSubmit = this.handleVoteSubmit.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
-    this.routeToResults = this.routeToResults.bind(this);
     this.checkHandle = this.checkHandle.bind(this);
 
     this.state = {
@@ -188,6 +187,7 @@ class ViewPoll extends Component {
             this.setState({
               submitted: true,
             });
+            this.props.router.push(`/polls/${this.props.poll._id}/results`);
           }
         });
       } else {
@@ -228,9 +228,6 @@ class ViewPoll extends Component {
     }
   }
 
-  routeToResults() {
-    this.props.router.push(`/polls/${this.props.poll._id}/results`);
-  }
 
   renderOptions() {
     const { options, isWeighted } = this.props.poll;
@@ -297,7 +294,6 @@ class ViewPoll extends Component {
               bsStyle="success"
               type="submit"
               disabled={this.state.submitted}
-              onClick={this.routeToResults}
             >
               Vote
             </Button>
