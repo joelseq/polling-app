@@ -12,7 +12,10 @@ import {
 } from 'react-bootstrap';
 
 // Grabs chart from PollResults
-import PollChart from '../../poll-results/components/PollChart.js';
+import PollChart from './PollChart';
+
+// Grabs table from PollTable
+import PollTable from './PollTable';
 
 // Grab collection for polls
 import Polls, { voteHelper } from '../../../../api/polls.js';
@@ -78,6 +81,7 @@ class PollResults extends Component {
           ?
             <div>
               {/* TODO Organize extra info here */}
+              <PollTable/>
               <p>This should show up</p>
             </div>
           : null

@@ -15,7 +15,6 @@ export default (
     <Route path="polls/">
       <Route path=":pollId" component={ViewPoll}/>
       <Route path=":pollId/results" component={PollResults}/>
-      <Route path=":pollId" component={ViewPoll} />
       <Route path=":pollId/edit" component={EditPoll} />
     </Route>
   </Route>
