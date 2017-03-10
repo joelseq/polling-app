@@ -14,21 +14,26 @@ export default class PollTable extends Component {
     const poll_votes = this.props.votes; // votes from poll collection
     let rows = []
 
+    // iterates through each handle
     for (let names = 0; names < poll_votes.length; names++) {
+      // iterates through each vote for a handle
       for (let opt = 0, keys = Object.keys(poll_votes[names].selectedOptions);
           opt < keys.length; opt++) {
 
-        rows.push([poll_votes[names].handle, keys[opt], 0])
+        // pushes [name, option, weight] for table
+        rows.push([poll_votes[names].handle, keys[opt],
+                  poll_votes[names].selectedOptions[keys[opt]]]);
 
       }
     }
+
 
     return (
       <Table
         rowHeight={50}
         rowsCount={rows.length}
         width={600}
-        height={101*(rows.length - 1)}
+        height={50*(rows.length + 1) + 2}
         headerHeight={50}>
         <Column
           header={<Cell>Handle</Cell>}

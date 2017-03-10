@@ -79,12 +79,11 @@ class PollResults extends Component {
         <div>
           <PollChart options={this.props.poll.options}/>
         </div>
+        {/* Only shown if button has been pressed */}
         { this.state.showExtraInfo
           ?
             <div>
-              {/* TODO Organize extra info here */}
               <PollTable votes={this.props.poll.votes}/>
-              <p>This should show up</p>
             </div>
           : null
         }
