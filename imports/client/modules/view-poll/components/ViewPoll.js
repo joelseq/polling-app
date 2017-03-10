@@ -15,6 +15,10 @@ import {
 } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import {withRouter, routerShape} from 'react-router';
+
+// Grabs chart from PollResults
+import PollResults from '../../poll-results/components/PollResults.js';
 
 // Grab collection for polls
 import Polls, { voteHelper } from '../../../../api/polls.js';
@@ -183,6 +187,7 @@ class ViewPoll extends Component {
             this.setState({
               submitted: true,
             });
+            this.props.router.push(`/polls/${this.props.poll._id}/results`);
           }
         });
       } else {
@@ -222,6 +227,7 @@ class ViewPoll extends Component {
       );
     }
   }
+
 
   renderOptions() {
     const { options, isWeighted } = this.props.poll;
@@ -341,4 +347,4 @@ export default createContainer(({ params }) => {
   return {
     poll: Polls.findOne(params.pollId),
   };
-}, ViewPoll);
+}, withRouter(ViewPoll));
