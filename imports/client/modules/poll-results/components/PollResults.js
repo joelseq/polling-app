@@ -33,6 +33,8 @@ const propTypes = {
     // A hashmap of key = option and
     // value = amount of votes
     options: PropTypes.object,
+    // Vote object for poll
+    votes: PropTypes.array,
   }),
 };
 
@@ -81,7 +83,7 @@ class PollResults extends Component {
           ?
             <div>
               {/* TODO Organize extra info here */}
-              <PollTable/>
+              <PollTable votes={this.props.poll.votes}/>
               <p>This should show up</p>
             </div>
           : null

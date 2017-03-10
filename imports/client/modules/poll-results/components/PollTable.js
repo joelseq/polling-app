@@ -11,12 +11,17 @@ export default class PollTable extends Component {
 
   // renders the table
   render() {
-    // rows in table
-    const rows = [
-      ['a', 'b', 'c'],
-      ['1', '2', '3'],
-      ['x', 'y', 'z']
-    ]
+    const poll_votes = this.props.votes; // votes from poll collection
+    let rows = []
+
+    for (let names = 0; names < poll_votes.length; names++) {
+      for (let opt = 0, keys = Object.keys(poll_votes[names].selectedOptions);
+          opt < keys.length; opt++) {
+
+        rows.push([poll_votes[names].handle, keys[opt], 0])
+
+      }
+    }
 
     return (
       <Table
