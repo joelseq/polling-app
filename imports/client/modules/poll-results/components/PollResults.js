@@ -77,7 +77,7 @@ class PollResults extends Component {
     return (
       <div>
         <div>
-          <PollChart options={this.props.poll.options}/>
+          <PollChart options={this.props.poll.options} isWeighted={this.props.poll.isWeighted}/>
         </div>
         {/* Only shown if button has been pressed */}
         { this.state.showExtraInfo
@@ -89,7 +89,9 @@ class PollResults extends Component {
         }
         <Button
           bsStyle="success"
+          disabled={this.state.showExtraInfo}
           onClick={this.toggleExtraInfo}
+
         >
           View More
         </Button>

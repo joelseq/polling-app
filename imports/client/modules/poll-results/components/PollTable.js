@@ -61,7 +61,7 @@ export default class PollTable extends Component {
             </Cell>
           )}
           width={200}
-          />
+        />
       </Table>
     );
 
