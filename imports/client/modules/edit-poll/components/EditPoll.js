@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
+import Datetime from 'react-datetime';
 import {
   Well,
   FormGroup,
@@ -32,6 +33,10 @@ const propTypes = {
     // A hashmap of key = option and
     // value = amount of votes
     options: React.PropTypes.object,
+    // bool / whether poll has expiration
+    isTimed: React.PropTypes.boolean,
+    // date of expiry
+    expiresAt: React.PropTypes.object,
   }),
 };
 
@@ -45,6 +50,8 @@ const defaultProps = {
       'Option 1': 0,
       'Option 2': 0,
     },
+    isTimed: true,
+    expiresAt: new Date(),
   },
 };
 
@@ -66,12 +73,14 @@ class EditPoll extends Component {
     this.removeOption = this.removeOption.bind(this);
     this.handleOptionNameChange = this.handleOptionNameChange.bind(this);
     this.handleOptionSubmit = this.handleOptionSubmit.bind(this);
+    this.handleDateChange = this.handleDateChange.bind(this);
 
     this.state = {
       pollName: this.props.poll.name,
       options: {},
       optionName: '',
       showPollNameModal: false,
+      showDatetime: false,
       error: '',
     };
   }
@@ -82,6 +91,8 @@ class EditPoll extends Component {
     this.setState({ showPollNameModal: true });
     this.setState({ pollName: this.props.poll.name });
     this.setState({ options: this.props.poll.options });
+    this.setState({ isTimed: this.props.poll.isTimed });
+    this.setState({ expiresAt: this.props.poll.expiresAt });
   }
 
   /* Here is a method for closing a poll name prompt for changing the poll name,
@@ -104,6 +115,37 @@ class EditPoll extends Component {
     });
   }
 
+  // Handler for the show add exp date input
+  handleExpDateShow(showDatetime) {
+    this.setState({
+      ...this.state,
+      showDatetime,
+    });
+  }
+
+  // Handler for the show add exp date input
+  handleEditDateButtonChange(isTimed) {
+    var date = new Date();
+
+    // add a day
+    date.setDate(date.getDate() + 1);
+
+    this.setState({
+      ...this.state,
+      showDatetime: false,
+      isTimed,
+      expiresAt: date,
+    });
+  }
+
+  handleDateChange(e) {
+    var expAt = e.toDate();
+
+    this.setState({
+      ...this.state,
+      expiresAt: expAt,
+    });
+  }
 
   /* Handler for adding an option, in the modal window provided */
   handleOptionSubmit(e) {
@@ -126,11 +168,24 @@ class EditPoll extends Component {
     }
   }
 
+  //Function to blank out invalid dates (past days) for the user
+  //calender input
+  checkIfValid(currentDate, selectedDate) {
+    
+    //If the user has selected a day then check if their time is valid
+    //as well
+    if( selectedDate && !(selectedDate.isAfter(Datetime.moment()))) {
+      return currentDate.isAfter(Datetime.moment());
+    }
+   
+    //Otherwise just blank out any days before the current date
+    return currentDate.isAfter(Datetime.moment().subtract(1, 'day'));
+  }
   /* Handler for updating the poll in the database. Currently just updates the
    * poll's name, but can be easily modified to change the poll options if
    * needed */
   updatePoll() {
-    const { pollName, options } = this.state;
+    const { pollName, options, isTimed, expiresAt } = this.state;
 
     if (!pollName) {
       this.setState({
@@ -146,6 +201,9 @@ class EditPoll extends Component {
 
     updatedPoll.name = pollName;
     updatedPoll.options = options;
+    updatedPoll.isTimed = isTimed;
+    updatedPoll.expiresAt = expiresAt;
+
 
     Meteor.call('polls.editPoll', this.props.poll._id, updatedPoll);
 
@@ -276,12 +334,38 @@ class EditPoll extends Component {
             </Row>
           </Modal.Body>
           <Modal.Footer>
+            <Row>
+              <Button 
+                bsStyle="success"
+                onClick={() => this.handleEditDateButtonChange(!this.state.isTimed)}
+              > { this.state.isTimed ? "Remove Expiration Date" : 
+                                    "Add Expiration Date" }</Button>
+              { this.state.isTimed
+                ?
+                <Button 
+                  bsStyle="success"
+                  onClick={() => this.handleExpDateShow(!this.state.showDatetime)}
+                > { !this.state.showDatetime ? "Edit Expiration Date" : 
+                                    "Hide Calendar" }</Button>
+                : null
+              }
             <Button
               onClick={this.updatePoll}
               bsStyle="success"
               type="submit"
             >Submit</Button>
             <Button onClick={this.closePollNamePrompt}>Close</Button>
+            </Row>
+            <Row>
+              { this.state.showDatetime
+                ?
+                <Datetime onChange={this.handleDateChange} 
+                            input={false} 
+                            defaultValue={this.state.expiresAt}
+                            isValidDate={this.checkIfValid}/>
+                : null
+              }
+            </Row>
           </Modal.Footer>
 
         </Modal>

@@ -91,7 +91,7 @@ class CreatePoll extends Component {
   }
 
   // Handler for the show add exp date input
-  handleExpDateChange(isTimed) {
+  handleExpDateShow(isTimed) {
     this.setState({
       ...this.state,
       isTimed,
@@ -178,7 +178,6 @@ class CreatePoll extends Component {
 
   handleDateChange(e) {
     var expAt = e.toDate();
-    console.log(expAt);
 
     this.setState({
       ...this.state,
@@ -296,7 +295,7 @@ class CreatePoll extends Component {
               <Button 
                 className={"btn btn-primary center-block"}
                 bsStyle="success"
-                onClick={() => this.handleExpDateChange(!this.state.isTimed)}
+                onClick={() => this.handleExpDateShow(!this.state.isTimed)}
               > Add Expiration date </Button>
               <br />
               { this.state.isTimed

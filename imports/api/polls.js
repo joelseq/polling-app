@@ -96,13 +96,15 @@ Meteor.methods({
     check(updatedPoll, PollSchema);
     check(pollId, String);
 
-    const { name, options } = updatedPoll;
+    const { name, options, isTimed, expiresAt } = updatedPoll;
 
       // Database call
     return Polls.update(pollId, {
       $set: {
         name,
         options,
+        isTimed,
+        expiresAt,
       },
     });
   },
