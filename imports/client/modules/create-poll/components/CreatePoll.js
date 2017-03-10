@@ -47,13 +47,13 @@ class CreatePoll extends Component {
       options: {},
       password: '',
       loading: false,
+      error: '',
     };
   }
 
   // Handler for the question input
   handleQuestionChange(e) {
     this.setState({
-      ...this.state,
       name: e.target.value,
     });
   }
@@ -61,7 +61,6 @@ class CreatePoll extends Component {
   // Handler for the password input
   handlePasswordChange(e) {
     this.setState({
-      ...this.state,
       password: e.target.value,
     });
   }
@@ -69,7 +68,6 @@ class CreatePoll extends Component {
   // Handler for the weighted radio buttons
   handleWeightedChange(isWeighted) {
     this.setState({
-      ...this.state,
       isWeighted,
     });
   }
@@ -77,7 +75,6 @@ class CreatePoll extends Component {
   // Handler for the private radio buttons
   handlePrivateChange(isPrivate) {
     this.setState({
-      ...this.state,
       isPrivate,
     });
   }
@@ -85,7 +82,6 @@ class CreatePoll extends Component {
   // Handler for the option name change input
   handleOptionNameChange(e) {
     this.setState({
-      ...this.state,
       optionName: e.target.value,
     });
   }
@@ -104,7 +100,6 @@ class CreatePoll extends Component {
       newOptions[optionName] = 0;
 
       this.setState({
-        ...this.state,
         options: newOptions,
         optionName: '',
       });
@@ -116,32 +111,49 @@ class CreatePoll extends Component {
     // Destructuring the state object
     const { name, isWeighted, options, isPrivate, password } = this.state;
 
-    Meteor.call('polls.insert', {
-      name,
-      isWeighted,
-      options,
-      isPrivate,
-      password,
-    }, (err, result) => {
-      if (err || !result) {
-        // TODO: add proper error handling
-        console.log('Something went wrong');
-      }
+    if (options.length < 2) {
       this.setState({
-        loading: false,
+        error: 'Too few options. Please add at least 2.',
+      });
+    } else if (!name) {
+      this.setState({
+        error: 'Please add a poll name.',
+      });
+    } else if (isPrivate && !password) {
+      this.setState({
+        error: 'Please enter a password if the poll is private.',
+      });
+    } else {
+      Meteor.call('polls.insert', {
+        name,
+        isWeighted,
+        options,
+        isPrivate,
+        password,
+      }, (err, result) => {
+        if (err || !result) {
+          // TODO: add proper error handling
+          this.setState({
+            error: 'Something went wrong with creating Poll.',
+          });
+        }
+        this.setState({
+          loading: false,
+        });
+
+        // route the user to either the poll page or poll edit page
+        // after successful poll creation.
+        this.props.router.push(`/polls/${result}/edit`);
       });
 
-      // route the user to either the poll page or poll edit page
-      // after successful poll creation.
-      this.props.router.push(`/polls/${result}/edit`);
-    });
-
-    // When the DB is creating the poll, we disable the create button
-    // for UX purposes and to avoid users accidentally creating the
-    // same poll twice.
-    this.setState({
-      loading: true,
-    });
+      // When the DB is creating the poll, we disable the create button
+      // for UX purposes and to avoid users accidentally creating the
+      // same poll twice.
+      this.setState({
+        loading: true,
+        error: '',
+      });
+    }
   }
 
   // Function to remove an option from the options in state
@@ -149,7 +161,9 @@ class CreatePoll extends Component {
     // This filters out the selected option to remove from the options in the
     // state. It iterates over each option and only returns the element if it
     // is not equal to the option we are trying to remove.
-    const newOptions = this.state.options.filter(opt => opt !== option);
+    const newOptions = { ...this.state.options };
+
+    delete newOptions[option];
 
     this.setState({
       options: newOptions,
@@ -172,6 +186,10 @@ class CreatePoll extends Component {
   }
 
   render() {
+    const { options, loading, name, isPrivate, password } = this.state;
+    const disabled = Object.keys(options).length < 2 || loading ||
+      !name || (isPrivate && !password);
+
     return (
       <Grid>
         <h1 className="text-center">Create a Poll</h1>
@@ -287,7 +305,7 @@ class CreatePoll extends Component {
                 className="margin-top"
                 bsStyle="primary"
                 block
-                disabled={this.state.options.length < 2 || this.state.loading}
+                disabled={disabled}
                 onClick={!this.state.loading ? this.handlePollCreate : null}
               >
                 Create
