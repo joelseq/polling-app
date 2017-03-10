@@ -1,11 +1,45 @@
+@import url('https://fonts.googleapis.com/css?family=Raleway');
+$pantone-dark: #00859B;
+
 html, body {
   font-size: 16px;
   height: 100%;
   width: 100%;
+  background: linear-gradient(360deg, #B7F8D8 0%, #50A7C2 100%) no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  color: #EEE;
+  font-family: 'Raleway', sans-serif;
 }
 
-.sp__brand {
-  font-size: 1.5rem;
+#react-root {
+  height: 100%;
+  width: 100%;
+}
+
+.App {
+  height: 100%;
+  width: 100%;
+}
+
+#sp__brand {
+  font-size: 2.0rem;
+  background-color: rgba(0,0,0,0);
+  margin: 10px;
+}
+
+#sp__create-button {
+  background-color: rgba(0,0,0,0);
+  border: 1px solid white;
+  border-radius: 10px;
+  margin: 15px;
+  padding: 12px;
+
+  &:focus, &:hover {
+    border: 1px solid #2c3e50;
+  }
 }
 
 .CreatePoll__info {
@@ -65,4 +99,47 @@ html, body {
 
 .ViewPoll__options-container {
   margin-bottom: 20px;
+}
+
+.navbar-inverse {
+  background-color: rgba(0,0,0,0);
+  border-bottom: 1px solid rgba(255,255,255,0.4);
+}
+
+.Main {
+  display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+
+	-ms-flex-align: center;
+	-webkit-align-items: center;
+	-webkit-box-align: center;
+
+	align-items: center;
+}
+
+.Main__landing-text {
+  font-size: 3.5rem;
+  font-family: 'Raleway', sans-serif;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 70px;
+}
+
+.Main__landing-subtext {
+  font-size: 1.5rem;
+  text-align: center;
+  margin: 35px;
+}
+
+.Main__landing-button {
+  margin-left: auto;
+  margin-right: auto;
+  background: $pantone-dark;
+  border: none;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+
+  &:hover, &:focus {
+    background: #2c3e50;
+  }
 }
