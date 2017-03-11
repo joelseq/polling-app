@@ -84,7 +84,11 @@ class PollResults extends Component {
         { this.state.showExtraInfo
           ?
             <div>
-              <PollTable votes={this.props.poll.votes} isWeighted={this.props.poll.isWeighted}/>
+              <PollTable
+                votes={this.props.poll.votes}
+                isWeighted={this.props.poll.isWeighted}
+                options={this.props.poll.options}
+              />
             </div>
           : null
         }

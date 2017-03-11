@@ -12,6 +12,7 @@ export default class PollTable extends Component {
   // renders the table
   render() {
     const poll_votes = this.props.votes; // votes from poll collection
+    const poll_options = this.props.options; // options from poll collection
     let rows = [];
 
     // iterates through each handle
@@ -20,10 +21,12 @@ export default class PollTable extends Component {
       for (let opt = 0, keys = Object.keys(poll_votes[names].selectedOptions);
           opt < keys.length; opt++) {
 
-        // pushes [name, option, weight] for table
-        rows.push([poll_votes[names].handle, keys[opt],
-                  poll_votes[names].selectedOptions[keys[opt]]]);
-
+        // displays votes that align with available options
+        if (poll_options.find(keys[opt])) {
+          // pushes [name, option, weight] for table
+          rows.push([poll_votes[names].handle, keys[opt],
+                    poll_votes[names].selectedOptions[keys[opt]]]);
+        }
       }
     }
 
