@@ -16,13 +16,10 @@ import {
 } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import {withRouter, routerShape} from 'react-router';
-
-// Grabs chart from PollResults
-import PollResults from '../../poll-results/components/PollResults.js';
+import { withRouter } from 'react-router';
 
 // Grab collection for polls
-import Polls, { voteHelper } from '../../../../api/polls.js';
+import Polls from '../../../../api/polls.js';
 
 const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const SliderWithTooltip = createSliderWithTooltip(Slider);
@@ -166,8 +163,8 @@ class ViewPoll extends Component {
     Meteor.call('polls.suggestOptions',
       this.props.poll._id,
       updatedPoll,
-      (err) => {
-          this.setState({ showEditOptionModal: false });
+      () => {
+        this.setState({ showEditOptionModal: false });
       }
     );
   }
@@ -323,54 +320,6 @@ class ViewPoll extends Component {
   }
 
 
-  renderOptions() {
-    const { options, isWeighted } = this.props.poll;
-
-    if (isWeighted) {
-      return Object.keys(options).map(option => (
-        <Col key={option} md={7} xs={8} className="margin-bottom">
-          <p>{option}</p>
-          <SliderWithTooltip
-            onAfterChange={val => this.handleSliderChange(val, option)}
-            min={0}
-            max={10}
-          />
-        </Col>
-      ));
-    }
-
-    return Object.keys(options).map(option => (
-      <Col key={option} md={7} xs={8}>
-        <FormGroup>
-          <Checkbox
-            onChange={() => this.toggleCheckbox(option)}
-            checked={this.state.selectedOptions[option] === 1}
-          >
-            {option}
-          </Checkbox>
-        </FormGroup>
-      </Col>
-    ));
-  }
-
-  renderPassNeededDialog() {
-    if (this.props.poll.isPrivate) {
-      return (
-        <FormGroup controlId={'password'}>
-          <ControlLabel>Password: </ControlLabel>
-          <FormControl
-            onChange={this.handlePasswordChange}
-            type="text"
-            value={this.state.password}
-            placeholder="Please enter the password"
-          />
-          <HelpBlock>{this.state.passValidError}</HelpBlock>
-        </FormGroup>
-      );
-    }
-    return null;
-  }
-
   closeEditOptionsModal() {
     this.setState({ showEditOptionModal: false });
     return null;
@@ -398,6 +347,53 @@ class ViewPoll extends Component {
           &times;
         </button>
         <p>{option}</p>
+      </Col>
+    ));
+  }
+
+  renderPassNeededDialog() {
+    if (this.props.poll.isPrivate) {
+      return (
+        <FormGroup controlId={'password'}>
+          <ControlLabel>Password: </ControlLabel>
+          <FormControl
+            onChange={this.handlePasswordChange}
+            type="text"
+            value={this.state.password}
+            placeholder="Please enter the password"
+          />
+          <HelpBlock>{this.state.passValidError}</HelpBlock>
+        </FormGroup>
+      );
+    }
+    return null;
+  }
+  renderOptions() {
+    const { options, isWeighted } = this.props.poll;
+
+    if (isWeighted) {
+      return Object.keys(options).map(option => (
+        <Col key={option} md={7} xs={8} className="margin-bottom">
+          <p>{option}</p>
+          <SliderWithTooltip
+            onAfterChange={val => this.handleSliderChange(val, option)}
+            min={0}
+            max={10}
+          />
+        </Col>
+      ));
+    }
+
+    return Object.keys(options).map(option => (
+      <Col key={option} md={7} xs={8}>
+        <FormGroup>
+          <Checkbox
+            onChange={() => this.toggleCheckbox(option)}
+            checked={this.state.selectedOptions[option] === 1}
+          >
+            {option}
+          </Checkbox>
+        </FormGroup>
       </Col>
     ));
   }
