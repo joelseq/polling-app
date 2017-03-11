@@ -34,6 +34,7 @@ const propTypes = {
     _id: PropTypes.string,
     // Whether the poll is weighted
     isWeighted: PropTypes.bool,
+    // Whether the poll is private
     isPrivate: PropTypes.bool,
     // Name / Question of the poll
     name: PropTypes.string,
