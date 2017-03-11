@@ -14,6 +14,12 @@ export default class PollTable extends Component {
     const poll_votes = this.props.votes; // votes from poll collection
     const poll_options = this.props.options; // options from poll collection
     let rows = [];
+    let voterOptions = [];
+
+    // Grabs names and values for each poll option from options hashmap
+    for (let i = 0, keys = Object.keys(poll_options), ii = keys.length; i < ii; i++) {
+      voterOptions.push(keys[i]);
+    }
 
     // iterates through each handle
     for (let names = 0; names < poll_votes.length; names++) {
