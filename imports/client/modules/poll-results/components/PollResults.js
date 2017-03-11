@@ -43,10 +43,44 @@ class PollResults extends Component {
     super(props);
 
     this.toggleExtraInfo = this.toggleExtraInfo.bind(this);
+    this.postComment = this.postComment.bind(this);
 
     this.state = {
-      showExtraInfo: false
+      showExtraInfo: false,
+      handleText: '',
+      commentText: '',
     };
+  }
+
+  postComment(e) {
+    e.preventDefault();
+    const { handleText, commentText } = this.state;
+
+    // Create a new Poll object to be saved
+    const updatedPoll = { ...this.props.poll };
+    updatedPoll.comments.push({ handle: handleText, text: commentText });
+
+    // Remove the _id key to pass validation
+    delete updatedPoll._id;
+
+    Meteor.call('polls.comment',
+      updatedPoll,
+      this.props.poll._id,
+    );
+  }
+
+  handleCommentChange(e) {
+    e.preventDefault();
+    this.setState({
+      commentText: e.target.value,
+    });
+  }
+
+  handleCommentNameChange(e) {
+    e.preventDefault();
+    this.setState({
+      handleText: e.target.value,
+    });
   }
 
   // allows the user to display and show extra voting info
@@ -66,6 +100,16 @@ class PollResults extends Component {
     }
   }
 
+  renderComments() {
+    const { comments } = this.props.poll;
+
+    return Object.keys(comments).map(comment => (
+      <Col key={comment} md={12} xs={12}>
+        <h1>{comment.handle}</h1>
+        <h2>{comment.text}</h2>
+      </Col>
+    ));
+  }
   // Layout of the page
   render() {
     // if there is no information to display
@@ -100,6 +144,27 @@ class PollResults extends Component {
         >
           View More
         </Button>
+        {this.renderComments()}
+        <form onSubmit={this.postComment}>
+          <FormGroup
+          >
+            <ControlLabel>Post Comment: </ControlLabel>
+            <FormControl
+              onChange={this.handleCommentNameChange}
+              type="text"
+              value={this.state.handleText}
+              placeholder="Enter Name"
+            />
+            <FormControl
+              onChange={this.handleCommentChange}
+              type="text"
+              value={this.state.commentText}
+              placeholder="Enter Comment"
+            />
+            <FormControl.Feedback />
+            <HelpBlock>{this.state.commentError}</HelpBlock>
+          </FormGroup>
+        </form>
       </div>
     );
   }

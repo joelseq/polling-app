@@ -5,6 +5,13 @@ import { SimpleSchema } from 'meteor/aldeed:simple-schema';
 
 // Collection of all polls
 const Polls = new Mongo.Collection('polls');
+const Comments = new Mongo.Collection('collections');
+
+// Schema for Comments
+const CommentSchema = new SimpleSchema({
+  handle: { type: String },
+  text: { type: String },
+});
 
 // Schema for Votes
 const VoteSchema = new SimpleSchema({
@@ -22,6 +29,7 @@ const PollSchema = new SimpleSchema({
     blackbox: true,
   },
   votes: { type: [VoteSchema], optional: true },
+  comments: { type: [CommentSchema], optional: true},
   isPrivate: { type: Boolean },
   password: { type: String, optional: true },
   editPassword: { type: String, optional: true },
@@ -102,6 +110,23 @@ Meteor.methods({
         options,
       },
     });
+  },
+
+  // Add comments to an existing poll in the database
+  'polls.comment': function votePoll(pollId, updatedPoll) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(updatedPoll, PollSchema);
+
+    const { comments } = updatedPoll;
+    // TODODOODODODODOO!!!!!
+    // Database call
+    return Polls.update(pollId, {
+      $set: {
+        comments,
+      },
+    });
+
   },
 
   // Update an existing poll in the database
