@@ -51,6 +51,7 @@ class CreatePoll extends Component {
       options: {},
       password: '',
       loading: false,
+      voterEditable: false,
       pollNameError: '',
       optionError: '',
       editPass: '',
@@ -96,6 +97,13 @@ class CreatePoll extends Component {
     });
   }
 
+  // Handler for the voter editable radio buttons
+  handleVoterEditChange(voterEditable) {
+    this.setState({
+      voterEditable,
+    });
+  }
+
   // Handler for the private radio buttons
   handlePrivateChange(isPrivate) {
     this.setState({
@@ -134,7 +142,8 @@ class CreatePoll extends Component {
   // Handler for creating a poll
   handlePollCreate() {
     // Destructuring the state object
-    const { name, isWeighted, options, isPrivate, password, editPass } =
+    const { name, isWeighted, options, isPrivate, 
+      password, editPass, voterEditable } =
       this.state;
     if (name === '') {
       this.setState({ pollNameError: 'No poll name provided!' });
@@ -172,6 +181,7 @@ class CreatePoll extends Component {
         isPrivate,
         password,
         editPassword: editPass,
+        isVoterEditable: voterEditable,
       }, (err, result) => {
         if (err || !result) {
           // TODO: add proper error handling
@@ -300,6 +310,21 @@ class CreatePoll extends Component {
             <Radio
               onChange={() => this.handlePrivateChange(false)}
               checked={!this.state.isPrivate}
+            >
+              No
+            </Radio>
+          </FormGroup>
+          <FormGroup controlId={'voterEditable'}>
+            <ControlLabel>Allow Voters to Add and Remove Options?</ControlLabel>
+            <Radio
+              onChange={() => this.handleVoterEditChange(true)}
+              checked={this.state.voterEditable}
+            >
+              Yes
+            </Radio>
+            <Radio
+              onChange={() => this.handleVoterEditChange(false)}
+              checked={!this.state.voterEditable}
             >
               No
             </Radio>
