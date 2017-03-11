@@ -199,7 +199,7 @@ Meteor.methods({
           onSuccess(list);
         }
         else {
-          onError(results.headers);
+          onError("Network Error");
         }
       }
     );

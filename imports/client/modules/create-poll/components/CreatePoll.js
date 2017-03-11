@@ -12,7 +12,7 @@ import {
   Row,
   Col,
   Popover,
-	OverlayTrigger,
+  OverlayTrigger,
 } from 'react-bootstrap';
 
 import '../../../main.js';
@@ -40,7 +40,7 @@ class CreatePoll extends Component {
     this.handlePollCreate = this.handlePollCreate.bind(this);
     this.renderOptions = this.renderOptions.bind(this);
     this.getPollNameValidationState =
-      this.getPollNameValidationState.bind(this);
+    this.getPollNameValidationState.bind(this);
     this.removeOption = this.removeOption.bind(this);
     this.handleEditPassChange = this.handleEditPassChange.bind(this);
     this.renderMovieOptions = this.renderMovieOptions.bind(this);
@@ -110,17 +110,24 @@ class CreatePoll extends Component {
 
   // Handler for the option name change input
   handleOptionNameChange(e) {
-
+    option = e.target.value;
     if(this.state.moviePoll){
       console.log("clicked");
-
+        
+      if( e.target.value == "" ) {
+        return;
+      }
+       
+      console.log("METEOR CALL");
       Meteor.call('polls.getMovies', e.target.value, (val) => {this.renderMovieOptions(val)},
                   (val) => {console.log(val)});
       console.log("past call");
+
+      
     }
 
     this.setState({
-      optionName: e.target.value,
+      optionName: option,
     });
   }
 
@@ -241,14 +248,29 @@ class CreatePoll extends Component {
     ));
   }
 
+  setMovieOption(movieName) {
+    this.setState({
+      optionName: movieName,
+      movieURLs: [],
+    });
+
+    this.renderMovieOptions([]);
+
+  }
+    
+
 	/* TODO */
   renderMovieOptions(list){
-		this.state.movieURLs = list;
-		console.log(this.state.movieURLs);
-    return Object.keys(this.state.movieURLs).map(option => (
-      <Col key={option} className="" md={4} sm={6} xs={12}>
-				console.log({option["poster_path"]});
-        <p>{option["poster_path"]}</p>
+	this.state.movieURLs = list;
+	console.log(this.state.movieURLs);
+
+    return this.state.movieURLs.map(option => (
+      <Col key={option["id"]} className="CreatePoll__movie" md={4} sm={6} xs={12}>
+        <button
+            onClick={() => this.setMovieOption(option["original_title"])}
+        >
+        <img src={"https://image.tmdb.org/t/p/w500/" + option["poster_path"]} width="100"/>
+        </button>
       </Col>
     ));
   }
@@ -359,7 +381,7 @@ class CreatePoll extends Component {
                options by hitting enter now which is good for UX. */}
             <form onSubmit={this.handleOptionSubmit}>
 							{/*TODO: this is fucked. make it a separate thing?? */}
-							<Popover id="popover-positioned-top" title="Movies">
+							<Popover id="popover-positioned-top" placement='top' title="Movies">
 								{this.renderMovieOptions(this.state.movieURLs)}
 								<br/><br/><br/>
 							</Popover>
