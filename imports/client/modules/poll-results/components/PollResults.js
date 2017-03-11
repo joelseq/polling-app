@@ -75,15 +75,16 @@ class PollResults extends Component {
     }
 
     return (
+
       <div>
         <div>
-          <PollChart options={this.props.poll.options} isWeighted={this.props.poll.isWeighted}/>
+          <PollChart options={this.props.poll.options} />
         </div>
         {/* Only shown if button has been pressed */}
         { this.state.showExtraInfo
           ?
             <div>
-              <PollTable votes={this.props.poll.votes}/>
+              <PollTable votes={this.props.poll.votes} isWeighted={this.props.poll.isWeighted}/>
             </div>
           : null
         }
