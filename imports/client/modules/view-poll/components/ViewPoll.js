@@ -29,7 +29,7 @@ const SliderWithTooltip = createSliderWithTooltip(Slider);
 
 // Prop Types for this Component
 const propTypes = {
-  router: Proptypes.object,
+  router: PropTypes.object,
   // Poll object in DB from createContainer
   poll: PropTypes.shape({
     // Mongo ID for Poll
