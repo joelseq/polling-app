@@ -9,6 +9,7 @@ import {
   ControlLabel,
   FormControl,
   Radio,
+  HelpBlock,
   Row,
   Col,
 } from 'react-bootstrap';
@@ -40,8 +41,11 @@ class CreatePoll extends Component {
     this.handlePrivateChange = this.handlePrivateChange.bind(this);
     this.handlePollCreate = this.handlePollCreate.bind(this);
     this.renderOptions = this.renderOptions.bind(this);
+    this.getPollNameValidationState =
+      this.getPollNameValidationState.bind(this);
     this.removeOption = this.removeOption.bind(this);
     this.handleDateChange = this.handleDateChange.bind(this);
+    this.handleEditPassChange = this.handleEditPassChange.bind(this);
 
     // This is the same as doing getInitialState but the ES6 way
     this.state = {
@@ -55,21 +59,40 @@ class CreatePoll extends Component {
       password: '',
       loading: false,
       expiresAt: new Date(0, 0, 0, 0, 0, 0),
+      pollNameError: '',
+      optionError: '',
+      editPass: '',
+      error: '',
     };
+  }
+
+  getPollNameValidationState() {
+    const length = this.state.name.length;
+    if (length > 0) return 'success';
+    else if (length === 0) return 'error';
+
+    return null;
+  }
+
+  // Handler for the edit pass input
+  handleEditPassChange(e) {
+    this.setState({
+      ...this.state,
+      editPass: e.target.value,
+    });
   }
 
   // Handler for the question input
   handleQuestionChange(e) {
     this.setState({
-      ...this.state,
       name: e.target.value,
+      pollNameError: '',
     });
   }
 
   // Handler for the password input
   handlePasswordChange(e) {
     this.setState({
-      ...this.state,
       password: e.target.value,
     });
   }
@@ -77,7 +100,6 @@ class CreatePoll extends Component {
   // Handler for the weighted radio buttons
   handleWeightedChange(isWeighted) {
     this.setState({
-      ...this.state,
       isWeighted,
     });
   }
@@ -85,7 +107,6 @@ class CreatePoll extends Component {
   // Handler for the private radio buttons
   handlePrivateChange(isPrivate) {
     this.setState({
-      ...this.state,
       isPrivate,
     });
   }
@@ -101,7 +122,6 @@ class CreatePoll extends Component {
   // Handler for the option name change input
   handleOptionNameChange(e) {
     this.setState({
-      ...this.state,
       optionName: e.target.value,
     });
   }
@@ -120,9 +140,9 @@ class CreatePoll extends Component {
       newOptions[optionName] = 0;
 
       this.setState({
-        ...this.state,
         options: newOptions,
         optionName: '',
+        optionError: '',
       });
     }
   }
@@ -130,36 +150,70 @@ class CreatePoll extends Component {
   // Handler for creating a poll
   handlePollCreate() {
     // Destructuring the state object
-    const { name, isWeighted, options, isPrivate, password, isTimed, expiresAt } = this.state;
+    const { name, isWeighted, options, isPrivate, password, editPass, isTimed, expiresAt} =
+      this.state;
+    if (name === '') {
+      this.setState({ pollNameError: 'No poll name provided!' });
+      return;
+    }
 
-    Meteor.call('polls.insert', {
-      name,
-      isWeighted,
-      options,
-      isPrivate,
-      password,
-      isTimed,
-      expiresAt,
-    }, (err, result) => {
-      if (err || !result) {
-        // TODO: add proper error handling
-        console.log('Something went wrong');
-      }
+    // Check for the correct number of options
+    const optionNum = Object.keys(options).length;
+    if (optionNum < 2) {
+      this.setState({ optionError:
+        'Too few options specified, please add another before submitting!' });
       this.setState({
         loading: false,
       });
+      return;
+    }
 
-      // route the user to either the poll page or poll edit page
-      // after successful poll creation.
-      this.props.router.push(`/polls/${result}/edit`);
-    });
+    if (options.length < 2) {
+      this.setState({
+        error: 'Too few options. Please add at least 2.',
+      });
+    } else if (!name) {
+      this.setState({
+        error: 'Please add a poll name.',
+      });
+    } else if (isPrivate && !password) {
+      this.setState({
+        error: 'Please enter a password if the poll is private.',
+      });
+    } else {
+      Meteor.call('polls.insert', {
+        name,
+        isWeighted,
+        options,
+        isPrivate,
+        password,
+        editPassword: editPass,
+        isTimed,
+        expiresAt,
+      }, (err, result) => {
+        if (err || !result) {
+          // TODO: add proper error handling
+          this.setState({
+            error: 'Something went wrong with creating Poll.',
+          });
+        }
+        this.setState({
+          loading: false,
+        });
 
-    // When the DB is creating the poll, we disable the create button
-    // for UX purposes and to avoid users accidentally creating the
-    // same poll twice.
-    this.setState({
-      loading: true,
-    });
+        // route the user to either the poll page or poll edit page
+        // after successful poll creation.
+        this.props.router.push(`/polls/${result}/edit`);
+      });
+
+      // When the DB is creating the poll, we disable the create button
+      // for UX purposes and to avoid users accidentally creating the
+      // same poll twice.
+      this.setState({
+        loading: true,
+        error: '',
+      });
+    }
   }
 
   //Function to blank out invalid dates (past days) for the user
@@ -191,7 +245,9 @@ class CreatePoll extends Component {
     // This filters out the selected option to remove from the options in the
     // state. It iterates over each option and only returns the element if it
     // is not equal to the option we are trying to remove.
-    const newOptions = this.state.options.filter(opt => opt !== option);
+    const newOptions = { ...this.state.options };
+
+    delete newOptions[option];
 
     this.setState({
       options: newOptions,
@@ -214,12 +270,18 @@ class CreatePoll extends Component {
   }
 
   render() {
-    // not sure what the right way 
+    const { options, loading, name, isPrivate, password } = this.state;
+    const disabled = Object.keys(options).length < 2 || loading ||
+      !name || (isPrivate && !password);
+
     return (
       <Grid>
         <h1 className="text-center">Create a Poll</h1>
         <form onSubmit={(e) => { e.preventDefault(); }}>
-          <FormGroup controlId={'question'}>
+          <FormGroup
+            controlId={'question'}
+            validationState={this.getPollNameValidationState()}
+          >
             <ControlLabel>Question: </ControlLabel>
             {/* This component is now 'controlled'. Further reading:
               * https://facebook.github.io/react/docs/forms.html
@@ -230,6 +292,20 @@ class CreatePoll extends Component {
               value={this.state.question}
               placeholder="Enter question for poll"
             />
+            <FormControl.Feedback />
+          </FormGroup>
+          <FormGroup
+            controlId={'editPass'}
+          >
+            <HelpBlock>{this.state.pollNameError}</HelpBlock>
+            <ControlLabel>Administration Password: </ControlLabel>
+            <FormControl
+              onChange={this.handleEditPassChange}
+              type="text"
+              value={this.state.editPass}
+              placeholder="Enter password for the poll's edit page (optional)"
+            />
+            <FormControl.Feedback />
           </FormGroup>
           <Row>
             <Col md={4}>
@@ -332,6 +408,7 @@ class CreatePoll extends Component {
                   Add Option
                 </Button>
               </div>
+              <HelpBlock>{this.state.optionError}</HelpBlock>
             </form>
           </Col>
         </Row>
@@ -349,7 +426,7 @@ class CreatePoll extends Component {
                 className="margin-top"
                 bsStyle="primary"
                 block
-                disabled={this.state.options.length < 2 || this.state.loading}
+                disabled={disabled}
                 onClick={!this.state.loading ? this.handlePollCreate : null}
               >
                 Create

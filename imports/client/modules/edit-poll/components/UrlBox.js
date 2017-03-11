@@ -16,7 +16,6 @@ import {
 
 /* For the "copied!" alert message */
 const ToastMessageFactory = React.createFactory(ToastMessage.animation);
-
 /**
  * UrlBox - component that displays the URL in a nicely formatted box, with
  * buttons to copy, as well as a tiny notification that the text has been
@@ -28,10 +27,12 @@ class UrlBox extends Component {
 
     this.onCopy = this.onCopy.bind(this);
     this.voteRedirect = this.voteRedirect.bind(this);
+    this.closePoll = this.closePoll.bind(this);
 
     // This is the same as doing getInitialState but the ES6 way
     this.state = {
       shareURL: document.URL.substring(0, document.URL.lastIndexOf('/')),
+      isClosed: this.props.isClosed,
     };
   }
 
@@ -44,10 +45,22 @@ class UrlBox extends Component {
   }
 
   closePoll() {
+
     const pathName = window.location.pathname;
     const pollIdSubstring = pathName.substring(7, pathName.lastIndexOf('/'));
-    console.log(pollIdSubstring);
-    Meteor.call('polls.closePoll', pollIdSubstring); 
+    var closed = this.state.isClosed;
+    var closed = !closed;
+    this.setState({ isClosed: closed });
+    Meteor.call('polls.changePollStatus', pollIdSubstring, closed); 
+    var message = "";
+    if(closed){
+      message = 'Poll has been closed!';
+    }
+    else{
+      message = 'Poll has been opened!';
+    }
+    this.alert.success('', message, {closeButton: false, timeOut: 1000,
+    });
   }
   /* Use the router to redirect the user to the voting page, do so by grabbing
    * the preceding portion of the url pathname. A bit inefficient, but it
@@ -94,7 +107,7 @@ class UrlBox extends Component {
                 bsStyle="primary"
                 onClick={this.closePoll}
                 block
-              > Close Poll</Button>
+              > {this.state.isClosed ? "Open Poll" : "Close Poll" }</Button>
             </Col>
           </Row>
         </Grid>
@@ -107,6 +120,7 @@ class UrlBox extends Component {
 
 UrlBox.propTypes = {
   router: routerShape,
+  isClosed: React.PropTypes.bool,
 };
 
 export default withRouter(UrlBox);

@@ -7,6 +7,7 @@ import {
   FormGroup,
   ControlLabel,
   Col,
+  HelpBlock,
   Row,
   FormControl,
   PageHeader,
@@ -37,6 +38,8 @@ const propTypes = {
     isTimed: React.PropTypes.boolean,
     // date of expiry
     expiresAt: React.PropTypes.object,
+    // if the poll is already closed or not
+    isClosed: React.PropTypes.bool,
   }),
 };
 
@@ -65,6 +68,7 @@ class EditPoll extends Component {
   constructor(props) {
     super(props);
 
+
     this.pollNamePrompt = this.pollNamePrompt.bind(this);
     this.closePollNamePrompt = this.closePollNamePrompt.bind(this);
     this.handlePollNameChange = this.handlePollNameChange.bind(this);
@@ -74,6 +78,10 @@ class EditPoll extends Component {
     this.handleOptionNameChange = this.handleOptionNameChange.bind(this);
     this.handleOptionSubmit = this.handleOptionSubmit.bind(this);
     this.handleDateChange = this.handleDateChange.bind(this);
+    this.getPollNameValidationState =
+      this.getPollNameValidationState.bind(this);
+    this.handleEditPassChange = this.handleEditPassChange.bind(this);
+    this.checkEditPass = this.checkEditPass.bind(this);
 
     this.state = {
       pollName: this.props.poll.name,
@@ -82,29 +90,44 @@ class EditPoll extends Component {
       showPollNameModal: false,
       showDatetime: false,
       error: '',
+      pollNameError: '',
+      optionError: '',
+      validated: false,
+      editPass: '',
+      passValidError: '',
+      loaded: false,
     };
   }
 
   /* Here is a method for opening a poll name prompt for changing the poll name,
    * but it is unclear whether this is the best option for this functionality */
   pollNamePrompt() {
-    this.setState({ showPollNameModal: true });
-    this.setState({ pollName: this.props.poll.name });
-    this.setState({ options: this.props.poll.options });
-    this.setState({ isTimed: this.props.poll.isTimed });
-    this.setState({ expiresAt: this.props.poll.expiresAt });
+    this.setState({
+      pollName: this.props.poll.name,
+      options: this.props.poll.options,
+      showPollNameModal: true,
+      isTimed: this.props.poll.isTimed,
+      expiresAt: this.props.poll.expiresAt,
+      isClosed: this.props.poll.isClosed,
+    });
   }
-
-  /* Here is a method for closing a poll name prompt for changing the poll name,
-   * but it is unclear whether this is the best option for this functionality */
-  closePollNamePrompt() {
-    this.setState({ showPollNameModal: false });
+  
+  /* Validate the length of the poll name to make sure it is not empty */
+  getPollNameValidationState() {
+    const length = this.state.pollName.length;
+    if (length > 0) return 'success';
+    else if (length === 0) return 'error';
+    return null;
   }
 
   /* Simple method for handling changing the state of the poll name on the
    * component */
   handlePollNameChange(e) {
-    this.setState({ pollName: e.target.value });
+    e.preventDefault();
+    this.setState({
+      pollName: e.target.value,
+      pollNameError: '',
+    });
   }
 
   /* Handler for the option name change input */
@@ -112,6 +135,7 @@ class EditPoll extends Component {
     this.setState({
       ...this.state,
       optionName: e.target.value,
+      optionError: '',
     });
   }
 
@@ -144,6 +168,15 @@ class EditPoll extends Component {
     this.setState({
       ...this.state,
       expiresAt: expAt,
+    });
+  }
+  
+  /* Handler for the edit pass change input */
+  handleEditPassChange(e) {
+    this.setState({
+      ...this.state,
+      editPass: e.target.value,
+      passValidError: '',
     });
   }
 
@@ -181,16 +214,49 @@ class EditPoll extends Component {
     //Otherwise just blank out any days before the current date
     return currentDate.isAfter(Datetime.moment().subtract(1, 'day'));
   }
+  
+  /* Submission check for the edit password on the poll to check whether the
+   * person asking this question has permission to access the edit poll page
+   */
+  checkEditPass(e) {
+    e.preventDefault();
+    if (this.state.editPass === '') {
+      this.setState({ passValidError: 'Please enter a non-empty password!' });
+    } else {
+      Meteor.call(
+        'polls.checkEditPass',
+        this.props.poll._id,
+        this.state.editPass,
+        (err) => {
+          if (err) {
+            if (err.error === 501) {
+              this.setState({ passValidError: err.reason });
+            }
+          } else {
+            this.setState({ validated: true });
+          }
+        }
+      );
+    }
+  }
+
   /* Handler for updating the poll in the database. Currently just updates the
    * poll's name, but can be easily modified to change the poll options if
    * needed */
-  updatePoll() {
+  updatePoll(e) {
+    e.preventDefault();
     const { pollName, options, isTimed, expiresAt } = this.state;
 
-    if (!pollName) {
-      this.setState({
-        error: 'Please enter a name',
-      });
+    if (pollName === '') {
+      this.setState({ pollNameError: 'No poll name provided!' });
+      return;
+    }
+
+    const optionNum = Object.keys(options).length;
+    if (optionNum < 2) {
+      this.setState({ optionError:
+        'Too few options specified, please add another before submitting!' });
+      return;
     }
 
     // Create a new Poll object to be saved
@@ -205,9 +271,21 @@ class EditPoll extends Component {
     updatedPoll.expiresAt = expiresAt;
 
 
-    Meteor.call('polls.editPoll', this.props.poll._id, updatedPoll);
-
-    this.setState({ showPollNameModal: false });
+    Meteor.call('polls.editPoll',
+      this.props.poll._id,
+      updatedPoll,
+      this.state.editPass, (err) => {
+        // Attempted break-in, reprompt for password
+        if (err) {
+          if (err.error === 501) {
+            alert(
+              'Seems you tried to get around security, please reload the page.'
+            );
+          }
+        } else {
+          this.setState({ showPollNameModal: false });
+        }
+      });
   }
 
   /* Function to remove an option from the options in state */
@@ -231,6 +309,13 @@ class EditPoll extends Component {
     });
   }
 
+
+  /* Here is a method for closing a poll name prompt for changing the poll name,
+   * but it is unclear whether this is the best option for this functionality */
+  closePollNamePrompt() {
+    this.setState({ showPollNameModal: false });
+  }
+
   /* Helper function to render all the options, used elsewhere, bad style,
    * however, this project is not going to be big enough to require us to
    * separate this out into different component.
@@ -249,8 +334,64 @@ class EditPoll extends Component {
     ));
   }
 
+  /* Function for rendering the Modal for asking for a password; rendered
+   * so long as the user of this page has not been validated
+   */
+  renderEditPassModal() {
+    // Check to see if there even is a password set on the poll
+    if (this.props.poll._id !== '123' && !this.state.validated) {
+      Meteor.call('polls.checkEditPass',
+        this.props.poll._id,
+        '', (err) => {
+          if (!err) {
+            this.setState({ validated: true });
+          }
+        }
+      );
+      // Render modal for prompting for the password to edit the poll
+      return (
+        <Modal
+          show={!this.state.validated}
+        >
+          <Modal.Header>
+            <Modal.Title>Administration Password Needed.</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form onSubmit={this.checkEditPass}>
+              <FormGroup controlId={'handle'}>
+                <ControlLabel>Please enter the administrator password to
+                access this poll's edit options: </ControlLabel>
+                <FormControl
+                  onChange={this.handleEditPassChange}
+                  type="text"
+                  value={this.state.editPass}
+                  placeholder="Please enter a handle"
+                />
+                <HelpBlock>{this.state.passValidError}</HelpBlock>
+              </FormGroup>
+            </form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={this.checkEditPass}
+              bsStyle="success"
+              type="submit"
+            >Submit</Button>
+          </Modal.Footer>
+
+        </Modal>
+      );
+    }
+    return '';
+  }
+
   render() {
     if (!this.props.poll) {
+      // TODO: add a nice loading animation here instead of this
+      return <h4 className="text-center">Loading...</h4>;
+    }
+    
+    if (this.props.poll.isClosed == null) {
       // TODO: add a nice loading animation here instead of this
       return <h4 className="text-center">Loading...</h4>;
     }
@@ -261,7 +402,7 @@ class EditPoll extends Component {
         <PageHeader className="text-center">
           Success! Here is your unique poll URL:
         </PageHeader>
-        <UrlBox />
+        <UrlBox isClosed={this.props.poll.isClosed}/>
         <Well>
           <Button
             bsStyle="primary"
@@ -281,12 +422,13 @@ class EditPoll extends Component {
 
           <Modal.Header closeButton>
             <Modal.Title>Change Poll Name</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
+          </Modal.Header> <Modal.Body>
             <Row>
               <Col md={12} xs={12}>
                 <form onSubmit={this.updatePoll}>
-                  <FormGroup>
+                  <FormGroup
+                    validationState={this.getPollNameValidationState()}
+                  >
                     <ControlLabel>Question: </ControlLabel>
                     <FormControl
                       onChange={this.handlePollNameChange}
@@ -294,6 +436,8 @@ class EditPoll extends Component {
                       value={this.state.pollName}
                       placeholder="Enter question for poll"
                     />
+                    <FormControl.Feedback />
+                    <HelpBlock>{this.state.pollNameError}</HelpBlock>
                   </FormGroup>
                 </form>
               </Col>
@@ -324,6 +468,7 @@ class EditPoll extends Component {
                   Add Option
                 </Button>
               </div>
+              <HelpBlock>{this.state.optionError}</HelpBlock>
             </form>
             <Row>
               <Col xs={12}>
@@ -369,6 +514,8 @@ class EditPoll extends Component {
           </Modal.Footer>
 
         </Modal>
+
+        {this.state.validated ? '' : this.renderEditPassModal()}
 
       </Grid>
     );

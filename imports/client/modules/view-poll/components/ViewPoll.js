@@ -4,14 +4,21 @@ import { createContainer } from 'meteor/react-meteor-data';
 import {
   Grid,
   Row,
+  HelpBlock,
   Col,
   FormGroup,
+  Modal,
+  ControlLabel,
   FormControl,
   Checkbox,
   Button,
 } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import {withRouter, routerShape} from 'react-router';
+
+// Grabs chart from PollResults
+import PollResults from '../../poll-results/components/PollResults.js';
 
 // Grab collection for polls
 import Polls, { voteHelper } from '../../../../api/polls.js';
@@ -27,6 +34,7 @@ const propTypes = {
     _id: PropTypes.string,
     // Whether the poll is weighted
     isWeighted: PropTypes.bool,
+    isPrivate: PropTypes.bool,
     // Name / Question of the poll
     name: PropTypes.string,
     // A hashmap of key = option and
@@ -54,11 +62,13 @@ class ViewPoll extends Component {
     super(props);
 
     this.renderOptions = this.renderOptions.bind(this);
+    this.renderPassNeededDialog = this.renderPassNeededDialog.bind(this);
     this.toggleCheckbox = this.toggleCheckbox.bind(this);
     this.handleHandleChange = this.handleHandleChange.bind(this);
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
     this.handleVoteSubmit = this.handleVoteSubmit.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
+    this.checkHandle = this.checkHandle.bind(this);
 
     this.state = {
       handle: '',
@@ -66,6 +76,9 @@ class ViewPoll extends Component {
       selectedOptions: {},
       error: '',
       submitted: false,
+      showHandleModal: true,
+      handleError: '',
+      passValidError: '',
     };
   }
 
@@ -99,6 +112,7 @@ class ViewPoll extends Component {
   handleHandleChange(e) {
     this.setState({
       handle: e.target.value,
+      handleError: '',
     });
   }
 
@@ -106,6 +120,7 @@ class ViewPoll extends Component {
   handlePasswordChange(e) {
     this.setState({
       password: e.target.value,
+      passValidError: '',
     });
   }
 
@@ -115,11 +130,9 @@ class ViewPoll extends Component {
 
     const { handle, password, selectedOptions } = this.state;
 
-    if (!handle) {
-      this.setState({
-        error: 'Please enter a handle',
-      });
-    } else if (Object.keys(selectedOptions).length < 1) {
+    this.checkHandle(e);
+
+    if (Object.keys(selectedOptions).length < 1) {
       this.setState({
         error: 'Please vote on one of the options',
       });
@@ -141,12 +154,6 @@ class ViewPoll extends Component {
         selectedOptions,
       };
 
-      // Map over all the user's selectedOptions and update
-      // the scores for each option in the Poll
-      Object.keys(selectedOptions).forEach((option) => {
-        updatedPoll.options[option] += selectedOptions[option];
-      });
-
       if (!updatedPoll.votes) {
         updatedPoll.votes = [];
       }
@@ -155,6 +162,12 @@ class ViewPoll extends Component {
 
       // Client side check to make sure no duplicate votes
       if (voteHelper(updatedPoll)) {
+        // Map over all the user's selectedOptions and update
+        // the scores for each option in the Poll
+        Object.keys(selectedOptions).forEach((option) => {
+          updatedPoll.options[option] += selectedOptions[option];
+        });
+
         // Meteor method with a callback for server-side validation of no duplicates.
         Meteor.call('polls.vote', this.props.poll._id, updatedPoll, (err) => {
           if (err) {
@@ -164,10 +177,17 @@ class ViewPoll extends Component {
 
             // If there was an error, remove the last element to avoid bugs
             updatedPoll.votes.pop();
+
+            // Map over all the user's selectedOptions and update
+            // the scores for each option in the Poll to undo changes
+            Object.keys(selectedOptions).forEach((option) => {
+              updatedPoll.options[option] -= selectedOptions[option];
+            });
           } else {
             this.setState({
               submitted: true,
             });
+            this.props.router.push(`/polls/${this.props.poll._id}/results`);
           }
         });
       } else {
@@ -180,6 +200,34 @@ class ViewPoll extends Component {
       }
     }
   }
+  checkHandle(e) {
+    e.preventDefault();
+    if (this.state.handle === '') {
+      this.setState({ handleError: 'Please enter a non-empty handle!' });
+    } else {
+      Meteor.call(
+        'polls.checkPassAndHandle',
+        {
+          pollId: this.props.poll._id,
+          otherHandle: this.state.handle,
+          pass: this.state.password,
+        },
+        (err) => {
+          if (err) {
+            if (err.error === 500) {
+              this.setState({ handleError: err.reason });
+            } else if (err.error === 501) {
+              this.setState({ passValidError: err.reason });
+            }
+            this.setState({ showHandleModal: true });
+          } else {
+            this.setState({ showHandleModal: false });
+          }
+        }
+      );
+    }
+  }
+
 
   renderOptions() {
     const { options, isWeighted } = this.props.poll;
@@ -210,6 +258,24 @@ class ViewPoll extends Component {
     ));
   }
 
+  renderPassNeededDialog() {
+    if (this.props.poll.isPrivate) {
+      return (
+        <FormGroup controlId={'password'}>
+          <ControlLabel>Password: </ControlLabel>
+          <FormControl
+            onChange={this.handlePasswordChange}
+            type="text"
+            value={this.state.password}
+            placeholder="Please enter the password"
+          />
+          <HelpBlock>{this.state.passValidError}</HelpBlock>
+        </FormGroup>
+      );
+    }
+    return null;
+  }
+
   // Actual layout
   render() {
     if (!this.props.poll) {
@@ -236,22 +302,6 @@ class ViewPoll extends Component {
           <form onSubmit={this.handleVoteSubmit}>
             <h2 className="margin-left">{this.props.poll.name}</h2>
             {this.renderOptions()}
-            <FormGroup controlId={'handle'}>
-              <FormControl
-                onChange={this.handleHandleChange}
-                type="text"
-                value={this.state.handle}
-                placeholder="Please enter a handle"
-              />
-            </FormGroup>
-            <FormGroup controlId={'password'}>
-              <FormControl
-                onChange={this.handlePasswordChange}
-                type="password"
-                value={this.state.password}
-                placeholder="Password (Optional)"
-              />
-            </FormGroup>
             {this.state.error && <div className="text-danger">{this.state.error}</div>}
             <Button
               bsStyle="success"
@@ -262,6 +312,38 @@ class ViewPoll extends Component {
             </Button>
           </form>
         </Row>
+
+        <Modal
+          show={this.state.showHandleModal}
+        >
+          <Modal.Header>
+            <Modal.Title>Access Poll!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form onSubmit={this.checkHandle}>
+              <FormGroup controlId={'handle'}>
+                <ControlLabel>Name: </ControlLabel>
+                <FormControl
+                  onChange={this.handleHandleChange}
+                  type="text"
+                  value={this.state.handle}
+                  placeholder="Please enter a handle"
+                />
+                <HelpBlock>{this.state.handleError}</HelpBlock>
+              </FormGroup>
+              {this.renderPassNeededDialog()}
+            </form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={this.checkHandle}
+              bsStyle="success"
+              type="submit"
+            >Submit</Button>
+          </Modal.Footer>
+
+        </Modal>
+
       </Grid>
     );
   }
@@ -278,4 +360,4 @@ export default createContainer(({ params }) => {
   return {
     poll: Polls.findOne(params.pollId),
   };
-}, ViewPoll);
+}, withRouter(ViewPoll));

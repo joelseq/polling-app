@@ -5,6 +5,18 @@ import Polls from '../imports/api/polls';
 // rather than imports/api/polls.js
 Meteor.startup(() => {
   Meteor.publish('polls', function callback() { // eslint-disable-line prefer-arrow-callback
-    return Polls.find({});
+    return Polls.find({}, {
+      fields: {
+        name: 1,
+        isWeighted: 1,
+        options: 1,
+        votes: 1,
+        isPrivate: 1,
+        createdAt: 1,
+        isClosed: 1,
+        isTimed: 1,
+        expiresAt: 1,
+      },
+    });
   });
 });

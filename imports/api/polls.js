@@ -24,6 +24,7 @@ const PollSchema = new SimpleSchema({
   votes: { type: [VoteSchema], optional: true },
   isPrivate: { type: Boolean },
   password: { type: String, optional: true },
+  editPassword: { type: String, optional: true },
   createdAt: { type: Date, defaultValue: new Date() },
   isClosed: { type: Boolean, defaultValue: false },
   isTimed: {type: Boolean, defaultValue: false },
@@ -37,8 +38,7 @@ Polls.attachSchema(PollSchema);
  * Helper function to make sure that there is only
  * 1 vote by a particular handle in the Poll object.
  * This is for the sake of updating votes and ensuring
- * that there is no duplication or malicious insertion
- * happening.
+ * that there is no duplication or malicious insertion * happening.
  *
  * @param {Poll} pollObject
  * @returns {Boolean} True if no duplicates, False if
@@ -47,7 +47,6 @@ Polls.attachSchema(PollSchema);
 export function voteHelper(pollObject) {
   const handles = {};
   let ret = true;
-
   pollObject.votes.forEach((vote) => {
     const { handle } = vote;
 
@@ -76,27 +75,42 @@ Meteor.methods({
     return Polls.insert(poll);
   },
 
-  'polls.closePoll': function closePoll(pollId) {
+  'polls.changePollStatus': function closePoll(pollId, pollStatus) {
     // Check if the vote object conforms with
     // the VoteSchema
     check(pollId, String);
+    check(pollStatus, Boolean);
 
-      // Database call
+    // Database call
     return Polls.update(pollId, {
       $set: {
-        isClosed: true,
+        isClosed: pollStatus,
       },
     });
   },    
 
   // Update an existing poll in the database
-  'polls.editPoll': function changeName(pollId, updatedPoll) {
+  'polls.editPoll': function changeName(pollId, updatedPoll, inputPass) {
     // Check if the vote object conforms with
     // the VoteSchema
     check(updatedPoll, PollSchema);
     check(pollId, String);
+    check(inputPass, String);
 
     const { name, options, isTimed, expiresAt } = updatedPoll;
+
+    // check to make sure that we are not updating the poll without proper
+    // credentials
+    if (Meteor.isServer) {
+      const poll = Polls.findOne(pollId);
+      // check if poll's edit password exists
+      if (poll.editPassword) {
+        if (poll.editPassword !== inputPass) {
+          throw new Meteor.Error(501,
+            'An error occured, the password given is invalid, please reload the page!');
+        }
+      }
+    }
 
       // Database call
     return Polls.update(pollId, {
@@ -127,7 +141,64 @@ Meteor.methods({
         },
       });
     }
-    throw new Error('This handle already voted.');
+    throw new Meteor.Error('This handle already voted.');
+  },
+
+  'polls.checkEditPass':
+  function checkEditPass(pollId, inputPass) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(pollId, String);
+    check(inputPass, String);
+
+    // Database call
+    if (Meteor.isServer) {
+      const poll = Polls.findOne(pollId);
+
+      if (poll.editPassword) {
+        if (poll.editPassword !== inputPass) {
+          throw new Meteor.Error(501, 'Password is invalid!');
+        }
+      }
+    }
+
+    return true;
+  },
+
+  'polls.checkPassAndHandle':
+  function checkPassAndHandle(data) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(data, Object);
+    const { pollId, otherHandle, pass } = data;
+    check(pollId, String);
+    check(otherHandle, String);
+    check(pass, String);
+
+    // Database call
+    if (Meteor.isServer) {
+      const poll = Polls.findOne(pollId);
+      let ret = true;
+
+      if (poll.votes) {
+        poll.votes.forEach((vote) => {
+          const { handle } = vote;
+          if (handle === otherHandle) {
+            ret = false;
+          }
+        });
+      }
+
+      if (!ret) {
+        throw new Meteor.Error(500, 'This handle already voted.');
+      }
+
+      if (poll.isPrivate) {
+        if (poll.password !== pass) {
+          throw new Meteor.Error(501, 'Password is invalid!');
+        }
+      }
+    }
   },
 
 });
