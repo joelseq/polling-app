@@ -11,6 +11,8 @@ import {
   HelpBlock,
   Row,
   Col,
+  Popover,
+	OverlayTrigger,
 } from 'react-bootstrap';
 
 import '../../../main.js';
@@ -41,6 +43,7 @@ class CreatePoll extends Component {
       this.getPollNameValidationState.bind(this);
     this.removeOption = this.removeOption.bind(this);
     this.handleEditPassChange = this.handleEditPassChange.bind(this);
+    this.renderMovieOptions = this.renderMovieOptions.bind(this);
 
     // This is the same as doing getInitialState but the ES6 way
     this.state = {
@@ -55,6 +58,8 @@ class CreatePoll extends Component {
       optionError: '',
       editPass: '',
       error: '',
+      moviePoll: true,
+			movieURLs: [],
     };
   }
 
@@ -105,6 +110,15 @@ class CreatePoll extends Component {
 
   // Handler for the option name change input
   handleOptionNameChange(e) {
+
+    if(this.state.moviePoll){
+      console.log("clicked");
+
+      Meteor.call('polls.getMovies', e.target.value, (val) => {this.renderMovieOptions(val)},
+                  (val) => {console.log(val)});
+      console.log("past call");
+    }
+
     this.setState({
       optionName: e.target.value,
     });
@@ -227,6 +241,18 @@ class CreatePoll extends Component {
     ));
   }
 
+	/* TODO */
+  renderMovieOptions(list){
+		this.state.movieURLs = list;
+		console.log(this.state.movieURLs);
+    return Object.keys(this.state.movieURLs).map(option => (
+      <Col key={option} className="" md={4} sm={6} xs={12}>
+				console.log({option["poster_path"]});
+        <p>{option["poster_path"]}</p>
+      </Col>
+    ));
+  }
+
   render() {
     const { options, loading, name, isPrivate, password } = this.state;
     const disabled = Object.keys(options).length < 2 || loading ||
@@ -332,6 +358,11 @@ class CreatePoll extends Component {
             2) Splitting up adding options into its own form allows for people to submit and add
                options by hitting enter now which is good for UX. */}
             <form onSubmit={this.handleOptionSubmit}>
+							{/*TODO: this is fucked. make it a separate thing?? */}
+							<Popover id="popover-positioned-top" title="Movies">
+								{this.renderMovieOptions(this.state.movieURLs)}
+								<br/><br/><br/>
+							</Popover>
               <div className="CreatePoll__add-option">
                 <FormControl
                   onChange={this.handleOptionNameChange}

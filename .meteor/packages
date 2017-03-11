@@ -29,3 +29,4 @@ dispatch:phantomjs-tests@=0.0.5
 react-meteor-data
 aldeed:collection2
 aldeed:simple-schema
+http

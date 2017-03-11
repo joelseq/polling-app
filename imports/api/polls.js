@@ -2,9 +2,13 @@ import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
 import { SimpleSchema } from 'meteor/aldeed:simple-schema';
+import { HTTP } from 'meteor/http';
 
 // Collection of all polls
 const Polls = new Mongo.Collection('polls');
+
+const baseURL = "https://api.themoviedb.org/3/search/movie";
+const apiKey = "811e991877f0df19ab022a0b81ac7bc5";
 
 // Schema for Votes
 const VoteSchema = new SimpleSchema({
@@ -181,6 +185,25 @@ Meteor.methods({
       }
     }
   },
+
+  'polls.getMovies':
+  function getList(search, onSuccess, onError) {
+    check(search, String);
+
+    HTTP.call("GET", "https://api.themoviedb.org/3/search/movie?api_key=811e991877f0df19ab022a0b81ac7bc5", {params: {query: search}},
+      (error, result) => {
+        if (!error) {
+          var data = result.data;
+          var list = data["results"];
+          list = list.slice(0,5);
+          onSuccess(list);
+        }
+        else {
+          onError(results.headers);
+        }
+      }
+    );
+	},
 
 });
 
