@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { Table, Column, Cell } from 'fixed-data-table';
 
 // Component for data table displaying which users voted for which option
@@ -108,6 +108,5 @@ export default class PollTable extends Component {
         }
       </div>
     );
-
   }
 }

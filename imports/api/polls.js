@@ -31,6 +31,7 @@ const PollSchema = new SimpleSchema({
   votes: { type: [VoteSchema], optional: true },
   comments: { type: [CommentSchema], optional: true},
   isPrivate: { type: Boolean },
+  isVoterEditable: { type: Boolean, optional: true },
   password: { type: String, optional: true },
   editPassword: { type: String, optional: true },
   createdAt: { type: Date, defaultValue: new Date() },
@@ -49,19 +50,13 @@ Polls.attachSchema(PollSchema);
  * @returns {Boolean} True if no duplicates, False if
  * there are duplicates.
  */
-export function voteHelper(pollObject) {
-  const handles = {};
-  let ret = true;
-  pollObject.votes.forEach((vote) => {
-    const { handle } = vote;
-
-    if (handles[handle] === true) {
-      ret = false;
-    }
-    handles[handle] = true;
+export function dupVoteHelper(pollObject, handle) {
+  let votes = pollObject.votes;
+  votes = votes.filter( (obj) => {
+    return obj.handle !== handle;
   });
 
-  return ret;
+  return votes;
 }
 
 // Meteor methods are the secure way of making database calls
@@ -78,6 +73,34 @@ Meteor.methods({
 
     // Database call
     return Polls.insert(poll);
+  },
+
+  // Suggest new options & change options for poll
+  'polls.suggestOptions': function changeName(pollId, updatedPoll) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(updatedPoll, PollSchema);
+    check(pollId, String);
+
+    const { options } = updatedPoll;
+
+    // check to make sure that we are not updating the poll without proper
+    // credentials
+    if (Meteor.isServer) {
+      const poll = Polls.findOne(pollId);
+      // check if poll's edit password exists
+      if (!poll.isVoterEditable) {
+          throw new Meteor.Error(501,
+            'This poll is not voter editable!');
+      }
+    }
+
+      // Database call
+    return Polls.update(pollId, {
+      $set: {
+        options,
+      },
+    });
   },
 
   // Update an existing poll in the database
@@ -130,24 +153,38 @@ Meteor.methods({
   },
 
   // Update an existing poll in the database
-  'polls.vote': function votePoll(pollId, updatedPoll) {
+  'polls.vote': function votePoll(pollId, updatedPoll, vote) {
     // Check if the vote object conforms with
     // the VoteSchema
     check(updatedPoll, PollSchema);
     check(pollId, String);
+    check(vote, VoteSchema);
+    let options = updatedPoll.options;
 
-    const { options, votes } = updatedPoll;
+    let votes = dupVoteHelper( updatedPoll, vote.handle );
+    votes.push( vote );
 
-    if (voteHelper(updatedPoll)) {
-      // Database call
-      return Polls.update(pollId, {
-        $set: {
-          options,
-          votes,
-        },
+    // Reset each of the options back to zero
+    Object.keys(options).forEach((option) => {
+      options[option] = 0;
+    });
+
+    // iterate through each of the votes and count them for the current options
+    for( let vote of votes ) {
+      Object.keys(options).forEach((option) => {
+        if ( vote.selectedOptions[option] ) {
+          options[option] += vote.selectedOptions[option];
+        }
       });
     }
-    throw new Meteor.Error('This handle already voted.');
+
+    // Database call
+    return Polls.update(pollId, {
+      $set: {
+        options,
+        votes,
+      },
+    });
   },
 
   'polls.checkEditPass':
@@ -176,29 +213,11 @@ Meteor.methods({
     // Check if the vote object conforms with
     // the VoteSchema
     check(data, Object);
-    const { pollId, otherHandle, pass } = data;
-    check(pollId, String);
-    check(otherHandle, String);
-    check(pass, String);
+    const { pollId, pass } = data;
 
     // Database call
     if (Meteor.isServer) {
       const poll = Polls.findOne(pollId);
-      let ret = true;
-
-      if (poll.votes) {
-        poll.votes.forEach((vote) => {
-          const { handle } = vote;
-          if (handle === otherHandle) {
-            ret = false;
-          }
-        });
-      }
-
-      if (!ret) {
-        throw new Meteor.Error(500, 'This handle already voted.');
-      }
-
       if (poll.isPrivate) {
         if (poll.password !== pass) {
           throw new Meteor.Error(501, 'Password is invalid!');
