@@ -12,6 +12,7 @@ import {
 } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { withRouter, routerShape } from 'react-router';
 
 // Grab collection for polls
 import Polls, { voteHelper } from '../../../../api/polls.js';
@@ -217,6 +218,10 @@ class ViewPoll extends Component {
       return <h4 className="text-center">Loading...</h4>;
     }
 
+    if (this.props.poll._id == defaultProps.poll._id) {
+      this.props.router.push(`/404Error`);
+    }
+
     return (
       <Grid>
         <Row>
@@ -265,4 +270,4 @@ export default createContainer(({ params }) => {
   return {
     poll: Polls.findOne(params.pollId),
   };
-}, ViewPoll);
+}, withRouter(ViewPoll));
