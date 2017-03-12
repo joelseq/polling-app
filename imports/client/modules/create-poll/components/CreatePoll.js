@@ -12,8 +12,6 @@ import {
   HelpBlock,
   Row,
   Col,
-  Popover,
-  OverlayTrigger,
 } from 'react-bootstrap';
 
 var moment = require('moment');
@@ -41,7 +39,7 @@ class CreatePoll extends Component {
     this.handleWeightedChange = this.handleWeightedChange.bind(this);
     this.handleOptionNameChange = this.handleOptionNameChange.bind(this);
     this.handleOptionSubmit = this.handleOptionSubmit.bind(this);
-    this.handleOptionSubmitFromDropdown = 
+    this.handleOptionSubmitFromDropdown =
       this.handleOptionSubmitFromDropdown.bind(this);
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
     this.handlePrivateChange = this.handlePrivateChange.bind(this);
@@ -52,7 +50,7 @@ class CreatePoll extends Component {
     this.removeOption = this.removeOption.bind(this);
     this.handleDateChange = this.handleDateChange.bind(this);
     this.handleEditPassChange = this.handleEditPassChange.bind(this);
-		this.handleDropdownChange = this.handleDropdownChange.bind(this);
+    this.handleDropdownChange = this.handleDropdownChange.bind(this);
 
     // This is the same as doing getInitialState but the ES6 way
     this.state = {
@@ -72,9 +70,9 @@ class CreatePoll extends Component {
       editPass: '',
       error: '',
       moviePoll: false,
-			movieURLs: [],
+      movieURLs: [],
       movieData: [],
-    }
+    };
   }
 
   getPollNameValidationState() {
@@ -140,7 +138,7 @@ class CreatePoll extends Component {
   // Handler for the option name change input
   handleOptionNameChange(e) {
     this.setState({
-      optionName: e.targetValue,
+      optionName: e.target.value,
     });
   }
 
@@ -150,7 +148,7 @@ class CreatePoll extends Component {
     e.preventDefault();
     console.log("got the call");
     console.log(e);
-    const { options } = this.state;
+    const { options, optionName } = this.state;
 
     // Make sure the input isn't empty and the option hasn't already been added
     // TODO: Show a warning when the user is trying to add the same option twice
@@ -510,7 +508,7 @@ class CreatePoll extends Component {
             2) Splitting up adding options into its own form allows for people to submit and add
                options by hitting enter now which is good for UX. */}
 							{/*TODO: this is fucked. make it a separate thing?? I concur*/}
-								{this.state.moviePoll
+								{/* this.state.moviePoll
 								?
                   <Col md={8}>
                   <ReactUIDropdown
@@ -519,7 +517,7 @@ class CreatePoll extends Component {
                     addOption={this.handleOptionSubmitFromDropdown}
                     onChange={this.handleDropdownChange}/>
                   </Col>
-								:
+								:*/}
                 <form onSubmit={this.handleOptionSubmit}>
                   <div className="CreatePoll__add-option">
                     <FormControl
@@ -539,7 +537,6 @@ class CreatePoll extends Component {
                   </div>
                   <HelpBlock>{this.state.optionError}</HelpBlock>
                 </form>
-								}
           </Col>
         </Row>
         <Grid>
