@@ -59,13 +59,17 @@ class PollResults extends Component {
   constructor(props) {
     super(props);
 
-    this.counter = 0;
-
     this.toggleExtraInfo = this.toggleExtraInfo.bind(this);
 
     this.state = {
-      showExtraInfo: false
+      showExtraInfo: false,
+      isLoading: true,
+      isError: false
     };
+      
+    if(this.props.poll._id == defaultProps.poll._id) {
+        this.state.isError = true;
+    }
   }
 
   // allows the user to display and show extra voting info
@@ -89,7 +93,7 @@ class PollResults extends Component {
   // Layout of the page
   render() {
 
-    this.counter++;
+    console.log(poll);
 
     // if there is no information to display
     if (this.props.poll._id == defaultProps.poll._id && this.counter == 0) {
