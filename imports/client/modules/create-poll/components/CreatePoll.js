@@ -23,7 +23,7 @@ import '../../../../ui/react-datetime.css'
 /**
  * CreatePoll - component that handles the creation of polls. There are
  * no props passed in to this component which is why propTypes and defaultProps
- * aren't specified. 
+ * aren't specified.  
  */
 class CreatePoll extends Component {
   constructor(props) {
