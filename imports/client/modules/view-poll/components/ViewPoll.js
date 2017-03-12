@@ -5,6 +5,7 @@ import {
   Grid,
   Row,
   Well,
+  PageHeader,
   HelpBlock,
   Col,
   FormGroup,
@@ -391,7 +392,7 @@ class ViewPoll extends Component {
           <ControlLabel>Password: </ControlLabel>
           <FormControl
             onChange={this.handlePasswordChange}
-            type="text"
+						type="password"
             value={this.state.password}
             placeholder="Please enter the password"
           />
@@ -411,29 +412,31 @@ class ViewPoll extends Component {
 
     if (isWeighted) {
       return Object.keys(options).map(option => (
-        <Col key={option} md={7} xs={8} className="margin-bottom">
+        <Col key={option} md={12} xs={12} className="margin-bottom">
           <p>{option}</p>
-          <SliderWithTooltip
-            onChange={val => this.handleSliderChange(val, option)}
-            value={this.state.selectedOptions[option]}
-            min={0}
-            max={10}
-          />
+          <Well>
+            <SliderWithTooltip
+              onChange={val => this.handleSliderChange(val, option)}
+              value={this.state.selectedOptions[option]}
+              min={0}
+              max={10}
+            />
+          </Well>
         </Col>
       ));
     }
 
     return Object.keys(options).map(option => (
-      <Col key={option} md={7} xs={8}>
-        <FormGroup>
-          <Checkbox
-            onChange={() => this.toggleCheckbox(option)}
-            checked={this.state.selectedOptions[option] === 1}
-          >
-            {option}
-          </Checkbox>
+        <FormGroup key={option}>
+          <Well>
+            <Checkbox
+              onChange={() => this.toggleCheckbox(option)}
+              checked={this.state.selectedOptions[option] === 1}
+            >
+              {option}
+            </Checkbox>
+          </Well>
         </FormGroup>
-      </Col>
     ));
   }
 
@@ -477,16 +480,19 @@ class ViewPoll extends Component {
       <Grid>
         <Row>
           <form onSubmit={this.handleVoteSubmit}>
-            <h2 className="margin-left">{this.props.poll.name}</h2>
+            <Col md={12} xs={12}>
+            <PageHeader>{this.props.poll.name}</PageHeader>
             {this.renderOptions()}
             {this.state.error && <div className="text-danger">{this.state.error}</div>}
             <Button
               bsStyle="success"
               type="submit"
               disabled={this.state.submitted}
+              block
             >
               Vote
             </Button>
+            </Col>
           </form>
         </Row>
         { this.props.poll.isVoterEditable ? (

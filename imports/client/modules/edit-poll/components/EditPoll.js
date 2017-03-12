@@ -349,7 +349,7 @@ class EditPoll extends Component {
    */
   renderOptions() {
     return Object.keys(this.state.options).map(option => (
-      <Col key={option} className="CreatePoll__option" md={4} sm={6} xs={12}>
+      <Col key={option} className="CreatePoll__option" md={6} sm={6} xs={12}>
         <button
           onClick={() => this.removeOption(option)}
           className="CreatePoll__option-close-button"
@@ -390,9 +390,9 @@ class EditPoll extends Component {
                 access this poll's edit options: </ControlLabel>
                 <FormControl
                   onChange={this.handleEditPassChange}
-                  type="text"
+                  type="password"
                   value={this.state.editPass}
-                  placeholder="Please enter a handle"
+                  placeholder="Please enter the editing password."
                 />
                 <HelpBlock>{this.state.passValidError}</HelpBlock>
               </FormGroup>
