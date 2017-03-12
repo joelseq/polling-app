@@ -1,5 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import { Meteor } from 'meteor/meteor';
+import {
+  Well,
+  Col,
+  Image,
+  PageHeader,
+} from 'react-bootstrap';
 
 // Component for 404 page
 export default class ErrorPage extends Component {
@@ -12,10 +18,10 @@ export default class ErrorPage extends Component {
   // renders error message for the user
   render() {
     return(
-      <div>
-				<img src={'http://i.imgur.com/gbDypc4.png'} />
-        <h4 className="center">Sorry! Looks like you've found a page that doesn't exist</h4>
-      </div>
+      <Col>
+        <PageHeader className='text-center'>Sorry! Looks like you've found a page that doesn't exist.</PageHeader>
+				<Image src={'http://i.imgur.com/gbDypc4.png'} responsive />
+      </Col>
     );
   }
 }
