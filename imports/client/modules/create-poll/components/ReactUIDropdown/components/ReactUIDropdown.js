@@ -178,18 +178,25 @@ export default class ReactUIDropdown extends Component {
     };
 
     switch (e.key) {
-      case "ArrowDown":
+     /*case "ArrowDown":
         updateState(focusedItemIndex < (displayedItems.length - 1) ? (focusedItemIndex + 1) : 0);
         break;
       case "ArrowUp":
         updateState((focusedItemIndex == 0) ? (displayedItems.length - 1) : (focusedItemIndex - 1));
-        break;
+        break;*/
       case "Enter":
-        this.addItemToSelected(focusedItem);
+        this.props.addOption(this.state.searchValue);
+        /*this.addItemToSelected(focusedItem);
 
         updateState(focusedItemIndex < (displayedItems.length - 1) ? (focusedItemIndex + 1) : (focusedItemIndex - 1));
-        break;
+        break;*/
     }
+  }
+
+  handleOptionAdded(e) {
+    e.preventDefault();
+    console.log(e);
+    this.props.addOption(this.state.searchValue);
   }
 
   handleSearchInputFocus() {
@@ -394,7 +401,7 @@ export default class ReactUIDropdown extends Component {
             onChange={this.handleSearchInputChange.bind(this)}
             onFocus={this.handleSearchInputFocus.bind(this)}
             onBlur={this.handleSearchInputBlur.bind(this)}
-            addOption={this.props.addOption}
+            addOption={this.handleOptionAdded}
             onKeyDown={this.handleSearchInputKeyDown.bind(this)}/>
         </div>
 

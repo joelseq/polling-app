@@ -69,7 +69,7 @@ class CreatePoll extends Component {
       optionError: '',
       editPass: '',
       error: '',
-      moviePoll: false,
+      moviePoll: true,
       movieURLs: [],
       movieData: [],
     };
@@ -144,18 +144,16 @@ class CreatePoll extends Component {
 
 
   // Handler for adding an option
-  handleOptionSubmitFromDropdown(e) {
-    e.preventDefault();
+  handleOptionSubmitFromDropdown(name) {
     console.log("got the call");
-    console.log(e);
-    const { options, optionName } = this.state;
+    const { options } = this.state;
 
     // Make sure the input isn't empty and the option hasn't already been added
     // TODO: Show a warning when the user is trying to add the same option twice
-    if (optionName.length > 0 && !(optionName in options)) {
+    if (name.length > 0 && !(name in options)) {
       const newOptions = { ...options };
 
-      newOptions[optionName] = 0;
+      newOptions[name] = 0;
 
       this.setState({
         options: newOptions,
@@ -508,16 +506,14 @@ class CreatePoll extends Component {
             2) Splitting up adding options into its own form allows for people to submit and add
                options by hitting enter now which is good for UX. */}
 							{/*TODO: this is fucked. make it a separate thing?? I concur*/}
-								{/* this.state.moviePoll
+								{ this.state.moviePoll
 								?
-                  <Col md={8}>
                   <ReactUIDropdown
                     label=""
                     initialItems={this.state.movieData}
                     addOption={this.handleOptionSubmitFromDropdown}
                     onChange={this.handleDropdownChange}/>
-                  </Col>
-								:*/}
+								:
                 <form onSubmit={this.handleOptionSubmit}>
                   <div className="CreatePoll__add-option">
                     <FormControl
@@ -537,6 +533,7 @@ class CreatePoll extends Component {
                   </div>
                   <HelpBlock>{this.state.optionError}</HelpBlock>
                 </form>
+                }
           </Col>
         </Row>
         <Grid>

@@ -22,28 +22,31 @@ export default class SearchInput extends Component {
 
   render() {
     return (
-      <form onSubmit={this.props.addOption}>
-        <input
-          ref="input"
-          className="dropdown-search-input"
-          id={this.getId()}
-          value={this.props.value}
-          placeholder={this.props.placeholder}
-          role="combobox"
-          aria-autocomplete="list"
-          aria-owns={this.getItemsId()}
-          onChange={this.props.onChange}
-          onFocus={this.props.onFocus}
-          onBlur={this.props.onBlur}
-          onKeyDown={this.props.onKeyDown}/>
+      <form >
+        <div className="CreatePoll__add-option">
+          <input
+            ref="input"
+            className="dropdown-search-input"
+            id={this.getId()}
+            value={this.props.value}
+            placeholder={this.props.placeholder}
+            role="combobox"
+            aria-autocomplete="list"
+            aria-owns={this.getItemsId()}
+            onChange={this.props.onChange}
+            onFocus={this.props.onFocus}
+            onBlur={this.props.onBlur}
+            onKeyDown={this.props.onKeyDown}/>
 
-        <Button
-          className="CreatePoll__add-button"
-          bsStyle="success"
-          type="submit"
-        >
-          Add Option
-        </Button>
+          <Button
+            className="CreatePoll__add-button"
+            onClick={this.props.addOption}
+            bsStyle="success"
+            type="submit"
+          >
+            Add Option
+          </Button>
+        </div>
       </form>
     )
   }
