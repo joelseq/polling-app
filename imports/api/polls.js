@@ -168,7 +168,6 @@ Meteor.methods({
 					{params: {bot_id: 6, say: commentText.substring(0,200), format: 'json'}},
 					(err, res) => { 
             if ( err ) {
-              comments.pop();
 							comments.push({ 
 								handle: "anon28439", 
 								text: "Sorry, I can't talk right now, I'm too sleepy.",
@@ -179,7 +178,6 @@ Meteor.methods({
                 },
               });
             } else {
-              comments.pop();
               if ( res.statusCode === 200 ) {
                 comments.push({ 
                   handle: "anon28439", 
