@@ -15,6 +15,7 @@ import {
   Button,
 } from 'react-bootstrap';
 import UrlBox from './UrlBox.js';
+import { withRouter, routerShape } from 'react-router';
 
 import '../../../main.js';
 
@@ -24,6 +25,7 @@ import Polls from '../../../../api/polls.js';
 const propTypes = {
   // Poll object in DB from createContainer
   poll: React.PropTypes.shape({
+    router: React.PropTypes.object,
     // Mongo ID for Poll
     _id: React.PropTypes.string,
     /* Whether the poll is weighted
@@ -68,7 +70,7 @@ class EditPoll extends Component {
     this.handleOptionNameChange = this.handleOptionNameChange.bind(this);
     this.handleOptionSubmit = this.handleOptionSubmit.bind(this);
     this.getPollNameValidationState =
-      this.getPollNameValidationState.bind(this);
+    this.getPollNameValidationState.bind(this);
     this.handleEditPassChange = this.handleEditPassChange.bind(this);
     this.checkEditPass = this.checkEditPass.bind(this);
 
@@ -83,7 +85,22 @@ class EditPoll extends Component {
       validated: false,
       editPass: '',
       passValidError: '',
+      isLoading: true
     };
+
+
+    setTimeout(() => {
+      if(this.props.poll._id == defaultProps.poll._id) {
+        this.props.router.push(`/404Error`);
+      }
+    }, 5000);
+
+
+    if(this.props.poll._id != defaultProps.poll._id) {
+        this.state = {
+          isLoading: false,
+        };
+    }
   }
 
   /* Validate the length of the poll name to make sure it is not empty */
@@ -214,6 +231,16 @@ class EditPoll extends Component {
       });
   }
 
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.poll._id != defaultProps.poll._id) {
+        this.setState({
+          isLoading: false,
+        });
+    } else {
+      nextProps.router.push(`/404Error`);
+    }
+  }
+
   /* Function to remove an option from the options in state */
   removeOption(option) {
     /* From StackOverflow:
@@ -321,7 +348,7 @@ class EditPoll extends Component {
   }
 
   render() {
-    if (!this.props.poll) {
+    if (this.state.isLoading) {
       // TODO: add a nice loading animation here instead of this
       return <h4 className="text-center">Loading...</h4>;
     }
@@ -436,4 +463,4 @@ export default createContainer(({ params }) => {
   return {
     poll: grabbedPoll,
   };
-}, EditPoll);
+}, withRouter(EditPoll));

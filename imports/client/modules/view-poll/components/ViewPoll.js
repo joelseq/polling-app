@@ -94,7 +94,6 @@ class ViewPoll extends Component {
       isLoading: true
     };
 
-    //react sucks
     setTimeout(() => {
       if(this.props.poll._id == defaultProps.poll._id) {
         this.props.router.push(`/404Error`);
