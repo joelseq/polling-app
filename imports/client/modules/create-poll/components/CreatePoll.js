@@ -48,8 +48,6 @@ class CreatePoll extends Component {
     this.handleDateChange = this.handleDateChange.bind(this);
     this.handleEditPassChange = this.handleEditPassChange.bind(this);
 
-		this.initialcheck = 1;
-
     // This is the same as doing getInitialState but the ES6 way
     this.state = {
       // might wanna move this
@@ -65,6 +63,7 @@ class CreatePoll extends Component {
       voterEditable: false,
       pollNameError: '',
       optionError: '',
+      passwordError: '',
       editPass: '',
       error: '',
     };
@@ -72,13 +71,15 @@ class CreatePoll extends Component {
 
   getPollNameValidationState() {
     const length = this.state.name.length;
-		if ( this.initialcheck === 1 ) {
-			this.initialcheck = 0;
-			return null;
-		}
 		
-    if (length > 0) return 'success';
-    else if (length === 0) return 'error';
+    if (length > 0) {
+      return 'success';
+    } else if (length === 0) {
+      if ( this.state.pollNameError === '' ) {
+        return null;
+      }
+      return 'error';
+    }
 
     return null;
   }
@@ -103,6 +104,7 @@ class CreatePoll extends Component {
   handlePasswordChange(e) {
     this.setState({
       password: e.target.value,
+      passwordError: '',
     });
   }
 
@@ -139,6 +141,7 @@ class CreatePoll extends Component {
   handleOptionNameChange(e) {
     this.setState({
       optionName: e.target.value,
+      optionError: '',
     });
   }
 
@@ -148,9 +151,13 @@ class CreatePoll extends Component {
 
     const { optionName, options } = this.state;
 
+    if (optionName in options) {
+      this.setState({ optionError: 'Please submit a non-duplicate option!' });
+      return;
+    }
+
     // Make sure the input isn't empty and the option hasn't already been added
-    // TODO: Show a warning when the user is trying to add the same option twice
-    if (optionName.length > 0 && !(optionName in options)) {
+    if (optionName.length > 0 ) {
       const newOptions = { ...options };
 
       newOptions[optionName] = 0;
@@ -161,6 +168,7 @@ class CreatePoll extends Component {
         optionError: '',
       });
     }
+
   }
 
   // Handler for creating a poll
@@ -195,7 +203,7 @@ class CreatePoll extends Component {
       });
     } else if (isPrivate && !password) {
       this.setState({
-        error: 'Please enter a password if the poll is private.',
+        passwordError: 'Please enter a password if the poll is private.',
       });
     } else {
       Meteor.call('polls.insert', {
@@ -413,22 +421,26 @@ class CreatePoll extends Component {
 							<h3></h3>
               <Row>
                 <Col md={12}>
-								{ this.state.isPrivate
-									?
-										<FormGroup controlId={'password'}>
-											<ControlLabel>Password: </ControlLabel>
-											{/* This component is now 'controlled'. Further reading:
-												* https://facebook.github.io/react/docs/forms.html
-												*/}
-											<FormControl
-												onChange={this.handlePasswordChange}
-												type="password"
-												defaultValue={this.state.password}
-												placeholder="Enter password for poll"
-											/>
-										</FormGroup>
-									: null
-								}
+                  { this.state.isPrivate
+                    ?
+                      <FormGroup controlId={'password'}
+                       validationState={this.state.passwordError === '' ?
+                       null : 'error' }
+                      >
+                        <ControlLabel>Password: </ControlLabel>
+                        {/* This component is now 'controlled'. Further reading:
+                          * https://facebook.github.io/react/docs/forms.html
+                          */}
+                        <FormControl
+                          onChange={this.handlePasswordChange}
+                          type="password"
+                          defaultValue={this.state.password}
+                          placeholder="Enter password for poll"
+                        />
+                        <HelpBlock>{this.state.passwordError}</HelpBlock>
+                      </FormGroup>
+                    : null
+                  }
 								</Col>
 							</Row>
               <Row>
