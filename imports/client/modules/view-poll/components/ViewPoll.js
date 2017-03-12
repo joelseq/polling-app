@@ -36,7 +36,7 @@ const propTypes = {
     // Whether the poll is private
     isPrivate: PropTypes.bool,
     isVoterEditable: PropTypes.bool,
-    votes: PropTypes.object,
+    votes: PropTypes.array,
     // Name / Question of the poll
     name: PropTypes.string,
     // A hashmap of key = option and
