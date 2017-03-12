@@ -21,9 +21,6 @@ import { withRouter, routerShape } from 'react-router';
 // Grab collection for polls
 import Polls from '../../../../api/polls.js';
 
-// Grabs ErrorPage component
-import ErrorPage from '../../error-page/components/ErrorPage';
-
 const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const SliderWithTooltip = createSliderWithTooltip(Slider);
 
@@ -94,7 +91,24 @@ class ViewPoll extends Component {
       optionName: '',
       optionError: '',
       showEditOptionModal: false,
+      isLoading: true
     };
+
+    //react sucks
+    setTimeout(() => {
+      if(this.props.poll._id == defaultProps.poll._id) {
+        this.props.router.push(`/404Error`);
+      }
+    }, 5000);
+
+
+    if(this.props.poll._id != defaultProps.poll._id) {
+        this.state = {
+          isLoading: false,
+        };
+    }
+
+
   }
 
   // Handler for selecting/unselecting options in the checkboxes
@@ -284,6 +298,7 @@ class ViewPoll extends Component {
       );
     }
   }
+
   checkHandle(e) {
     e.preventDefault();
     if (this.state.handle === '') {
@@ -323,7 +338,6 @@ class ViewPoll extends Component {
     }
   }
 
-
   closeEditOptionsModal() {
     this.setState({ showEditOptionModal: false });
     return null;
@@ -355,6 +369,16 @@ class ViewPoll extends Component {
     ));
   }
 
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.poll._id != defaultProps.poll._id) {
+        this.setState({
+          isLoading: false,
+        });
+    } else {
+      nextProps.router.push(`/404Error`);
+    }
+  }
+
   renderPassNeededDialog() {
     if (this.props.poll.isPrivate) {
       return (
@@ -372,6 +396,7 @@ class ViewPoll extends Component {
     }
     return null;
   }
+
   renderOptions() {
     const { options, isWeighted } = this.props.poll;
 
@@ -404,14 +429,7 @@ class ViewPoll extends Component {
 
   // Actual layout
   render() {
-    // if the poll isn't found, it displays the 404 error
-    if (this.props.poll._id == defaultProps.poll._id) {
-      return(
-        <ErrorPage/>
-      );
-    }
-
-    if (!this.props.poll) {
+    if (this.state.isLoading) {
       // TODO: add a nice loading animation here instead of this
       return <h4 className="text-center">Loading...</h4>;
     }

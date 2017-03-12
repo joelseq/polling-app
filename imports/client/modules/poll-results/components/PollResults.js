@@ -10,6 +10,8 @@ import {
   Checkbox,
   Button,
 } from 'react-bootstrap';
+import { withRouter, routerShape } from 'react-router';
+
 
 // Grabs chart from PollResults
 import PollChart from './PollChart';
@@ -26,6 +28,7 @@ import ErrorPage from '../../error-page/components/ErrorPage';
 
 // Prop Types for this Component
 const propTypes = {
+  router: PropTypes.object,
   // Poll object in DB from createContainer
   poll: PropTypes.shape({
     // Mongo ID for Poll
@@ -45,7 +48,7 @@ const propTypes = {
 // Default Props if none are provided
 const defaultProps = {
   poll: {
-    _id: '123',
+    _id: '12345',
     isWeighted: false,
     name: 'Default Poll',
     options: {
@@ -63,12 +66,31 @@ class PollResults extends Component {
 
     this.state = {
       showExtraInfo: false,
-      isLoading: true,
-      isError: false
+      isLoading: true
     };
-      
-    if(this.props.poll._id == defaultProps.poll._id) {
-        this.state.isError = true;
+
+    setTimeout(() => {
+      if(this.props.poll._id == defaultProps.poll._id) {
+        this.props.router.push(`/404Error`);
+      }
+    }, 5000);
+
+
+    if(this.props.poll._id != defaultProps.poll._id) {
+        this.state = {
+          isLoading: false,
+        };
+    }
+
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.poll._id != defaultProps.poll._id) {
+        this.setState({
+          isLoading: false,
+        });
+    } else {
+      nextProps.router.push(`/404Error`);
     }
   }
 
@@ -93,23 +115,12 @@ class PollResults extends Component {
   // Layout of the page
   render() {
 
-    console.log(poll);
-
     // if there is no information to display
-    if (this.props.poll._id == defaultProps.poll._id && this.counter == 0) {
+    if (this.state.isLoading) {
       // TODO: add a nice loading animation here instead of
       return <h4 className="text-center">Loading...</h4>;
     }
 
-    // if the poll isn't found, it displays the 404 error
-    if (this.props.poll._id == defaultProps.poll._id && this.counter > 1) {
-      this.counter = 10;
-      return(
-        <ErrorPage/>
-      );
-    }
-
-    if (this.props.poll._id)
     return (
       <div>
         <div>
@@ -147,6 +158,7 @@ export default createContainer(({ params }) => {
   Meteor.subscribe('polls'); // get the poll database
 
   return {
-    poll: Polls.findOne(params.pollId),
+    poll: Polls.findOne(params.pollId)
   };
-}, PollResults);
+
+}, withRouter(PollResults));
