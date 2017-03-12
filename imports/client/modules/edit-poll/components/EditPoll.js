@@ -84,6 +84,7 @@ class EditPoll extends Component {
     this.getPollNameValidationState.bind(this);
     this.handleEditPassChange = this.handleEditPassChange.bind(this);
     this.checkEditPass = this.checkEditPass.bind(this);
+    this.routeToResults = this.routeToResults.bind(this);
 
     this.state = {
       pollName: this.props.poll.name,
@@ -97,23 +98,7 @@ class EditPoll extends Component {
       validated: false,
       editPass: '',
       passValidError: '',
-      isLoading: true,
-      loaded: false
     };
-
-
-    setTimeout(() => {
-      if(this.props.poll._id == defaultProps.poll._id) {
-        this.props.router.push(`/404Error`);
-      }
-    }, 5000);
-
-
-    if(this.props.poll._id != defaultProps.poll._id) {
-        this.state = {
-          isLoading: false,
-        };
-    }
   }
 
   /* Here is a method for opening a poll name prompt for changing the poll name,
@@ -343,6 +328,10 @@ class EditPoll extends Component {
     this.setState({ showPollNameModal: false });
   }
 
+  routeToResults() {
+    this.props.router.push(`/polls/${this.props.poll._id}/results`);
+  }
+
   /* Helper function to render all the options, used elsewhere, bad style,
    * however, this project is not going to be big enough to require us to
    * separate this out into different component.
@@ -413,9 +402,26 @@ class EditPoll extends Component {
   }
 
   render() {
-    if (this.state.isLoading) {
+    if (this.props.loading) {
       // TODO: add a nice loading animation here instead of this
       return <h4 className="text-center">Loading...</h4>;
+    }
+
+    if (this.props.poll._id === defaultProps.poll._id) {
+      this.props.router.push('/404Error');
+    }
+
+    if (this.props.poll.isClosed) {
+      return (
+        <div>
+          <h4 className="text-center">Sorry, this poll has been closed</h4>
+          <Button
+            onClick={this.routeToResults}
+          >
+            View Results
+          </Button>
+        </div>
+      );
     }
 
     // Ensure the poll's details are populated in the state
@@ -548,10 +554,11 @@ EditPoll.propTypes = propTypes;
 EditPoll.defaultProps = defaultProps;
 
 export default createContainer(({ params }) => {
-  Meteor.subscribe('polls'); // get the poll database
-  const grabbedPoll = Polls.findOne(params.pollId);
+  const poll = Meteor.subscribe('polls'); // get the poll database
+  const loading = !poll.ready();
 
   return {
-    poll: grabbedPoll,
+    poll: Polls.findOne(params.pollId),
+    loading,
   };
 }, withRouter(EditPoll));

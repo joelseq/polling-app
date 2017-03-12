@@ -87,31 +87,7 @@ class PollResults extends Component {
       chatBotWanted: false,
       amountToLoad: 5
     };
-
-    setTimeout(() => {
-      if(this.props.poll._id == defaultProps.poll._id) {
-        this.props.router.push(`/404Error`);
-      }
-    }, 5000);
-
-
-    if(this.props.poll._id != defaultProps.poll._id) {
-        this.state = {
-          isLoading: false,
-        };
-    }
-
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if(nextProps.poll._id != defaultProps.poll._id) {
-        this.setState({
-          isLoading: false,
-        });
-    } else {
-      nextProps.router.push(`/404Error`);
-    }
-  }
+	}
 
   postComment(e) {
     e.preventDefault();
@@ -225,9 +201,14 @@ class PollResults extends Component {
   render() {
     console.warn = function () {}
     // if there is no information to display
-    if (this.state.isLoading) {
-      // TODO: add a nice loading animation here instead of
+		
+		if (this.props.loading) {
+      // TODO: add a nice loading animation here instead of this
       return <h4 className="text-center">Loading...</h4>;
+    }
+
+    if (this.props.poll._id === defaultProps.poll._id) {
+      this.props.router.push('/404Error');
     }
 
     return (
@@ -349,10 +330,12 @@ PollResults.propTypes = propTypes;
 PollResults.defaultProps = defaultProps;
 
 export default createContainer(({ params }) => {
-  Meteor.subscribe('polls'); // get the poll database
+  const poll = Meteor.subscribe('polls'); // get the poll database
+  const loading = !poll.ready();
 
   return {
-    poll: Polls.findOne(params.pollId)
+    poll: Polls.findOne(params.pollId),
+		loading,
   };
 
 }, withRouter(PollResults));

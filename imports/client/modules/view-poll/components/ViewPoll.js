@@ -93,23 +93,7 @@ class ViewPoll extends Component {
       optionName: '',
       optionError: '',
       showEditOptionModal: false,
-      isLoading: true
     };
-
-    setTimeout(() => {
-      if(this.props.poll._id == defaultProps.poll._id) {
-        this.props.router.push(`/404Error`);
-      }
-    }, 5000);
-
-
-    if(this.props.poll._id != defaultProps.poll._id) {
-        this.state = {
-          isLoading: false,
-        };
-    }
-
-
   }
 
   // Handler for selecting/unselecting options in the checkboxes
@@ -375,16 +359,6 @@ class ViewPoll extends Component {
     ));
   }
 
-  componentWillReceiveProps(nextProps) {
-    if(nextProps.poll._id != defaultProps.poll._id) {
-        this.setState({
-          isLoading: false,
-        });
-    } else {
-      nextProps.router.push(`/404Error`);
-    }
-  }
-
   renderPassNeededDialog() {
     if (this.props.poll.isPrivate) {
       return (
@@ -442,9 +416,13 @@ class ViewPoll extends Component {
 
   // Actual layout
   render() {
-    if (this.state.isLoading) {
+    if (this.props.loading) {
       // TODO: add a nice loading animation here instead of this
       return <h4 className="text-center">Loading...</h4>;
+    }
+
+    if (this.props.poll._id === defaultProps.poll._id) {
+      this.props.router.push('/404Error');
     }
 
     if (this.props.poll.isClosed) {
@@ -460,20 +438,20 @@ class ViewPoll extends Component {
       );
     }
 
-    if( this.props.poll.isTimed ){
-         if( this.props.poll.expiresAt.getTime() < (new Date()).getTime() ) {
-            return (
-              <div>
-                <h4 className="text-center">Sorry, this poll has been closed</h4>
-                <Button
-                  onClick={this.routeToResults}
-                  bsStyle="success"
-                >
-                  View Results
-                </Button>
-              </div>
-            );
-         }
+    if (this.props.poll.isTimed) {
+      if (this.props.poll.expiresAt.getTime() < (new Date()).getTime()) {
+        return (
+          <div>
+            <h4 className="text-center">Sorry, this poll has been closed</h4>
+            <Button
+              onClick={this.routeToResults}
+              bsStyle="success"
+            >
+              View Results
+            </Button>
+          </div>
+        );
+      }
     }
 
     return (
@@ -595,9 +573,11 @@ ViewPoll.defaultProps = defaultProps;
 // The real MVP; creates the ViewPoll container using the routing params
 // (the unique url)
 export default createContainer(({ params }) => {
-  Meteor.subscribe('polls'); // get the poll database
+  const poll = Meteor.subscribe('polls'); // get the poll database
+  const loading = !poll.ready();
 
   return {
     poll: Polls.findOne(params.pollId),
+    loading,
   };
 }, withRouter(ViewPoll));
