@@ -174,7 +174,7 @@ Meteor.methods({
     
 		if ( chatBotWanted ) {
       comments.push({ 
-        handle: "anon28439", 
+        handle: "PoopBot", 
         text: "Wait a second, let me think about that...",
       });
       Polls.update(pollId, {
@@ -188,7 +188,7 @@ Meteor.methods({
 					(err, res) => { 
             if ( err ) {
 							comments.push({ 
-								handle: "anon28439", 
+								handle: "PoopBot", 
 								text: "Sorry, I can't talk right now, I'm too sleepy.",
 							});
               Polls.update(pollId, {
@@ -199,12 +199,12 @@ Meteor.methods({
             } else {
               if ( res.statusCode === 200 ) {
                 comments.push({ 
-                  handle: "anon28439", 
+                  handle: "PoopBot", 
                   text: (JSON.parse(res.content)).botsay,
                 });
               } else {
                 comments.push({ 
-                  handle: "anon28439", 
+                  handle: "PoopBot", 
                   text: "Sorry, I can't talk right now, I'm too sleepy.",
                 });
               }
