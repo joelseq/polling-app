@@ -1,12 +1,17 @@
 import React, { Component } from 'react';
 import { Table, Column, Cell } from 'fixed-data-table';
+import GetContainerDimensions from 'react-dimensions'
+import {
+  Row,
+} from 'react-bootstrap';
 
 // Component for data table displaying which users voted for which option
-export default class PollTable extends Component {
+class PollTable extends Component {
   constructor(props) {
     super(props);
 
     this.findElement = this.findElement.bind(this);
+    this.props.containerWidth = 600;
 
     this.state = {};
   }
@@ -48,82 +53,79 @@ export default class PollTable extends Component {
     }
 
     // actual layout
-    return (
-      <div>
-        { this.props.isWeighted
-          ?
-            (
-              <Table
-                rowHeight={50}
-                rowsCount={rows.length}
-                width={600}
-                height={50*(rows.length + 1) + 2}
-                headerHeight={50}>
-                {/* Handles */}
-                <Column
-                  header={<Cell>Handle</Cell>}
-                  cell={({rowIndex, ...props}) => (
-                    <Cell {...props}>
-                      {rows[rowIndex][0]}
-                    </Cell>
-                  )}
-                  width={200}
-                />
-                {/* Options */}
-                <Column
-                  header={<Cell>Option</Cell>}
-                  cell={({rowIndex, ...props}) => (
-                    <Cell {...props}>
-                      {rows[rowIndex][1]}
-                    </Cell>
-                  )}
-                  width={200}
-                />
-                {/* Weight of vote */}
-                <Column
-                  header={<Cell>Weight</Cell>}
-                  cell={({rowIndex, ...props}) => (
-                    <Cell {...props}>
-                      {rows[rowIndex][2]}
-                    </Cell>
-                  )}
-                  width={200}
-                />
-              </Table>
-
-            )
-          :
-            (
-              <Table
-                rowHeight={50}
-                rowsCount={rows.length}
-                width={400}
-                height={50*(rows.length + 1) + 2}
-                headerHeight={50}>
-                {/* Handles */}
-                <Column
-                  header={<Cell>Handle</Cell>}
-                  cell={({rowIndex, ...props}) => (
-                    <Cell {...props}>
-                      {rows[rowIndex][0]}
-                    </Cell>
-                  )}
-                  width={200}
-                />
-                {/* Options voted for */}
-                <Column
-                  header={<Cell>Option</Cell>}
-                  cell={({rowIndex, ...props}) => (
-                    <Cell {...props}>
-                      {rows[rowIndex][1]}
-                    </Cell>
-                  )}
-                  width={200}
-                />
-              </Table>
-            )
-        }
-      </div>
-    );
+    if (this.props.isWeighted) {
+      return (
+        <Table
+          rowHeight={50}
+          rowsCount={rows.length}
+          width={this.props.containerWidth}
+          height={50*(rows.length + 1) + 2}
+          headerHeight={50}>
+          {/* Handles */}
+          <Column
+            header={<Cell>Handle</Cell>}
+            cell={({rowIndex, ...props}) => (
+              <Cell {...props}>
+                {rows[rowIndex][0]}
+              </Cell>
+            )}
+            width={this.props.containerWidth/3}
+          />
+          {/* Options */}
+          <Column
+            header={<Cell>Option</Cell>}
+            cell={({rowIndex, ...props}) => (
+              <Cell {...props}>
+                {rows[rowIndex][1]}
+              </Cell>
+            )}
+            width={this.props.containerWidth/3}
+          />
+          {/* Weight of vote */}
+          <Column
+            header={<Cell>Weight</Cell>}
+            cell={({rowIndex, ...props}) => (
+              <Cell {...props}>
+                {rows[rowIndex][2]}
+              </Cell>
+            )}
+            width={this.props.containerWidth/3}
+          />
+        </Table>
+      ); 
+    } else 
+    {
+      return (
+          <Table
+            rowHeight={50}
+            rowsCount={rows.length}
+            width={this.props.containerWidth}
+            height={50*(rows.length + 1) + 2}
+            headerHeight={50}>
+            {/* Handles */}
+            <Column
+              header={<Cell>Handle</Cell>}
+              cell={({rowIndex, ...props}) => (
+                <Cell {...props}>
+                  {rows[rowIndex][0]}
+                </Cell>
+              )}
+              width={this.props.containerWidth/2}
+            />
+            {/* Options voted for */}
+            <Column
+              header={<Cell>Option</Cell>}
+              cell={({rowIndex, ...props}) => (
+                <Cell {...props}>
+                  {rows[rowIndex][1]}
+                </Cell>
+              )}
+              width={this.props.containerWidth/2}
+            />
+          </Table>
+       );
+    }
   }
 }
+
+export default GetContainerDimensions()(PollTable);
