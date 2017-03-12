@@ -1,4 +1,17 @@
 import React, { Component, PropTypes } from "react";
+import {
+  Grid,
+  Button,
+  FormGroup,
+  ControlLabel,
+  FormControl,
+  Radio,
+  HelpBlock,
+  Row,
+  Col,
+  Popover,
+  OverlayTrigger,
+} from 'react-bootstrap';
 
 export default class Item extends Component {
   constructor(props) {
@@ -42,18 +55,22 @@ export default class Item extends Component {
         tabIndex="-1"
         onMouseDown={this.props.onClick}
         onMouseMove={this.props.onHover}>
+        <Row className="itemRow">
+        <Col md={4}>
         {this.hasImages()
         && <img
           className="dropdown-item-image"
           src={this.props.image}
-          height={180}
-          width={120}
+          height={100}
+          width={66}
           alt=""/>}
-        <div className="dropdown-item-title">
+        </Col>
+        <Col className="dropdown-item-title">
           {this.props.title}
           {this.hasSubtitle()
           && <div className="dropdown-item-subtitle">{this.props.subTitle}</div>}
-        </div>
+        </Col>
+        </Row>
       </div>
     )
   }

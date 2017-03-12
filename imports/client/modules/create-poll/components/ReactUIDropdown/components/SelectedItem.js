@@ -6,7 +6,8 @@ export default class SelectedItem extends Component {
   }
 
   render() {
-    return (
+    return (<div></div>);
+    {/*return (
       <div className="dropdown-selected-item" id={this.getId()}>
         <span className="dropdown-item-title">{this.props.title}</span>
         <button
@@ -14,7 +15,7 @@ export default class SelectedItem extends Component {
           type="button"
           onClick={this.props.onClick}>{String.fromCharCode(215)}</button>
       </div>
-    )
+    )*/}
   }
 }
 

@@ -5,6 +5,7 @@ $spacing: 2px;
 .dropdown {
   margin: calc(5 * $spacing) 0 calc(10 * $spacing);
   position: relative;
+  width: 100%;
 
   .dropdown-selector {
     background: $bgColor;
@@ -30,7 +31,7 @@ $spacing: 2px;
     border: none;
     flex: 1 1 auto;
     margin: $spacing;
-    min-width: 50%;
+    min-width: 50vw;
     padding: $spacing;
   }
 
@@ -95,4 +96,21 @@ $spacing: 2px;
     margin-right: calc(2 * $spacing);
     width: calc(20 * $spacing);
   }
+}
+
+input#dropdown-1-search-input.dropdown-search-input{
+  width: 100%;
+  padding-bottom: 2px;
+  margin-bottom: 2px;
+  margin-top: 2px;
+}
+
+button.CreatePoll__add-button.btn.btn-success{
+  max-height: 50px;
+}
+
+.itemRow{
+  margin-bottom: 2px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #ccc;
 }

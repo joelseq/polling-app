@@ -1,4 +1,3 @@
-import "./stylesheets/react-ui-dropdown.css";
 
 import React, { Component, PropTypes } from "react";
 import Items from "./Items";
@@ -57,8 +56,7 @@ export default class ReactUIDropdown extends Component {
   constructor(props) {
     super(props);
 
-    console.log("constructor call");
-    console.log(this.props.initialItems);
+    this.handleMovieNameChange = this.handleMovieNameChange.bind(this);
 
     const items = this.transformArrayToItems(props.initialItems, props.maxDisplayedItems);
 
@@ -92,7 +90,8 @@ export default class ReactUIDropdown extends Component {
    * @returns {Array}
    */
   getNotSelectedItems() {
-    return this.state.items.keys.displayed.filter(itemKey => !~this.state.items.keys.selected.indexOf(itemKey));
+    return this.state.items;
+    // return this.state.items.keys.displayed.filter(itemKey => !~this.state.items.keys.selected.indexOf(itemKey));
   }
 
   /**
@@ -105,27 +104,49 @@ export default class ReactUIDropdown extends Component {
   }
 
   handleSelectorClick() {
-    this.refs.searchInput.refs.input.focus();
+    //this.refs.searchInput.refs.input.focus();
   }
 
   handleSearchInputChange(e) {
     const searchValue = e.target.value;
 
-    console.log("initial items");
-    console.log(this.props.initialItems);
+    this.setState({
+      searchValue,
+    });
 
-    const retItems = this.transformArrayToItems(this.props.initialItems, this.props.maxDisplayedItems);
 
-    this.props.getSearch(searchValue);
+    this.handleMovieNameChange(searchValue);
+  }
+
+  handleMovieNameChange(movieName) {
+    //Call the api lookup method to return an array of movies
+    //which is rendered using the passed in functions
+    //Otherwise log the value (error handling) TODO
+    Meteor.call('polls.getMovies', movieName, (val) => {this.onSuccessMovieList(val)},
+                (val) => {console.log("Network Error be patient")});
+
+  }
+
+  onSuccessMovieList(list) {
+
+    const {searchValue} = this.state;
+
+    var data = [];
+		for (i=0; i<list.length; i++) {
+      var movie = list[i];
+			data.push({
+				id: movie["id"],
+				title: movie["original_title"],
+        image:"https://image.tmdb.org/t/p/w500/" + movie["poster_path"],
+			});
+		}
+
+    const retItems = this.transformArrayToItems(data, this.props.maxDisplayedItems);
 
     this.setState({
       searchValue,
       items: retItems,
     });
-
-    console.log("items in state");
-    console.log(retItems);
-
     const updateState = (displayedItemsKeys) => {
       let items = retItems;
       items.keys.displayed = displayedItemsKeys;
@@ -149,7 +170,7 @@ export default class ReactUIDropdown extends Component {
   handleSearchInputKeyDown(e) {
     const focusedItem = this.state.focusedItem;
     const displayedItems = this.getNotSelectedItems();
-    const focusedItemIndex = displayedItems.indexOf(focusedItem);
+    const focusedItemIndex = displayedItems;
     const updateState = (focusedItemIndex) => {
       this.setState({
         focusedItem: displayedItems[focusedItemIndex] || null
@@ -181,9 +202,9 @@ export default class ReactUIDropdown extends Component {
   }
 
   handleSearchInputBlur() {
-    this.refs.items.setHidden(true);
+    this.refs.items.setHidden(false);
     let item = this.refs["item-" + this.state.focusedItem];
-    if (item) item.setFocused(false);
+    if (item) item.setFocused(true);
   }
 
   handleSelectedItemClick(itemKey) {
@@ -205,7 +226,7 @@ export default class ReactUIDropdown extends Component {
     if(!this.props.onChange) return;
 
     this.props.onChange(this.state.items.keys.selected.reduce((selectedItems, itemKey) => {
-      selectedItems.push(this.state.items.collection[itemKey]);
+      selectedItems.unshift(this.state.items.collection[itemKey]);
       return selectedItems;
     }, []));
   }
@@ -228,7 +249,6 @@ export default class ReactUIDropdown extends Component {
         selected: []
       }
     };
-    console.log("data in array");
 
     if (data && data.length) {
       items.keys.all = data.map(item => item.id);
@@ -241,7 +261,6 @@ export default class ReactUIDropdown extends Component {
       }, {});
     }
 
-    console.log(items);
     return items;
   }
 
@@ -357,8 +376,6 @@ export default class ReactUIDropdown extends Component {
 
     return (
       <div className="dropdown">
-        <Label idPrefix={dropdownId}>{this.props.label}</Label>
-
         <div
           className="dropdown-selector"
           onClick={this.handleSelectorClick.bind(this)}>
@@ -377,6 +394,7 @@ export default class ReactUIDropdown extends Component {
             onChange={this.handleSearchInputChange.bind(this)}
             onFocus={this.handleSearchInputFocus.bind(this)}
             onBlur={this.handleSearchInputBlur.bind(this)}
+            addOption={this.props.addOption}
             onKeyDown={this.handleSearchInputKeyDown.bind(this)}/>
         </div>
 
@@ -415,7 +433,7 @@ ReactUIDropdown.propTypes = {
   showImages: PropTypes.bool,
   multiple: PropTypes.bool,
   onChange: PropTypes.func,
-  getSearch: PropTypes.func,
+  addOption: PropTypes.func,
 };
 ReactUIDropdown.defaultProps = {
   maxDisplayedItems: 10,
