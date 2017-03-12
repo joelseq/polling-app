@@ -110,24 +110,30 @@ class CreatePoll extends Component {
 
   // Handler for the option name change input
   handleOptionNameChange(e) {
-    option = e.target.value;
+    
+    //If the user is creating a movie poll 
+    //treat each input as a movie
     if(this.state.moviePoll){
-      console.log("clicked");
         
+      //If there is no target value then exit
       if( e.target.value == "" ) {
+        //Also clear any rendered objects
+        this.renderMovieOptions([]);
+        this.setState({
+            movieURLs: [],
+        });
         return;
       }
        
-      console.log("METEOR CALL");
+      //Call the api lookup method to return an array of movies
+      //which is rendered using the passed in functions
+      //Otherwise log the value (error handling) TODO
       Meteor.call('polls.getMovies', e.target.value, (val) => {this.renderMovieOptions(val)},
-                  (val) => {console.log(val)});
-      console.log("past call");
-
-      
+                  (val) => {console.log("Network Error be patient")});
     }
 
     this.setState({
-      optionName: option,
+      optionName: e.targetValue,
     });
   }
 
@@ -248,30 +254,42 @@ class CreatePoll extends Component {
     ));
   }
 
+  //Function that sets the movie options that the user
+  //clicks on to poll options
   setMovieOption(movieName) {
+
+    //Access the option array and add the movie name to that
+    //array 
+    //NOTE this is trash repeatative code but idk a better
+    //way 
+    const { options } = this.state;
+    const newOptions = { ...options };
+
+    newOptions[movieName] = 0;
+    
+    //Update the state to reflect the new option added
     this.setState({
-      optionName: movieName,
+      options: newOptions,
+      optionName: "",
       movieURLs: [],
     });
 
+    //Stop rendering movie posters
     this.renderMovieOptions([]);
-
   }
     
 
-	/* TODO */
+  //Render the movie posters in the popover
   renderMovieOptions(list){
+    //Get the list of movies
 	this.state.movieURLs = list;
-	console.log(this.state.movieURLs);
 
+    //Return the html button (each button containing a poster image)
     return this.state.movieURLs.map(option => (
-      <Col key={option["id"]} className="CreatePoll__movie" md={4} sm={6} xs={12}>
-        <button
-            onClick={() => this.setMovieOption(option["original_title"])}
-        >
+      <button key={option["id"]} className="CreatePoll__movie"
+            onClick={() => this.setMovieOption(option["original_title"])}>
         <img src={"https://image.tmdb.org/t/p/w500/" + option["poster_path"]} width="100"/>
         </button>
-      </Col>
     ));
   }
 
@@ -380,10 +398,9 @@ class CreatePoll extends Component {
             2) Splitting up adding options into its own form allows for people to submit and add
                options by hitting enter now which is good for UX. */}
             <form onSubmit={this.handleOptionSubmit}>
-							{/*TODO: this is fucked. make it a separate thing?? */}
+							{/*TODO: this is fucked. make it a separate thing?? I concur*/}
 							<Popover id="popover-positioned-top" placement='top' title="Movies">
-								{this.renderMovieOptions(this.state.movieURLs)}
-								<br/><br/><br/>
+								    {this.renderMovieOptions(this.state.movieURLs)}
 							</Popover>
               <div className="CreatePoll__add-option">
                 <FormControl
