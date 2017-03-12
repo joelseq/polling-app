@@ -2,9 +2,17 @@ import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
 import { SimpleSchema } from 'meteor/aldeed:simple-schema';
+import { HTTP } from 'meteor/http'
 
 // Collection of all polls
 const Polls = new Mongo.Collection('polls');
+const Comments = new Mongo.Collection('collections');
+
+// Schema for Comments
+const CommentSchema = new SimpleSchema({
+  handle: { type: String },
+  text: { type: String },
+});
 
 // Schema for Votes
 const VoteSchema = new SimpleSchema({
@@ -22,10 +30,15 @@ const PollSchema = new SimpleSchema({
     blackbox: true,
   },
   votes: { type: [VoteSchema], optional: true },
+  comments: { type: [CommentSchema], optional: true},
   isPrivate: { type: Boolean },
+  isVoterEditable: { type: Boolean, optional: true },
   password: { type: String, optional: true },
   editPassword: { type: String, optional: true },
   createdAt: { type: Date, defaultValue: new Date() },
+  isClosed: { type: Boolean, defaultValue: false },
+  isTimed: {type: Boolean, defaultValue: false },
+  expiresAt: { type: Date, defaultValue: new Date()},
 });
 
 // Automatically validate the schema for us
@@ -41,19 +54,13 @@ Polls.attachSchema(PollSchema);
  * @returns {Boolean} True if no duplicates, False if
  * there are duplicates.
  */
-export function voteHelper(pollObject) {
-  const handles = {};
-  let ret = true;
-  pollObject.votes.forEach((vote) => {
-    const { handle } = vote;
-
-    if (handles[handle] === true) {
-      ret = false;
-    }
-    handles[handle] = true;
+export function dupVoteHelper(pollObject, handle) {
+  let votes = pollObject.votes;
+  votes = votes.filter( (obj) => {
+    return obj.handle != handle;
   });
 
-  return ret;
+  return votes;
 }
 
 // Meteor methods are the secure way of making database calls
@@ -72,6 +79,48 @@ Meteor.methods({
     return Polls.insert(poll);
   },
 
+  'polls.changePollStatus': function closePoll(pollId, pollStatus) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(pollId, String);
+    check(pollStatus, Boolean);
+
+    // Database call
+    return Polls.update(pollId, {
+      $set: {
+        isClosed: pollStatus,
+      },
+    });
+  },    
+
+  // Suggest new options & change options for poll
+  'polls.suggestOptions': function changeName(pollId, updatedPoll) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(updatedPoll, PollSchema);
+    check(pollId, String);
+
+    const { options } = updatedPoll;
+
+    // check to make sure that we are not updating the poll without proper
+    // credentials
+    if (Meteor.isServer) {
+      const poll = Polls.findOne(pollId);
+      // check if poll's edit password exists
+      if (!poll.isVoterEditable) {
+          throw new Meteor.Error(501,
+            'This poll is not voter editable!');
+      }
+    }
+
+      // Database call
+    return Polls.update(pollId, {
+      $set: {
+        options,
+      },
+    });
+  },
+
   // Update an existing poll in the database
   'polls.editPoll': function changeName(pollId, updatedPoll, inputPass) {
     // Check if the vote object conforms with
@@ -80,7 +129,7 @@ Meteor.methods({
     check(pollId, String);
     check(inputPass, String);
 
-    const { name, options } = updatedPoll;
+    const { name, options, isTimed, expiresAt } = updatedPoll;
 
     // check to make sure that we are not updating the poll without proper
     // credentials
@@ -100,29 +149,116 @@ Meteor.methods({
       $set: {
         name,
         options,
+        isTimed,
+        expiresAt,
       },
     });
   },
 
+  // Add comments to an existing poll in the database
+  'polls.comment': 
+	function votePoll(pollId, updatedPoll, commentText, chatBotWanted) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(pollId, String );
+    check(commentText, String );
+    check(updatedPoll, PollSchema);
+    check(chatBotWanted, Boolean);
+
+    const { comments } = updatedPoll;
+		Polls.update(pollId, {
+			$set: {
+				comments,
+			},
+		});
+    
+		if ( chatBotWanted ) {
+      comments.push({ 
+        handle: "anon28439", 
+        text: "Wait a second, let me think about that...",
+      });
+      Polls.update(pollId, {
+        $set: {
+          comments,
+        },
+      });
+			if ( Meteor.isServer ) {
+				HTTP.get("http://api.program-o.com/v2/chatbot/",
+					{params: {bot_id: 6, say: commentText.substring(0,200), format: 'json'}},
+					(err, res) => { 
+            if ( err ) {
+              comments.pop();
+							comments.push({ 
+								handle: "anon28439", 
+								text: "Sorry, I can't talk right now, I'm too sleepy.",
+							});
+              Polls.update(pollId, {
+                $set: {
+                  comments,
+                },
+              });
+            } else {
+              comments.pop();
+              if ( res.statusCode === 200 ) {
+                comments.push({ 
+                  handle: "anon28439", 
+                  text: (JSON.parse(res.content)).botsay,
+                });
+              } else {
+                comments.push({ 
+                  handle: "anon28439", 
+                  text: "Sorry, I can't talk right now, I'm too sleepy.",
+                });
+              }
+              Polls.update(pollId, {
+                $set: {
+                  comments,
+                },
+              });
+            }
+					}
+				);
+			}
+		}
+
+    // TODODOODODODODOO!!!!!
+    /* Database call
+    return Polls.update(pollId, {
+      $set: {
+        comments,
+      },
+    }); */
+
+  },
+
   // Update an existing poll in the database
-  'polls.vote': function votePoll(pollId, updatedPoll) {
+  'polls.vote': function votePoll(pollId, updatedPoll, vote) {
     // Check if the vote object conforms with
     // the VoteSchema
     check(updatedPoll, PollSchema);
     check(pollId, String);
+    check(vote, VoteSchema);
+    let options = updatedPoll.options;
 
-    const { options, votes } = updatedPoll;
+    let votes = dupVoteHelper( updatedPoll, vote.handle );
+    votes.push( vote );
 
-    if (voteHelper(updatedPoll)) {
-      // Database call
-      return Polls.update(pollId, {
-        $set: {
-          options,
-          votes,
-        },
+    // iterate through each of the votes and count them for the current options
+    for( let vote of votes ) {
+      Object.keys(options).forEach((option) => {
+        if ( vote.selectedOptions[option] ) {
+          options[option] += vote.selectedOptions[option];
+        }
       });
     }
-    throw new Meteor.Error('This handle already voted.');
+
+    // Database call
+    return Polls.update(pollId, {
+      $set: {
+        options,
+        votes,
+      },
+    });
   },
 
   'polls.checkEditPass':
@@ -151,29 +287,11 @@ Meteor.methods({
     // Check if the vote object conforms with
     // the VoteSchema
     check(data, Object);
-    const { pollId, otherHandle, pass } = data;
-    check(pollId, String);
-    check(otherHandle, String);
-    check(pass, String);
+    const { pollId, pass } = data;
 
     // Database call
     if (Meteor.isServer) {
       const poll = Polls.findOne(pollId);
-      let ret = true;
-
-      if (poll.votes) {
-        poll.votes.forEach((vote) => {
-          const { handle } = vote;
-          if (handle === otherHandle) {
-            ret = false;
-          }
-        });
-      }
-
-      if (!ret) {
-        throw new Meteor.Error(500, 'This handle already voted.');
-      }
-
       if (poll.isPrivate) {
         if (poll.password !== pass) {
           throw new Meteor.Error(501, 'Password is invalid!');
