@@ -6,7 +6,18 @@ export default class PollTable extends Component {
   constructor(props) {
     super(props);
 
+    this.findElement = this.findElement.bind(this);
+
     this.state = {};
+  }
+
+  findElement(array, element) {
+    for (let i = 0; i <= array.length; i++) {
+      if (array[i] == element) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // renders the table
@@ -14,6 +25,12 @@ export default class PollTable extends Component {
     const poll_votes = this.props.votes; // votes from poll collection
     const poll_options = this.props.options; // options from poll collection
     let rows = [];
+    let voterOptions = [];
+
+    // Grabs names and values for each poll option from options hashmap
+    for (let i = 0, keys = Object.keys(poll_options), ii = keys.length; i < ii; i++) {
+      voterOptions.push(keys[i]);
+    }
 
     // iterates through each handle
     for (let names = 0; names < poll_votes.length; names++) {
@@ -22,7 +39,7 @@ export default class PollTable extends Component {
           opt < keys.length; opt++) {
 
         // displays votes that align with available options
-        if (poll_options.find(keys[opt])) {
+        if (this.findElement(voterOptions, keys[opt])) {
           // pushes [name, option, weight] for table
           rows.push([poll_votes[names].handle, keys[opt],
                     poll_votes[names].selectedOptions[keys[opt]]]);
