@@ -6,7 +6,18 @@ export default class PollTable extends Component {
   constructor(props) {
     super(props);
 
+    this.findElement = this.findElement.bind(this);
+
     this.state = {};
+  }
+
+  findElement(array, element) {
+    for (let i = 0; i <= array.length; i++) {
+      if (array[i] == element) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // renders the table
@@ -28,7 +39,7 @@ export default class PollTable extends Component {
           opt < keys.length; opt++) {
 
         // displays votes that align with available options
-        if (poll_options.find(keys[opt])) {
+        if (this.findElement(voterOptions, keys[opt])) {
           // pushes [name, option, weight] for table
           rows.push([poll_votes[names].handle, keys[opt],
                     poll_votes[names].selectedOptions[keys[opt]]]);
