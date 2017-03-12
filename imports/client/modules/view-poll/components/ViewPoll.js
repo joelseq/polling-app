@@ -427,14 +427,23 @@ class ViewPoll extends Component {
 
     if (this.props.poll.isClosed) {
       return (
-        <div>
-          <h4 className="text-center">Sorry, this poll has been closed</h4>
-          <Button
-            onClick={this.routeToResults}
-          >
-            View Results
-          </Button>
-        </div>
+        <Grid className='text-center'>
+          <Well>
+            <Row>
+            <PageHeader>Sorry, this poll has been closed.</PageHeader>
+            <Col md={4} mdOffset={4}>
+              <Button
+                onClick={this.routeToResults}
+                bsStyle='primary'
+                block
+              >
+                View Results
+              </Button>
+              <h3></h3>
+            </Col>
+            </Row>
+          </Well>
+        </Grid>
       );
     }
 
