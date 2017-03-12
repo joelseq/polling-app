@@ -458,10 +458,7 @@ class ViewPoll extends Component {
     }
 
     if( this.props.poll.isTimed ){
-
-         console.log("Not the default");
          if( this.props.poll.expiresAt.getTime() < (new Date()).getTime() ) {
-
             return (
               <div>
                 <h4 className="text-center">Sorry, this poll has been closed</h4>
