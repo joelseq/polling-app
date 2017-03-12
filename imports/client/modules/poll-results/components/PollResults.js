@@ -16,6 +16,8 @@ import {
   Checkbox,
   Button,
 } from 'react-bootstrap';
+import { withRouter, routerShape } from 'react-router';
+
 
 // Grabs chart from PollResults
 import PollChart from './PollChart';
@@ -26,8 +28,13 @@ import PollTable from './PollTable';
 // Grab collection for polls
 import Polls, { voteHelper } from '../../../../api/polls.js';
 
+// Grabs ErrorPage component
+import ErrorPage from '../../error-page/components/ErrorPage';
+
+
 // Prop Types for this Component
 const propTypes = {
+  router: PropTypes.object,
   // Poll object in DB from createContainer
   poll: PropTypes.shape({
     // Mongo ID for Poll
@@ -46,6 +53,19 @@ const propTypes = {
   }),
 };
 
+// Default Props if none are provided
+const defaultProps = {
+  poll: {
+    _id: '12345',
+    isWeighted: false,
+    name: 'Default Poll',
+    options: {
+      'Option 1': 0,
+      'Option 2': 0,
+    },
+  },
+};
+
 class PollResults extends Component {
   constructor(props) {
     super(props);
@@ -59,13 +79,38 @@ class PollResults extends Component {
 
     this.state = {
       showExtraInfo: false,
+      isLoading: true,
       handleText: '',
       commentText: '',
       commentTextError: '',
       handleTextError: '',
       chatBotWanted: false,
-      amountToLoad: 5,
+      amountToLoad: 5
     };
+
+    setTimeout(() => {
+      if(this.props.poll._id == defaultProps.poll._id) {
+        this.props.router.push(`/404Error`);
+      }
+    }, 5000);
+
+
+    if(this.props.poll._id != defaultProps.poll._id) {
+        this.state = {
+          isLoading: false,
+        };
+    }
+
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.poll._id != defaultProps.poll._id) {
+        this.setState({
+          isLoading: false,
+        });
+    } else {
+      nextProps.router.push(`/404Error`);
+    }
   }
 
   postComment(e) {
@@ -82,7 +127,7 @@ class PollResults extends Component {
       this.setState({
         handleTextError: "Please enter a handle",
       });
-    } 
+    }
     if ( commentText !== '' && handleText !== '' ) {
       // Create a new Poll object to be saved
       const updatedPoll = { ...this.props.poll };
@@ -155,6 +200,7 @@ class PollResults extends Component {
     }
   }
 
+
   renderComments() {
     const { comments } = this.props.poll;
 
@@ -162,7 +208,7 @@ class PollResults extends Component {
       return Object.keys(comments).reverse().map((comment, index) => {
         if ( index < this.state.amountToLoad ) {
           return (
-            <Panel 
+            <Panel
               key={index}
               header={comments[comment].handle + ':'}
               bsStyle="primary"
@@ -174,17 +220,17 @@ class PollResults extends Component {
       });
     }
   }
+
   // Layout of the page
   render() {
     console.warn = function () {}
     // if there is no information to display
-    if (!this.props.poll) {
-      // TODO: add a nice loading animation here instead of this
+    if (this.state.isLoading) {
+      // TODO: add a nice loading animation here instead of
       return <h4 className="text-center">Loading...</h4>;
     }
 
     return (
-
       <div>
         <div>
           <PollChart options={this.props.poll.options} />
@@ -236,7 +282,7 @@ class PollResults extends Component {
 									/>
                   <HelpBlock>{this.state.handleTextError}</HelpBlock>
 									<ControlLabel>Comment:</ControlLabel>
-									<FormControl 
+									<FormControl
 										onChange={this.handleCommentChange}
 										type="text"
 										value={this.state.commentText}
@@ -288,11 +334,13 @@ class PollResults extends Component {
 }
 
 PollResults.propTypes = propTypes;
+PollResults.defaultProps = defaultProps;
 
 export default createContainer(({ params }) => {
   Meteor.subscribe('polls'); // get the poll database
 
   return {
-    poll: Polls.findOne(params.pollId),
+    poll: Polls.findOne(params.pollId)
   };
-}, PollResults);
+
+}, withRouter(PollResults));
