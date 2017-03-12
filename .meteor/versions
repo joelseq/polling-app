@@ -36,6 +36,7 @@ fastclick@1.0.13
 fortawesome:fontawesome@4.7.0
 fourseven:scss@3.13.0
 geojson-utils@1.0.10
+grigio:babel@0.1.8
 hot-code-push@1.0.4
 html-tools@1.0.11
 htmljs@1.0.11
@@ -46,6 +47,7 @@ launch-screen@1.0.12
 livedata@1.0.18
 localstorage@1.0.12
 logging@1.1.17
+matb33:collection-hooks@0.7.15
 mdg:validation-error@0.2.0
 meteor@1.6.1
 meteor-base@1.0.4
@@ -62,6 +64,7 @@ mongo-id@1.0.6
 npm-mongo@2.2.16_1
 observe-sequence@1.0.15
 ordered-dict@1.0.9
+poetic:chatterbox@0.0.3
 practicalmeteor:chai@2.1.0_1
 practicalmeteor:loglevel@1.2.0_2
 practicalmeteor:mocha@2.4.5_6
