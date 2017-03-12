@@ -9,12 +9,15 @@ import {
   ControlLabel,
   HelpBlock,
   Col,
+  Modal,
 	Panel,
   FormGroup,
   FormControl,
   Checkbox,
   Button,
 } from 'react-bootstrap';
+import { withRouter, routerShape } from 'react-router';
+
 
 // Grabs chart from PollResults
 import PollChart from './PollChart';
@@ -25,8 +28,13 @@ import PollTable from './PollTable';
 // Grab collection for polls
 import Polls, { voteHelper } from '../../../../api/polls.js';
 
+// Grabs ErrorPage component
+import ErrorPage from '../../error-page/components/ErrorPage';
+
+
 // Prop Types for this Component
 const propTypes = {
+  router: PropTypes.object,
   // Poll object in DB from createContainer
   poll: PropTypes.shape({
     // Mongo ID for Poll
@@ -41,7 +49,21 @@ const propTypes = {
     // Vote object for poll
     votes: PropTypes.array,
     comments: PropTypes.array,
+    isClosed: PropTypes.bool,
   }),
+};
+
+// Default Props if none are provided
+const defaultProps = {
+  poll: {
+    _id: '12345',
+    isWeighted: false,
+    name: 'Default Poll',
+    options: {
+      'Option 1': 0,
+      'Option 2': 0,
+    },
+  },
 };
 
 class PollResults extends Component {
@@ -57,13 +79,38 @@ class PollResults extends Component {
 
     this.state = {
       showExtraInfo: false,
+      isLoading: true,
       handleText: '',
       commentText: '',
       commentTextError: '',
       handleTextError: '',
       chatBotWanted: false,
-      amountToLoad: 5,
+      amountToLoad: 5
     };
+
+    setTimeout(() => {
+      if(this.props.poll._id == defaultProps.poll._id) {
+        this.props.router.push(`/404Error`);
+      }
+    }, 5000);
+
+
+    if(this.props.poll._id != defaultProps.poll._id) {
+        this.state = {
+          isLoading: false,
+        };
+    }
+
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.poll._id != defaultProps.poll._id) {
+        this.setState({
+          isLoading: false,
+        });
+    } else {
+      nextProps.router.push(`/404Error`);
+    }
   }
 
   postComment(e) {
@@ -80,7 +127,7 @@ class PollResults extends Component {
       this.setState({
         handleTextError: "Please enter a handle",
       });
-    } 
+    }
     if ( commentText !== '' && handleText !== '' ) {
       // Create a new Poll object to be saved
       const updatedPoll = { ...this.props.poll };
@@ -153,6 +200,7 @@ class PollResults extends Component {
     }
   }
 
+
   renderComments() {
     const { comments } = this.props.poll;
 
@@ -160,7 +208,7 @@ class PollResults extends Component {
       return Object.keys(comments).reverse().map((comment, index) => {
         if ( index < this.state.amountToLoad ) {
           return (
-            <Panel 
+            <Panel
               key={index}
               header={comments[comment].handle + ':'}
               bsStyle="primary"
@@ -172,34 +220,23 @@ class PollResults extends Component {
       });
     }
   }
+
   // Layout of the page
   render() {
+    console.warn = function () {}
     // if there is no information to display
-    if (!this.props.poll) {
-      // TODO: add a nice loading animation here instead of this
+    if (this.state.isLoading) {
+      // TODO: add a nice loading animation here instead of
       return <h4 className="text-center">Loading...</h4>;
     }
 
     return (
-
       <div>
         <Col md={12} xs={12} sm={12}>
           <Well>
             <PollChart options={this.props.poll.options} />
           </Well>
         </Col>
-        {/* Only shown if button has been pressed */}
-        { this.state.showExtraInfo
-          ?
-            <div>
-              <PollTable
-                votes={this.props.poll.votes}
-                isWeighted={this.props.poll.isWeighted}
-                options={this.props.poll.options}
-              />
-            </div>
-          : null
-        }
         <Button
           bsStyle="success"
           disabled={this.state.showExtraInfo}
@@ -212,6 +249,36 @@ class PollResults extends Component {
           <Well>
             <Row>
               <Col md={10} mdOffset={1}>
+                {/* Only shown if button has been pressed */}
+                <Modal
+                  show={this.state.showExtraInfo}
+                >
+                  <Modal.Header>
+                    <Modal.Title>Poll Results!</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <PollTable
+                      votes={this.props.poll.votes}
+                      isWeighted={this.props.poll.isWeighted}
+                      options={this.props.poll.options}
+                    />
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button
+                      onClick={this.toggleExtraInfo}
+                    >
+                      Close
+                    </Button>
+                  </Modal.Footer>
+
+                </Modal>
+                <Button
+                  bsStyle="success"
+                  onClick={this.toggleExtraInfo}
+                  block
+                >
+                  View More
+                </Button>
                 <h2>Comments</h2>
                 <Col md={10} mdOffset={1}>
                 <Form horizontal onSubmit={this.postComment}>
@@ -226,7 +293,7 @@ class PollResults extends Component {
                     />
                     <HelpBlock>{this.state.handleTextError}</HelpBlock>
                     <ControlLabel>Comment:</ControlLabel>
-                    <FormControl 
+                    <FormControl
                       onChange={this.handleCommentChange}
                       type="text"
                       value={this.state.commentText}
@@ -259,17 +326,19 @@ class PollResults extends Component {
             <Row>
               <Col md={10} mdOffset={1}>
                 {this.renderComments()}
+                {this.props.poll.comments ? ( 
+                this.props.poll.comments.length > 5 ? (
                 <Button
                   bsStyle="success"
                   onClick={this.loadMore}
                   block
                 >
                   Load More Comments
-                </Button>
+                </Button> ) : '' ) : '' }
               </Col>
             </Row>
             <h3></h3>
-          </Well>
+         </Well>
 				</Grid>
       </div>
     );
@@ -277,11 +346,13 @@ class PollResults extends Component {
 }
 
 PollResults.propTypes = propTypes;
+PollResults.defaultProps = defaultProps;
 
 export default createContainer(({ params }) => {
   Meteor.subscribe('polls'); // get the poll database
 
   return {
-    poll: Polls.findOne(params.pollId),
+    poll: Polls.findOne(params.pollId)
   };
-}, PollResults);
+
+}, withRouter(PollResults));

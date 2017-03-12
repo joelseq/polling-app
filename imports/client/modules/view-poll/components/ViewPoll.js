@@ -17,7 +17,7 @@ import {
 } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import { withRouter } from 'react-router';
+import { withRouter, routerShape } from 'react-router';
 
 // Grab collection for polls
 import Polls from '../../../../api/polls.js';
@@ -78,6 +78,7 @@ class ViewPoll extends Component {
     this.renderPollOptionModal = this.renderPollOptionModal.bind(this);
     this.closeEditOptionsModal = this.closeEditOptionsModal.bind(this);
     this.updatePoll = this.updatePoll.bind(this);
+    this.routeToResults = this.routeToResults.bind(this);
 
     this.state = {
       handle: '',
@@ -92,7 +93,23 @@ class ViewPoll extends Component {
       optionName: '',
       optionError: '',
       showEditOptionModal: false,
+      isLoading: true
     };
+
+    setTimeout(() => {
+      if(this.props.poll._id == defaultProps.poll._id) {
+        this.props.router.push(`/404Error`);
+      }
+    }, 5000);
+
+
+    if(this.props.poll._id != defaultProps.poll._id) {
+        this.state = {
+          isLoading: false,
+        };
+    }
+
+
   }
 
   // Handler for selecting/unselecting options in the checkboxes
@@ -287,6 +304,7 @@ class ViewPoll extends Component {
       );
     }
   }
+
   checkHandle(e) {
     e.preventDefault();
     if (this.state.handle === '') {
@@ -326,7 +344,6 @@ class ViewPoll extends Component {
     }
   }
 
-
   closeEditOptionsModal() {
     this.setState({ showEditOptionModal: false });
     return null;
@@ -358,6 +375,16 @@ class ViewPoll extends Component {
     ));
   }
 
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.poll._id != defaultProps.poll._id) {
+        this.setState({
+          isLoading: false,
+        });
+    } else {
+      nextProps.router.push(`/404Error`);
+    }
+  }
+
   renderPassNeededDialog() {
     if (this.props.poll.isPrivate) {
       return (
@@ -375,6 +402,11 @@ class ViewPoll extends Component {
     }
     return null;
   }
+
+  routeToResults() {
+    this.props.router.push(`/polls/${this.props.poll._id}/results`);
+  }
+
   renderOptions() {
     const { options, isWeighted } = this.props.poll;
 
@@ -410,21 +442,37 @@ class ViewPoll extends Component {
 
   // Actual layout
   render() {
-    if (!this.props.poll) {
+    if (this.state.isLoading) {
       // TODO: add a nice loading animation here instead of this
       return <h4 className="text-center">Loading...</h4>;
     }
 
     if (this.props.poll.isClosed) {
-      return <h4 className="text-center">um fuck you...</h4>;
+      return (
+        <div>
+          <h4 className="text-center">Sorry, this poll has been closed</h4>
+          <Button
+            onClick={this.routeToResults}
+          >
+            View Results
+          </Button>
+        </div>
+      );
     }
 
-    if( this.props.poll.isTimed ){ 
-
-         console.log("Not the default");
+    if( this.props.poll.isTimed ){
          if( this.props.poll.expiresAt.getTime() < (new Date()).getTime() ) {
-      
-            return <h4 className="text-center">um fuck you...</h4>;
+            return (
+              <div>
+                <h4 className="text-center">Sorry, this poll has been closed</h4>
+                <Button
+                  onClick={this.routeToResults}
+                  bsStyle="success"
+                >
+                  View Results
+                </Button>
+              </div>
+            );
          }
     }
 
