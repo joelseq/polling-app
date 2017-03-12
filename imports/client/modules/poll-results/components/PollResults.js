@@ -49,6 +49,7 @@ class PollResults extends Component {
     super(props);
 
     this.toggleExtraInfo = this.toggleExtraInfo.bind(this);
+    this.toggleCheck = this.toggleCheck.bind(this);
     this.postComment = this.postComment.bind(this);
     this.handleCommentChange = this.handleCommentChange.bind(this);
     this.handleCommentNameChange = this.handleCommentNameChange.bind(this);
@@ -57,40 +58,59 @@ class PollResults extends Component {
       showExtraInfo: false,
       handleText: '',
       commentText: '',
+      commentTextError: '',
+      handleTextError: '',
+      chatBotWanted: false,
     };
   }
 
   postComment(e) {
     e.preventDefault();
-    const { handleText, commentText } = this.state;
+    const { handleText, commentText, chatBotWanted } = this.state;
 
-    // Create a new Poll object to be saved
-    const updatedPoll = { ...this.props.poll };
+    if ( commentText === '' ) {
+      this.setState({
+        commentTextError: "Please enter a comment",
+      });
 
-    if ( !updatedPoll.comments ) {
-      updatedPoll.comments = [];
     }
+    if ( handleText === '' ) {
+      this.setState({
+        handleTextError: "Please enter a handle",
+      });
+    } 
+    if ( commentText !== '' && handleText !== '' ) {
+      // Create a new Poll object to be saved
+      const updatedPoll = { ...this.props.poll };
 
-    updatedPoll.comments.push({ handle: handleText, text: commentText });
+      if ( !updatedPoll.comments ) {
+        updatedPoll.comments = [];
+      }
 
-    // Remove the _id key to pass validation
-    delete updatedPoll._id;
+      updatedPoll.comments.push({ handle: handleText, text: commentText });
 
-    Meteor.call('polls.comment',
-      this.props.poll._id,
-      updatedPoll,
-    );
+      // Remove the _id key to pass validation
+      delete updatedPoll._id;
 
-    this.setState({
-      commentText: '',
-      handleText: '',
-    });
+      Meteor.call('polls.comment',
+        this.props.poll._id,
+        updatedPoll,
+        commentText,
+        chatBotWanted,
+      );
+
+      this.setState({
+        commentText: '',
+        handleText: '',
+      });
+    }
   }
 
   handleCommentChange(e) {
     e.preventDefault();
     this.setState({
       commentText: e.target.value,
+      commentTextError: '',
     });
   }
 
@@ -98,9 +118,16 @@ class PollResults extends Component {
     e.preventDefault();
     this.setState({
       handleText: e.target.value,
+      handleTextError: '',
     });
   }
 
+  toggleCheck() {
+    // if true, switches to false
+    this.setState({
+      chatBotWanted: !this.state.chatBotWanted,
+    });
+  }
   // allows the user to display and show extra voting info
   toggleExtraInfo() {
     // if true, switches to false
@@ -122,7 +149,7 @@ class PollResults extends Component {
     const { comments } = this.props.poll;
 
     if ( comments ) {
-      return Object.keys(comments).reverse().map((comment, index) => (
+      return Object.keys(comments).map((comment, index) => (
 				<Panel key={index} header={comments[comment].handle + ':'} bsStyle="primary">
 					{comments[comment].text}
 				</Panel>
@@ -166,7 +193,13 @@ class PollResults extends Component {
 				<Grid>
 					<Row>
 						<Col md={10} mdOffset={1}>
-						<h2>Comments</h2>
+              <h2>Comments</h2>
+							{this.renderComments()}
+						</Col>
+					</Row>
+					<h3></h3>
+					<Row>
+						<Col md={10} mdOffset={1}>
 							<Col md={10} mdOffset={1}>
 							<Form horizontal onSubmit={this.postComment}>
 								<FormGroup
@@ -178,6 +211,7 @@ class PollResults extends Component {
 										value={this.state.handleText}
 										placeholder="Enter Name"
 									/>
+                  <HelpBlock>{this.state.handleTextError}</HelpBlock>
 									<ControlLabel>Comment:</ControlLabel>
 									<FormControl 
 										onChange={this.handleCommentChange}
@@ -186,22 +220,26 @@ class PollResults extends Component {
 										placeholder="Enter Comment"
 									/>
 									<FormControl.Feedback />
-									<HelpBlock>{this.state.commentError}</HelpBlock>
-									<Button
-										onClick={this.postComment}
-										bsStyle="success"
-										type="submit"
-									  block
-									>Post!</Button>
+									<HelpBlock>{this.state.commentTextError}</HelpBlock>
+                  <Col md={6}>
+                    <Checkbox
+                      onChange={this.toggleCheck}
+                      checked={this.state.chatBotWanted}
+                    >
+                      Get ChatBot Response
+                    </Checkbox>
+                  </Col>
+                  <Col md={6}>
+                    <Button
+                      onClick={this.postComment}
+                      bsStyle="success"
+                      type="submit"
+                      block
+                    >Post!</Button>
+                  </Col>
 								</FormGroup>
 							</Form>
 							</Col>
-						</Col>
-					</Row>
-					<h3></h3>
-					<Row>
-						<Col md={10} mdOffset={1}>
-							{this.renderComments()}
 						</Col>
 					</Row>
 				</Grid>

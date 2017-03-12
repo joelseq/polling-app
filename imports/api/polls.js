@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
 import { SimpleSchema } from 'meteor/aldeed:simple-schema';
+import { HTTP } from 'meteor/http'
 
 // Collection of all polls
 const Polls = new Mongo.Collection('polls');
@@ -136,20 +137,50 @@ Meteor.methods({
   },
 
   // Add comments to an existing poll in the database
-  'polls.comment': function votePoll(pollId, updatedPoll) {
+  'polls.comment': 
+	function votePoll(pollId, updatedPoll, commentText, chatBotWanted) {
     // Check if the vote object conforms with
     // the VoteSchema
     check(pollId, String );
+    check(commentText, String );
     check(updatedPoll, PollSchema);
+    check(chatBotWanted, Boolean);
 
     const { comments } = updatedPoll;
+		Polls.update(pollId, {
+			$set: {
+				comments,
+			},
+		});
+    
+		if ( chatBotWanted ) {
+			if ( Meteor.isServer ) {
+				HTTP.get("http://api.program-o.com/v2/chatbot/",
+					{params: {bot_id: 6, say: commentText.substring(0,200), format: 'json'}},
+					(err, res) => { 
+						if ( res.statusCode === 200 ) {
+							comments.push({ 
+								handle: "anon28439", 
+								text: (JSON.parse(res.content)).botsay,
+							});
+						}
+						Polls.update(pollId, {
+							$set: {
+								comments,
+							},
+						});
+					}
+				);
+			}
+		}
+
     // TODODOODODODODOO!!!!!
-    // Database call
+    /* Database call
     return Polls.update(pollId, {
       $set: {
         comments,
       },
-    });
+    }); */
 
   },
 
