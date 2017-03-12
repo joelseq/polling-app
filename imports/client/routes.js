@@ -19,5 +19,6 @@ export default (
       <Route path=":pollId/results" component={PollResults} />
       <Route path=":pollId/edit" component={EditPoll} />
     </Route>
+    <Route path="*" component={ErrorPage} />
   </Route>
 );

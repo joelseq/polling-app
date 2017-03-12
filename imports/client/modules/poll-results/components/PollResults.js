@@ -77,13 +77,13 @@ class PollResults extends Component {
 
     this.state = {
       showExtraInfo: false,
-      isLoading: true
+      isLoading: true,
       handleText: '',
       commentText: '',
       commentTextError: '',
       handleTextError: '',
       chatBotWanted: false,
-      amountToLoad: 5,
+      amountToLoad: 5
     };
 
     setTimeout(() => {

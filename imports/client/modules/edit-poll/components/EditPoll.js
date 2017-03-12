@@ -97,8 +97,8 @@ class EditPoll extends Component {
       validated: false,
       editPass: '',
       passValidError: '',
-      isLoading: true
-      loaded: false,
+      isLoading: true,
+      loaded: false
     };
 
 
@@ -414,11 +414,6 @@ class EditPoll extends Component {
 
   render() {
     if (this.state.isLoading) {
-      // TODO: add a nice loading animation here instead of this
-      return <h4 className="text-center">Loading...</h4>;
-    }
-
-    if (this.props.poll.isClosed == null) {
       // TODO: add a nice loading animation here instead of this
       return <h4 className="text-center">Loading...</h4>;
     }
