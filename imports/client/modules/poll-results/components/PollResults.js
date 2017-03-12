@@ -183,9 +183,11 @@ class PollResults extends Component {
     return (
 
       <div>
-        <div>
-          <PollChart options={this.props.poll.options} />
-        </div>
+        <Col md={12} xs={12} sm={12}>
+          <Well>
+            <PollChart options={this.props.poll.options} />
+          </Well>
+        </Col>
         {/* Only shown if button has been pressed */}
         { this.state.showExtraInfo
           ?
@@ -207,65 +209,67 @@ class PollResults extends Component {
           View More
         </Button>
 				<Grid>
-					<Row>
-						<Col md={10} mdOffset={1}>
-              <h2>Comments</h2>
-							<Col md={10} mdOffset={1}>
-							<Form horizontal onSubmit={this.postComment}>
-								<FormGroup
-								>
-									<ControlLabel>Name: </ControlLabel>
-									<FormControl
-										onChange={this.handleCommentNameChange}
-										type="text"
-										value={this.state.handleText}
-										placeholder="Enter Name"
-									/>
-                  <HelpBlock>{this.state.handleTextError}</HelpBlock>
-									<ControlLabel>Comment:</ControlLabel>
-									<FormControl 
-										onChange={this.handleCommentChange}
-										type="text"
-										value={this.state.commentText}
-										placeholder="Enter Comment"
-									/>
-									<FormControl.Feedback />
-									<HelpBlock>{this.state.commentTextError}</HelpBlock>
-                  <Col md={6}>
-                    <Checkbox
-                      onChange={this.toggleCheck}
-                      checked={this.state.chatBotWanted}
-                    >
-                      Get ChatBot Response
-                    </Checkbox>
-                  </Col>
-                  <Col md={6}>
-                    <Button
-                      onClick={this.postComment}
-                      bsStyle="success"
-                      type="submit"
-                      block
-                    >Post!</Button>
-                  </Col>
-								</FormGroup>
-							</Form>
-							</Col>
-						</Col>
-					</Row>
-					<h3></h3>
-					<Row>
-						<Col md={10} mdOffset={1}>
-							{this.renderComments()}
-              <Button
-                bsStyle="success"
-                onClick={this.loadMore}
-                block
-              >
-                Load More Comments
-              </Button>
-						</Col>
-					</Row>
-					<h3></h3>
+          <Well>
+            <Row>
+              <Col md={10} mdOffset={1}>
+                <h2>Comments</h2>
+                <Col md={10} mdOffset={1}>
+                <Form horizontal onSubmit={this.postComment}>
+                  <FormGroup
+                  >
+                    <ControlLabel>Name: </ControlLabel>
+                    <FormControl
+                      onChange={this.handleCommentNameChange}
+                      type="text"
+                      value={this.state.handleText}
+                      placeholder="Enter Name"
+                    />
+                    <HelpBlock>{this.state.handleTextError}</HelpBlock>
+                    <ControlLabel>Comment:</ControlLabel>
+                    <FormControl 
+                      onChange={this.handleCommentChange}
+                      type="text"
+                      value={this.state.commentText}
+                      placeholder="Enter Comment"
+                    />
+                    <FormControl.Feedback />
+                    <HelpBlock>{this.state.commentTextError}</HelpBlock>
+                    <Col md={6}>
+                      <Checkbox
+                        onChange={this.toggleCheck}
+                        checked={this.state.chatBotWanted}
+                      >
+                        Get ChatBot Response
+                      </Checkbox>
+                    </Col>
+                    <Col md={6}>
+                      <Button
+                        onClick={this.postComment}
+                        bsStyle="success"
+                        type="submit"
+                        block
+                      >Post!</Button>
+                    </Col>
+                  </FormGroup>
+                </Form>
+                </Col>
+              </Col>
+            </Row>
+            <h3></h3>
+            <Row>
+              <Col md={10} mdOffset={1}>
+                {this.renderComments()}
+                <Button
+                  bsStyle="success"
+                  onClick={this.loadMore}
+                  block
+                >
+                  Load More Comments
+                </Button>
+              </Col>
+            </Row>
+            <h3></h3>
+          </Well>
 				</Grid>
       </div>
     );

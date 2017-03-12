@@ -9,7 +9,7 @@ export default function Header() {
     <Navbar inverse collapseOnSelect>
       <Nav>
         <IndexLinkContainer to="/">
-          <NavItem id="sp__brand" eventKey={0}>SimPoll</NavItem>
+            <NavItem id="sp__brand" eventKey={0}>SimPoll</NavItem>
         </IndexLinkContainer>
         <Navbar.Toggle />
       </Nav>
