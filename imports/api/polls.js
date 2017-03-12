@@ -154,21 +154,49 @@ Meteor.methods({
 		});
     
 		if ( chatBotWanted ) {
+      comments.push({ 
+        handle: "anon28439", 
+        text: "Wait a second, let me think about that...",
+      });
+      Polls.update(pollId, {
+        $set: {
+          comments,
+        },
+      });
 			if ( Meteor.isServer ) {
 				HTTP.get("http://api.program-o.com/v2/chatbot/",
 					{params: {bot_id: 6, say: commentText.substring(0,200), format: 'json'}},
 					(err, res) => { 
-						if ( res.statusCode === 200 ) {
+            if ( err ) {
+              comments.pop();
 							comments.push({ 
 								handle: "anon28439", 
-								text: (JSON.parse(res.content)).botsay,
+								text: "Sorry, I can't talk right now, I'm too sleepy.",
 							});
-						}
-						Polls.update(pollId, {
-							$set: {
-								comments,
-							},
-						});
+              Polls.update(pollId, {
+                $set: {
+                  comments,
+                },
+              });
+            } else {
+              comments.pop();
+              if ( res.statusCode === 200 ) {
+                comments.push({ 
+                  handle: "anon28439", 
+                  text: (JSON.parse(res.content)).botsay,
+                });
+              } else {
+                comments.push({ 
+                  handle: "anon28439", 
+                  text: "Sorry, I can't talk right now, I'm too sleepy.",
+                });
+              }
+              Polls.update(pollId, {
+                $set: {
+                  comments,
+                },
+              });
+            }
 					}
 				);
 			}

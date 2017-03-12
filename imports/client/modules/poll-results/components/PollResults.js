@@ -51,6 +51,7 @@ class PollResults extends Component {
     this.toggleExtraInfo = this.toggleExtraInfo.bind(this);
     this.toggleCheck = this.toggleCheck.bind(this);
     this.postComment = this.postComment.bind(this);
+    this.loadMore = this.loadMore.bind(this);
     this.handleCommentChange = this.handleCommentChange.bind(this);
     this.handleCommentNameChange = this.handleCommentNameChange.bind(this);
 
@@ -61,6 +62,7 @@ class PollResults extends Component {
       commentTextError: '',
       handleTextError: '',
       chatBotWanted: false,
+      amountToLoad: 5,
     };
   }
 
@@ -106,6 +108,12 @@ class PollResults extends Component {
     }
   }
 
+  loadMore(e) {
+    this.setState({
+      amountToLoad: this.state.amountToLoad + 5,
+    });
+  }
+
   handleCommentChange(e) {
     e.preventDefault();
     this.setState({
@@ -149,11 +157,19 @@ class PollResults extends Component {
     const { comments } = this.props.poll;
 
     if ( comments ) {
-      return Object.keys(comments).map((comment, index) => (
-				<Panel key={index} header={comments[comment].handle + ':'} bsStyle="primary">
-					{comments[comment].text}
-				</Panel>
-      ));
+      return Object.keys(comments).reverse().map((comment, index) => {
+        if ( index < this.state.amountToLoad ) {
+          return (
+            <Panel 
+              key={index}
+              header={comments[comment].handle + ':'}
+              bsStyle="primary"
+            >
+              {comments[comment].text}
+            </Panel>
+          );
+        }
+      });
     }
   }
   // Layout of the page
@@ -194,12 +210,6 @@ class PollResults extends Component {
 					<Row>
 						<Col md={10} mdOffset={1}>
               <h2>Comments</h2>
-							{this.renderComments()}
-						</Col>
-					</Row>
-					<h3></h3>
-					<Row>
-						<Col md={10} mdOffset={1}>
 							<Col md={10} mdOffset={1}>
 							<Form horizontal onSubmit={this.postComment}>
 								<FormGroup
@@ -242,6 +252,20 @@ class PollResults extends Component {
 							</Col>
 						</Col>
 					</Row>
+					<h3></h3>
+					<Row>
+						<Col md={10} mdOffset={1}>
+							{this.renderComments()}
+              <Button
+                bsStyle="success"
+                onClick={this.loadMore}
+                block
+              >
+                Load More Comments
+              </Button>
+						</Col>
+					</Row>
+					<h3></h3>
 				</Grid>
       </div>
     );
