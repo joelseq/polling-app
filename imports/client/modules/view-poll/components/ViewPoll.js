@@ -77,6 +77,7 @@ class ViewPoll extends Component {
     this.renderPollOptionModal = this.renderPollOptionModal.bind(this);
     this.closeEditOptionsModal = this.closeEditOptionsModal.bind(this);
     this.updatePoll = this.updatePoll.bind(this);
+    this.routeToResults = this.routeToResults.bind(this);
 
     this.state = {
       handle: '',
@@ -401,6 +402,10 @@ class ViewPoll extends Component {
     return null;
   }
 
+  routeToResults() {
+    this.props.router.push(`/polls/${this.props.poll._id}/results`);
+  }
+
   renderOptions() {
     const { options, isWeighted } = this.props.poll;
 
@@ -440,15 +445,31 @@ class ViewPoll extends Component {
     }
 
     if (this.props.poll.isClosed) {
-      return <h4 className="text-center">um fuck you...</h4>;
+      return (
+        <div>
+          <h4 className="text-center">Sorry, this poll has been closed</h4>
+          <Button
+            onClick={this.routeToResults}
+          >
+            View Results
+          </Button>
+        </div>
+      );
     }
 
-    if( this.props.poll.isTimed ){ 
-
-         console.log("Not the default");
+    if( this.props.poll.isTimed ){
          if( this.props.poll.expiresAt.getTime() < (new Date()).getTime() ) {
-      
-            return <h4 className="text-center">um fuck you...</h4>;
+            return (
+              <div>
+                <h4 className="text-center">Sorry, this poll has been closed</h4>
+                <Button
+                  onClick={this.routeToResults}
+                  bsStyle="success"
+                >
+                  View Results
+                </Button>
+              </div>
+            );
          }
     }
 
