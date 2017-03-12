@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { withRouter, routerShape } from 'react-router';
+import Datetime from 'react-datetime';
 import {
   Grid,
   Button,
@@ -13,12 +14,15 @@ import {
   Col,
 } from 'react-bootstrap';
 
+var moment = require('moment');
+
 import '../../../main.js';
+import '../../../../ui/react-datetime.css'
 
 /**
  * CreatePoll - component that handles the creation of polls. There are
  * no props passed in to this component which is why propTypes and defaultProps
- * aren't specified.
+ * aren't specified. 
  */
 class CreatePoll extends Component {
   constructor(props) {
@@ -40,17 +44,21 @@ class CreatePoll extends Component {
     this.getPollNameValidationState =
       this.getPollNameValidationState.bind(this);
     this.removeOption = this.removeOption.bind(this);
+    this.handleDateChange = this.handleDateChange.bind(this);
     this.handleEditPassChange = this.handleEditPassChange.bind(this);
 
     // This is the same as doing getInitialState but the ES6 way
     this.state = {
+      // might wanna move this
       name: '',
       isWeighted: false,
       isPrivate: false,
+      isTimed: false,
       optionName: '',
       options: {},
       password: '',
       loading: false,
+      expiresAt: new Date(0, 0, 0, 0, 0, 0),
       voterEditable: false,
       pollNameError: '',
       optionError: '',
@@ -111,6 +119,14 @@ class CreatePoll extends Component {
     });
   }
 
+  // Handler for the show add exp date input
+  handleExpDateShow(isTimed) {
+    this.setState({
+      ...this.state,
+      isTimed,
+    });
+  }
+
   // Handler for the option name change input
   handleOptionNameChange(e) {
     this.setState({
@@ -143,7 +159,7 @@ class CreatePoll extends Component {
   handlePollCreate() {
     // Destructuring the state object
     const { name, isWeighted, options, isPrivate, 
-      password, editPass, voterEditable } =
+      password, voterEditable, editPass, isTimed, expiresAt } =
       this.state;
     if (name === '') {
       this.setState({ pollNameError: 'No poll name provided!' });
@@ -181,6 +197,8 @@ class CreatePoll extends Component {
         isPrivate,
         password,
         editPassword: editPass,
+        isTimed,
+        expiresAt,
         isVoterEditable: voterEditable,
       }, (err, result) => {
         if (err || !result) {
@@ -206,6 +224,30 @@ class CreatePoll extends Component {
         error: '',
       });
     }
+  }
+
+  //Function to blank out invalid dates (past days) for the user
+  //calender input
+  checkIfValid(currentDate, selectedDate) {
+    
+    //If the user has selected a day then check if their time is valid
+    //as well
+    if( selectedDate && !(selectedDate.isAfter(Datetime.moment()))) {
+      return currentDate.isAfter(Datetime.moment());
+    }
+   
+    //Otherwise just blank out any days before the current date
+    return currentDate.isAfter(Datetime.moment().subtract(1, 'day'));
+  }
+
+  handleDateChange(e) {
+    var expAt = e.toDate();
+
+    this.setState({
+      ...this.state,
+      expiresAt: expAt,
+    });
+    
   }
 
   // Function to remove an option from the options in state
@@ -275,76 +317,131 @@ class CreatePoll extends Component {
             />
             <FormControl.Feedback />
           </FormGroup>
-          <FormGroup controlId={'weighted'}>
-            <ControlLabel>Weighted?</ControlLabel>
-            <p className="CreatePoll__info">
-              Weighted: Votes for options can have weights ranging from 1 to 10 (both inclusive)
-            </p>
-            <p className="CreatePoll__info">
-              Unweighted: Votes for options are weighted equally
-            </p>
-            {/* These radio buttons are now 'controlled' as well
-              * Further reading: same link as above
-              */}
-            <Radio
-              onChange={() => this.handleWeightedChange(true)}
-              checked={this.state.isWeighted}
-            >
-              Yes
-            </Radio>
-            <Radio
-              onChange={() => this.handleWeightedChange(false)}
-              checked={!this.state.isWeighted}
-            >
-              No
-            </Radio>
-          </FormGroup>
-          <FormGroup controlId={'private'}>
-            <ControlLabel>Private?</ControlLabel>
-            <Radio
-              onChange={() => this.handlePrivateChange(true)}
-              checked={this.state.isPrivate}
-            >
-              Yes
-            </Radio>
-            <Radio
-              onChange={() => this.handlePrivateChange(false)}
-              checked={!this.state.isPrivate}
-            >
-              No
-            </Radio>
-          </FormGroup>
-          <FormGroup controlId={'voterEditable'}>
-            <ControlLabel>Allow Voters to Add and Remove Options?</ControlLabel>
-            <Radio
-              onChange={() => this.handleVoterEditChange(true)}
-              checked={this.state.voterEditable}
-            >
-              Yes
-            </Radio>
-            <Radio
-              onChange={() => this.handleVoterEditChange(false)}
-              checked={!this.state.voterEditable}
-            >
-              No
-            </Radio>
-          </FormGroup>
-          { this.state.isPrivate
-            ?
+          <Row>
+            <Col md={4}>
+            <FormGroup controlId={'weighted'}>
+              <ControlLabel>Weighted?</ControlLabel>
+              <p className="CreatePoll__info">
+                Weighted: Votes for options can have weights ranging from 1 to 10 (both inclusive)
+              </p>
+              <p className="CreatePoll__info">
+                Unweighted: Votes for options are weighted equally
+              </p>
+              {/* These radio buttons are now 'controlled' as well
+                * Further reading: same link as above
+                */}
+              <Radio
+                onChange={() => this.handleWeightedChange(true)}
+                checked={this.state.isWeighted}
+              >
+                Yes
+              </Radio>
+              <Radio
+                onChange={() => this.handleWeightedChange(false)}
+                checked={!this.state.isWeighted}
+              >
+                No
+              </Radio>
+            </FormGroup>
+            <FormGroup controlId={'private'}>
+              <ControlLabel>Private?</ControlLabel>
+              <Radio
+                onChange={() => this.handlePrivateChange(true)}
+                checked={this.state.isPrivate}
+              >
+                Yes
+              </Radio>
+              <Radio
+                onChange={() => this.handlePrivateChange(false)}
+                checked={!this.state.isPrivate}
+              >
+                No
+              </Radio>
+            </FormGroup>
+            <FormGroup controlId={'voterEditable'}>
+              <ControlLabel>Allow Voters to Add and Remove Options?</ControlLabel>
+              <Radio
+                onChange={() => this.handleVoterEditChange(true)}
+                checked={this.state.voterEditable}
+              >
+                Yes
+              </Radio>
+              <Radio
+                onChange={() => this.handleVoterEditChange(false)}
+                checked={!this.state.voterEditable}
+              >
+                No
+              </Radio>
+            </FormGroup>
+              { this.state.isPrivate
+              ?
               <FormGroup controlId={'password'}>
                 <ControlLabel>Password: </ControlLabel>
                 {/* This component is now 'controlled'. Further reading:
-                  * https://facebook.github.io/react/docs/forms.html
-                  */}
-                <FormControl
-                  onChange={this.handlePasswordChange}
-                  type="password"
-                  defaultValue={this.state.password}
-                  placeholder="Enter password for poll"
-                />
+                  * https://facebook.github.io/react/docs/forms.html */}
+                <Radio
+                  onChange={() => this.handleWeightedChange(true)}
+                  checked={this.state.isWeighted}
+                >
+                  Yes
+                </Radio>
+                <Radio
+                  onChange={() => this.handleWeightedChange(false)}
+                  checked={!this.state.isWeighted}
+                >
+                  No
+                </Radio>
               </FormGroup>
-            : null
-          }
+              : null
+              }
+            </Col>
+            <Col md={4}>
+              <FormGroup controlId={'private'}>
+                <ControlLabel>Private?</ControlLabel>
+                <Radio
+                  onChange={() => this.handlePrivateChange(true)}
+                  checked={this.state.isPrivate}
+                >
+                  Yes
+                </Radio>
+                <Radio
+                  onChange={() => this.handlePrivateChange(false)}
+                  checked={!this.state.isPrivate}
+                >
+                  No
+                </Radio>
+              </FormGroup>
+                { this.state.isPrivate
+                  ?
+                  <FormGroup controlId={'password'}>
+                    <ControlLabel>Password: </ControlLabel>
+                    {/* This component is now 'controlled'. Further reading:
+                      * https://facebook.github.io/react/docs/forms.html
+                      */}
+                    <FormControl
+                      onChange={this.handlePasswordChange}
+                      type="password"
+                      defaultValue={this.state.password}
+                      placeholder="Enter password for poll"
+                    />
+                  </FormGroup>
+                : null
+              }
+            </Col>
+            <Col md={4} className={"text-center container col-xs-4"}>
+              <Button 
+                className={"btn btn-primary center-block"}
+                bsStyle="success"
+                onClick={() => this.handleExpDateShow(!this.state.isTimed)}
+              > Add Expiration date </Button>
+              <br />
+              { this.state.isTimed
+                ?
+                <Datetime onChange={this.handleDateChange} input={false} isValidDate={this.checkIfValid}/>
+                : null
+              }
+            </Col>
+          </Row>
         </form>
         <Row>
           <Col md={8} xs={10} mdOffset={2} xsOffset={1}>

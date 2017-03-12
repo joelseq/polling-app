@@ -14,6 +14,9 @@ Meteor.startup(() => {
         votes: 1,
         isPrivate: 1,
         createdAt: 1,
+        isClosed: 1,
+        isTimed: 1,
+        expiresAt: 1,
       },
     });
   });

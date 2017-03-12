@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
+import Datetime from 'react-datetime';
 import {
   Well,
   FormGroup,
@@ -33,6 +34,12 @@ const propTypes = {
     // A hashmap of key = option and
     // value = amount of votes
     options: React.PropTypes.object,
+    // bool / whether poll has expiration
+    isTimed: React.PropTypes.boolean,
+    // date of expiry
+    expiresAt: React.PropTypes.object,
+    // if the poll is already closed or not
+    isClosed: React.PropTypes.bool,
   }),
 };
 
@@ -46,6 +53,8 @@ const defaultProps = {
       'Option 1': 0,
       'Option 2': 0,
     },
+    isTimed: true,
+    expiresAt: new Date(),
   },
 };
 
@@ -59,6 +68,7 @@ class EditPoll extends Component {
   constructor(props) {
     super(props);
 
+
     this.pollNamePrompt = this.pollNamePrompt.bind(this);
     this.closePollNamePrompt = this.closePollNamePrompt.bind(this);
     this.handlePollNameChange = this.handlePollNameChange.bind(this);
@@ -67,6 +77,7 @@ class EditPoll extends Component {
     this.removeOption = this.removeOption.bind(this);
     this.handleOptionNameChange = this.handleOptionNameChange.bind(this);
     this.handleOptionSubmit = this.handleOptionSubmit.bind(this);
+    this.handleDateChange = this.handleDateChange.bind(this);
     this.getPollNameValidationState =
       this.getPollNameValidationState.bind(this);
     this.handleEditPassChange = this.handleEditPassChange.bind(this);
@@ -77,21 +88,35 @@ class EditPoll extends Component {
       options: {},
       optionName: '',
       showPollNameModal: false,
+      showDatetime: false,
       error: '',
       pollNameError: '',
       optionError: '',
       validated: false,
       editPass: '',
       passValidError: '',
+      loaded: false,
     };
   }
 
+  /* Here is a method for opening a poll name prompt for changing the poll name,
+   * but it is unclear whether this is the best option for this functionality */
+  pollNamePrompt() {
+    this.setState({
+      pollName: this.props.poll.name,
+      options: this.props.poll.options,
+      showPollNameModal: true,
+      isTimed: this.props.poll.isTimed,
+      expiresAt: this.props.poll.expiresAt,
+      isClosed: this.props.poll.isClosed,
+    });
+  }
+  
   /* Validate the length of the poll name to make sure it is not empty */
   getPollNameValidationState() {
     const length = this.state.pollName.length;
     if (length > 0) return 'success';
     else if (length === 0) return 'error';
-
     return null;
   }
 
@@ -114,6 +139,38 @@ class EditPoll extends Component {
     });
   }
 
+  // Handler for the show add exp date input
+  handleExpDateShow(showDatetime) {
+    this.setState({
+      ...this.state,
+      showDatetime,
+    });
+  }
+
+  // Handler for the show add exp date input
+  handleEditDateButtonChange(isTimed) {
+    var date = new Date();
+
+    // add a day
+    date.setDate(date.getDate() + 1);
+
+    this.setState({
+      ...this.state,
+      showDatetime: false,
+      isTimed,
+      expiresAt: date,
+    });
+  }
+
+  handleDateChange(e) {
+    var expAt = e.toDate();
+
+    this.setState({
+      ...this.state,
+      expiresAt: expAt,
+    });
+  }
+  
   /* Handler for the edit pass change input */
   handleEditPassChange(e) {
     this.setState({
@@ -144,6 +201,20 @@ class EditPoll extends Component {
     }
   }
 
+  //Function to blank out invalid dates (past days) for the user
+  //calender input
+  checkIfValid(currentDate, selectedDate) {
+    
+    //If the user has selected a day then check if their time is valid
+    //as well
+    if( selectedDate && !(selectedDate.isAfter(Datetime.moment()))) {
+      return currentDate.isAfter(Datetime.moment());
+    }
+   
+    //Otherwise just blank out any days before the current date
+    return currentDate.isAfter(Datetime.moment().subtract(1, 'day'));
+  }
+  
   /* Submission check for the edit password on the poll to check whether the
    * person asking this question has permission to access the edit poll page
    */
@@ -174,7 +245,7 @@ class EditPoll extends Component {
    * needed */
   updatePoll(e) {
     e.preventDefault();
-    const { pollName, options } = this.state;
+    const { pollName, options, isTimed, expiresAt } = this.state;
 
     if (pollName === '') {
       this.setState({ pollNameError: 'No poll name provided!' });
@@ -196,6 +267,9 @@ class EditPoll extends Component {
 
     updatedPoll.name = pollName;
     updatedPoll.options = options;
+    updatedPoll.isTimed = isTimed;
+    updatedPoll.expiresAt = expiresAt;
+
 
     Meteor.call('polls.editPoll',
       this.props.poll._id,
@@ -235,15 +309,6 @@ class EditPoll extends Component {
     });
   }
 
-  /* Here is a method for opening a poll name prompt for changing the poll name,
-   * but it is unclear whether this is the best option for this functionality */
-  pollNamePrompt() {
-    this.setState({
-      pollName: this.props.poll.name,
-      options: this.props.poll.options,
-      showPollNameModal: true,
-    });
-  }
 
   /* Here is a method for closing a poll name prompt for changing the poll name,
    * but it is unclear whether this is the best option for this functionality */
@@ -325,6 +390,11 @@ class EditPoll extends Component {
       // TODO: add a nice loading animation here instead of this
       return <h4 className="text-center">Loading...</h4>;
     }
+    
+    if (this.props.poll.isClosed == null) {
+      // TODO: add a nice loading animation here instead of this
+      return <h4 className="text-center">Loading...</h4>;
+    }
 
     // Ensure the poll's details are populated in the state
     return (
@@ -332,7 +402,7 @@ class EditPoll extends Component {
         <PageHeader className="text-center">
           Success! Here is your unique poll URL:
         </PageHeader>
-        <UrlBox />
+        <UrlBox isClosed={this.props.poll.isClosed}/>
         <Well>
           <Button
             bsStyle="primary"
@@ -409,12 +479,38 @@ class EditPoll extends Component {
             </Row>
           </Modal.Body>
           <Modal.Footer>
+            <Row>
+              <Button 
+                bsStyle="success"
+                onClick={() => this.handleEditDateButtonChange(!this.state.isTimed)}
+              > { this.state.isTimed ? "Remove Expiration Date" : 
+                                    "Add Expiration Date" }</Button>
+              { this.state.isTimed
+                ?
+                <Button 
+                  bsStyle="success"
+                  onClick={() => this.handleExpDateShow(!this.state.showDatetime)}
+                > { !this.state.showDatetime ? "Edit Expiration Date" : 
+                                    "Hide Calendar" }</Button>
+                : null
+              }
             <Button
               onClick={this.updatePoll}
               bsStyle="success"
               type="submit"
             >Submit</Button>
             <Button onClick={this.closePollNamePrompt}>Close</Button>
+            </Row>
+            <Row>
+              { this.state.showDatetime
+                ?
+                <Datetime onChange={this.handleDateChange} 
+                            input={false} 
+                            defaultValue={this.state.expiresAt}
+                            isValidDate={this.checkIfValid}/>
+                : null
+              }
+            </Row>
           </Modal.Footer>
 
         </Modal>

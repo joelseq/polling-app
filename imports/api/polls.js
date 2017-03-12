@@ -27,6 +27,9 @@ const PollSchema = new SimpleSchema({
   password: { type: String, optional: true },
   editPassword: { type: String, optional: true },
   createdAt: { type: Date, defaultValue: new Date() },
+  isClosed: { type: Boolean, defaultValue: false },
+  isTimed: {type: Boolean, defaultValue: false },
+  expiresAt: { type: Date, defaultValue: new Date()},
 });
 
 // Automatically validate the schema for us
@@ -67,6 +70,20 @@ Meteor.methods({
     return Polls.insert(poll);
   },
 
+  'polls.changePollStatus': function closePoll(pollId, pollStatus) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(pollId, String);
+    check(pollStatus, Boolean);
+
+    // Database call
+    return Polls.update(pollId, {
+      $set: {
+        isClosed: pollStatus,
+      },
+    });
+  },    
+
   // Suggest new options & change options for poll
   'polls.suggestOptions': function changeName(pollId, updatedPoll) {
     // Check if the vote object conforms with
@@ -103,7 +120,7 @@ Meteor.methods({
     check(pollId, String);
     check(inputPass, String);
 
-    const { name, options } = updatedPoll;
+    const { name, options, isTimed, expiresAt } = updatedPoll;
 
     // check to make sure that we are not updating the poll without proper
     // credentials
@@ -123,6 +140,8 @@ Meteor.methods({
       $set: {
         name,
         options,
+        isTimed,
+        expiresAt,
       },
     });
   },
