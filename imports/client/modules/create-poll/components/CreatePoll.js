@@ -159,7 +159,7 @@ class CreatePoll extends Component {
   handlePollCreate() {
     // Destructuring the state object
     const { name, isWeighted, options, isPrivate, 
-      password, editPass, voterEditable, editPass, isTimed, expiresAt } =
+      password, voterEditable, editPass, isTimed, expiresAt } =
       this.state;
     if (name === '') {
       this.setState({ pollNameError: 'No poll name provided!' });
@@ -392,6 +392,8 @@ class CreatePoll extends Component {
                   No
                 </Radio>
               </FormGroup>
+              : null
+              }
             </Col>
             <Col md={4}>
               <FormGroup controlId={'private'}>
