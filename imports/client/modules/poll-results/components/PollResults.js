@@ -213,20 +213,14 @@ class PollResults extends Component {
 
     return (
       <div>
-        <Col md={12} xs={12} sm={12}>
-          <Well>
-            <PollChart options={this.props.poll.options} />
-          </Well>
-        </Col>
-        <Button
-          bsStyle="success"
-          disabled={this.state.showExtraInfo}
-          onClick={this.toggleExtraInfo}
-
-        >
-          View More
-        </Button>
 				<Grid>
+          <Row>
+            <Col md={12} xs={12} sm={12}>
+              <Well>
+                <PollChart options={this.props.poll.options} />
+              </Well>
+            </Col>
+          </Row>
           <Well>
             <Row>
               <Col md={10} mdOffset={1}>
