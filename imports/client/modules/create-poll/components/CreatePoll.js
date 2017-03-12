@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { withRouter, routerShape } from 'react-router';
 import Datetime from 'react-datetime';
+import PopOver from './PopOver.js'
 import {
   Grid,
   Button,
@@ -339,33 +340,42 @@ class CreatePoll extends Component {
 							<h3></h3>
               <Row>
                 <Col md={12}>
-                <FormGroup controlId={'weighted'}>
-                  <ControlLabel>Weighted?</ControlLabel>
-                  <p className="CreatePoll__info">
-                    Weighted: Votes for options can have weights ranging <br />
-                    from 1 to 10 (both inclusive)
-                  </p>
-                  <p className="CreatePoll__info">
-                    Unweighted: Votes for options are weighted equally
-                  </p>
-                  {/* These radio buttons are now 'controlled' as well
-                    * Further reading: same link as above
-                    */}
-                  <Radio
-                    onChange={() => this.handleWeightedChange(true)}
-                    checked={this.state.isWeighted}
-										inline
-                  >
-                    Yes
-                  </Radio>
-                  <Radio
-                    onChange={() => this.handleWeightedChange(false)}
-                    checked={!this.state.isWeighted}
-										inline
-                  >
-                    No
-                  </Radio>
-                </FormGroup>
+                <Row>
+                  <FormGroup controlId={'weighted'}>
+                    <Col md={6}>
+                      <ControlLabel>Weighted</ControlLabel>
+                      <PopOver />
+                    </Col>
+                      {/*<p className="CreatePoll__info">
+                        Weighted: Votes for options can have weights ranging <br />
+                        from 1 to 10 (both inclusive)
+                      </p>
+                      <p className="CreatePoll__info">
+                        Unweighted: Votes for options are weighted equally
+                      </p>
+                      {/* These radio buttons are now 'controlled' as well
+                        * Further reading: same link as above
+                        */}
+                    <Col md={3}>
+                      <Radio
+                        onChange={() => this.handleWeightedChange(true)}
+                        checked={this.state.isWeighted}
+                        inline
+                      >
+                        Yes
+                      </Radio>
+                    </Col>
+                    <Col md={3}>
+                      <Radio
+                        onChange={() => this.handleWeightedChange(false)}
+                        checked={!this.state.isWeighted}
+                        inline
+                      >
+                        No
+                      </Radio>
+                    </Col>
+                  </FormGroup>
+                </Row>
                 </Col>
               </Row>
 							<h3></h3>
