@@ -70,6 +70,7 @@ class ViewPoll extends Component {
     this.toggleCheckbox = this.toggleCheckbox.bind(this);
     this.removeOption = this.removeOption.bind(this);
     this.handleHandleChange = this.handleHandleChange.bind(this);
+    this.handleHandlePassChange = this.handleHandlePassChange.bind(this);
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
     this.handleVoteSubmit = this.handleVoteSubmit.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
@@ -94,6 +95,8 @@ class ViewPoll extends Component {
       optionName: '',
       optionError: '',
       showEditOptionModal: false,
+      passwordForHandle: '',
+      handlePassError: '',
     };
   }
 
@@ -216,6 +219,13 @@ class ViewPoll extends Component {
     });
   }
 
+  handleHandlePassChange(e) {
+    this.setState({
+      passwordForHandle: e.target.value,
+      handlePassError: '',
+    });
+  }
+
   // Handler for the password input
   handlePasswordChange(e) {
     this.setState({
@@ -228,7 +238,7 @@ class ViewPoll extends Component {
   handleVoteSubmit(e) {
     e.preventDefault();
 
-    const { handle, password, selectedOptions } = this.state;
+    const { handle, passwordForHandle, selectedOptions } = this.state;
 
     this.checkHandle(e);
 
@@ -255,7 +265,7 @@ class ViewPoll extends Component {
       // The vote object for this user
       const vote = {
         handle,
-        password,
+        password: this.state.passwordForHandle,
         selectedOptions,
       };
 
@@ -268,7 +278,7 @@ class ViewPoll extends Component {
         (err) => {
           if (err) {
             this.setState({
-              error: 'This handle has already voted.',
+              error: err.reason,
             });
 
             // If there was an error, remove the last element to avoid bugs
@@ -299,7 +309,9 @@ class ViewPoll extends Component {
         'polls.checkPassAndHandle',
         {
           pollId: this.props.poll._id,
+          handle: this.state.handle,
           pass: this.state.password,
+          passwordForHandle: this.state.passwordForHandle,
         },
         (err) => {
           if (err) {
@@ -307,6 +319,8 @@ class ViewPoll extends Component {
               this.setState({ handleError: err.reason });
             } else if (err.error === 501) {
               this.setState({ passValidError: err.reason });
+            } else if (err.error === 502) {
+              this.setState({ handlePassError: err.reason });
             }
             this.setState({ showHandleModal: true });
           } else {
@@ -515,6 +529,16 @@ class ViewPoll extends Component {
                   placeholder="Please enter a handle"
                 />
                 <HelpBlock>{this.state.handleError}</HelpBlock>
+              </FormGroup>
+              <FormGroup controlId={'handleHandlePassword'}>
+                <ControlLabel>Password for this handle: </ControlLabel>
+                <FormControl
+                  onChange={this.handleHandlePassChange}
+                  type="text"
+                  value={this.state.passwordForHandle}
+                  placeholder="Please enter a handle password (optional)."
+                />
+                <HelpBlock>{this.state.handlePassError}</HelpBlock>
               </FormGroup>
               {this.renderPassNeededDialog()}
             </form>
