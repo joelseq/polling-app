@@ -6,17 +6,20 @@ import '../../../style.scss';
 
 export default function Header() {
   return (
-    <Navbar inverse>
+    <Navbar inverse collapseOnSelect>
       <Nav>
         <IndexLinkContainer to="/">
-          <NavItem className="sp__brand" eventKey={0}>SimPoll</NavItem>
+            <NavItem id="sp__brand" eventKey={0}>SimPoll</NavItem>
         </IndexLinkContainer>
       </Nav>
-      <Nav pullRight>
-        <LinkContainer to="create">
-          <NavItem eventKey={1}>Create Poll</NavItem>
-        </LinkContainer>
-      </Nav>
+      <Navbar.Toggle />
+      <Navbar.Collapse>
+        <Nav pullRight>
+          <LinkContainer to="create">
+            <NavItem id="sp__create-button" eventKey={1}>CREATE POLL</NavItem>
+          </LinkContainer>
+        </Nav>
+      </Navbar.Collapse>
     </Navbar>
   );
 }

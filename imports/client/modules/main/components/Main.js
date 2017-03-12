@@ -1,21 +1,29 @@
 import React from 'react';
 import { LinkContainer } from 'react-router-bootstrap';
-import { Grid, Button } from 'react-bootstrap';
+import { Grid, Button, Row, Col } from 'react-bootstrap';
 
 export default function () {
   return (
-    <Grid>
-      <div>
-        <h1>Welcome to People Order Our Products Polling App!</h1>
-        <p>
-          Our app helps groups to come to a consensus
-          on those tough choices in life like Panda or
-          Lemongrass
-        </p>
-        <LinkContainer to="/create">
-          <Button bsStyle="primary">Create Poll</Button>
-        </LinkContainer>
-      </div>
-    </Grid>
+    <div className="Main">
+      <Grid>
+        <Row>
+          <Col md={8} mdOffset={2}>
+            <h1 className="Main__landing-text">
+              (finally) decide on where to eat with your squad
+            </h1>
+            <p className="Main__landing-subtext">
+              and so much more.
+            </p>
+            <Row>
+              <Col xs={6} xsOffset={3}>
+                <LinkContainer to="/create">
+                  <Button block className="Main__landing-button" bsStyle="primary">CREATE POLL</Button>
+                </LinkContainer>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      </Grid>
+    </div>
   );
 }

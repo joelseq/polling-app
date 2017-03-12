@@ -5,6 +5,7 @@ import {
   Grid,
   Row,
   Well,
+  PageHeader,
   HelpBlock,
   Col,
   FormGroup,
@@ -16,8 +17,9 @@ import {
 } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import { withRouter } from 'react-router';
+import { withRouter, routerShape } from 'react-router';
 
+import Loading from '../../core/components/Loading';
 // Grab collection for polls
 import Polls from '../../../../api/polls.js';
 
@@ -77,6 +79,7 @@ class ViewPoll extends Component {
     this.renderPollOptionModal = this.renderPollOptionModal.bind(this);
     this.closeEditOptionsModal = this.closeEditOptionsModal.bind(this);
     this.updatePoll = this.updatePoll.bind(this);
+    this.routeToResults = this.routeToResults.bind(this);
 
     this.state = {
       handle: '',
@@ -286,6 +289,7 @@ class ViewPoll extends Component {
       );
     }
   }
+
   checkHandle(e) {
     e.preventDefault();
     if (this.state.handle === '') {
@@ -325,7 +329,6 @@ class ViewPoll extends Component {
     }
   }
 
-
   closeEditOptionsModal() {
     this.setState({ showEditOptionModal: false });
     return null;
@@ -364,7 +367,7 @@ class ViewPoll extends Component {
           <ControlLabel>Password: </ControlLabel>
           <FormControl
             onChange={this.handlePasswordChange}
-            type="text"
+						type="password"
             value={this.state.password}
             placeholder="Please enter the password"
           />
@@ -374,71 +377,101 @@ class ViewPoll extends Component {
     }
     return null;
   }
+
+  routeToResults() {
+    this.props.router.push(`/polls/${this.props.poll._id}/results`);
+  }
+
   renderOptions() {
     const { options, isWeighted } = this.props.poll;
 
     if (isWeighted) {
       return Object.keys(options).map(option => (
-        <Col key={option} md={7} xs={8} className="margin-bottom">
+        <Col key={option} md={12} xs={12} className="margin-bottom">
           <p>{option}</p>
-          <SliderWithTooltip
-            onChange={val => this.handleSliderChange(val, option)}
-            value={this.state.selectedOptions[option]}
-            min={0}
-            max={10}
-          />
+          <Well>
+            <SliderWithTooltip
+              onChange={val => this.handleSliderChange(val, option)}
+              value={this.state.selectedOptions[option]}
+              min={0}
+              max={10}
+            />
+          </Well>
         </Col>
       ));
     }
 
     return Object.keys(options).map(option => (
-      <Col key={option} md={7} xs={8}>
-        <FormGroup>
-          <Checkbox
-            onChange={() => this.toggleCheckbox(option)}
-            checked={this.state.selectedOptions[option] === 1}
-          >
-            {option}
-          </Checkbox>
+        <FormGroup key={option}>
+          <Well>
+            <Checkbox
+              onChange={() => this.toggleCheckbox(option)}
+              checked={this.state.selectedOptions[option] === 1}
+            >
+              {option}
+            </Checkbox>
+          </Well>
         </FormGroup>
-      </Col>
     ));
   }
 
   // Actual layout
   render() {
-    if (!this.props.poll) {
+    if (this.props.loading) {
       // TODO: add a nice loading animation here instead of this
-      return <h4 className="text-center">Loading...</h4>;
+      return <Loading />;
+    }
+
+    if (this.props.poll._id === defaultProps.poll._id) {
+      this.props.router.push('/404Error');
     }
 
     if (this.props.poll.isClosed) {
-      return <h4 className="text-center">um fuck you...</h4>;
+      return (
+        <div>
+          <h4 className="text-center">Sorry, this poll has been closed</h4>
+          <Button
+            onClick={this.routeToResults}
+          >
+            View Results
+          </Button>
+        </div>
+      );
     }
 
-    if( this.props.poll.isTimed ){ 
-
-         console.log("Not the default");
-         if( this.props.poll.expiresAt.getTime() < (new Date()).getTime() ) {
-      
-            return <h4 className="text-center">um fuck you...</h4>;
-         }
+    if (this.props.poll.isTimed) {
+      if (this.props.poll.expiresAt.getTime() < (new Date()).getTime()) {
+        return (
+          <div>
+            <h4 className="text-center">Sorry, this poll has been closed</h4>
+            <Button
+              onClick={this.routeToResults}
+              bsStyle="success"
+            >
+              View Results
+            </Button>
+          </div>
+        );
+      }
     }
 
     return (
       <Grid>
         <Row>
           <form onSubmit={this.handleVoteSubmit}>
-            <h2 className="margin-left">{this.props.poll.name}</h2>
+            <Col md={12} xs={12}>
+            <PageHeader>{this.props.poll.name}</PageHeader>
             {this.renderOptions()}
             {this.state.error && <div className="text-danger">{this.state.error}</div>}
             <Button
               bsStyle="success"
               type="submit"
               disabled={this.state.submitted}
+              block
             >
               Vote
             </Button>
+            </Col>
           </form>
         </Row>
         { this.props.poll.isVoterEditable ? (
@@ -541,9 +574,11 @@ ViewPoll.defaultProps = defaultProps;
 // The real MVP; creates the ViewPoll container using the routing params
 // (the unique url)
 export default createContainer(({ params }) => {
-  Meteor.subscribe('polls'); // get the poll database
+  const poll = Meteor.subscribe('polls'); // get the poll database
+  const loading = !poll.ready();
 
   return {
     poll: Polls.findOne(params.pollId),
+    loading,
   };
 }, withRouter(ViewPoll));
