@@ -472,14 +472,17 @@ class ViewPoll extends Component {
             <PageHeader>{this.props.poll.name}</PageHeader>
             {this.renderOptions()}
             {this.state.error && <div className="text-danger">{this.state.error}</div>}
-            <Button
-              bsStyle="success"
-              type="submit"
-              disabled={this.state.submitted}
-              block
-            >
+            <Well>
+              <Button
+                bsStyle="success"
+                bsSize="large"
+                type="submit"
+                disabled={this.state.submitted}
+                block
+              >
               Vote
-            </Button>
+              </Button>
+            </Well>
             </Col>
           </form>
         </Row>
