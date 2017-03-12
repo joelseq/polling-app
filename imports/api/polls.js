@@ -139,6 +139,7 @@ Meteor.methods({
   'polls.comment': function votePoll(pollId, updatedPoll) {
     // Check if the vote object conforms with
     // the VoteSchema
+    check(pollId, String );
     check(updatedPoll, PollSchema);
 
     const { comments } = updatedPoll;

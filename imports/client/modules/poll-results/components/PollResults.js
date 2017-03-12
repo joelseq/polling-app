@@ -4,7 +4,12 @@ import { createContainer } from 'meteor/react-meteor-data';
 import {
   Grid,
   Row,
+	Form,
+	Well,
+  ControlLabel,
+  HelpBlock,
   Col,
+	Panel,
   FormGroup,
   FormControl,
   Checkbox,
@@ -35,6 +40,7 @@ const propTypes = {
     options: PropTypes.object,
     // Vote object for poll
     votes: PropTypes.array,
+    comments: PropTypes.array,
   }),
 };
 
@@ -44,6 +50,8 @@ class PollResults extends Component {
 
     this.toggleExtraInfo = this.toggleExtraInfo.bind(this);
     this.postComment = this.postComment.bind(this);
+    this.handleCommentChange = this.handleCommentChange.bind(this);
+    this.handleCommentNameChange = this.handleCommentNameChange.bind(this);
 
     this.state = {
       showExtraInfo: false,
@@ -58,15 +66,25 @@ class PollResults extends Component {
 
     // Create a new Poll object to be saved
     const updatedPoll = { ...this.props.poll };
+
+    if ( !updatedPoll.comments ) {
+      updatedPoll.comments = [];
+    }
+
     updatedPoll.comments.push({ handle: handleText, text: commentText });
 
     // Remove the _id key to pass validation
     delete updatedPoll._id;
 
     Meteor.call('polls.comment',
-      updatedPoll,
       this.props.poll._id,
+      updatedPoll,
     );
+
+    this.setState({
+      commentText: '',
+      handleText: '',
+    });
   }
 
   handleCommentChange(e) {
@@ -103,12 +121,13 @@ class PollResults extends Component {
   renderComments() {
     const { comments } = this.props.poll;
 
-    return Object.keys(comments).map(comment => (
-      <Col key={comment} md={12} xs={12}>
-        <h1>{comment.handle}</h1>
-        <h2>{comment.text}</h2>
-      </Col>
-    ));
+    if ( comments ) {
+      return Object.keys(comments).reverse().map((comment, index) => (
+				<Panel key={index} header={comments[comment].handle + ':'} bsStyle="primary">
+					{comments[comment].text}
+				</Panel>
+      ));
+    }
   }
   // Layout of the page
   render() {
@@ -144,27 +163,48 @@ class PollResults extends Component {
         >
           View More
         </Button>
-        {this.renderComments()}
-        <form onSubmit={this.postComment}>
-          <FormGroup
-          >
-            <ControlLabel>Post Comment: </ControlLabel>
-            <FormControl
-              onChange={this.handleCommentNameChange}
-              type="text"
-              value={this.state.handleText}
-              placeholder="Enter Name"
-            />
-            <FormControl
-              onChange={this.handleCommentChange}
-              type="text"
-              value={this.state.commentText}
-              placeholder="Enter Comment"
-            />
-            <FormControl.Feedback />
-            <HelpBlock>{this.state.commentError}</HelpBlock>
-          </FormGroup>
-        </form>
+				<Grid>
+					<Row>
+						<Col md={10} mdOffset={1}>
+						<h2>Comments</h2>
+							<Col md={10} mdOffset={1}>
+							<Form horizontal onSubmit={this.postComment}>
+								<FormGroup
+								>
+									<ControlLabel>Name: </ControlLabel>
+									<FormControl
+										onChange={this.handleCommentNameChange}
+										type="text"
+										value={this.state.handleText}
+										placeholder="Enter Name"
+									/>
+									<ControlLabel>Comment:</ControlLabel>
+									<FormControl 
+										onChange={this.handleCommentChange}
+										type="text"
+										value={this.state.commentText}
+										placeholder="Enter Comment"
+									/>
+									<FormControl.Feedback />
+									<HelpBlock>{this.state.commentError}</HelpBlock>
+									<Button
+										onClick={this.postComment}
+										bsStyle="success"
+										type="submit"
+									  block
+									>Post!</Button>
+								</FormGroup>
+							</Form>
+							</Col>
+						</Col>
+					</Row>
+					<h3></h3>
+					<Row>
+						<Col md={10} mdOffset={1}>
+							{this.renderComments()}
+						</Col>
+					</Row>
+				</Grid>
       </div>
     );
   }
