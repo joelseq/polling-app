@@ -18,6 +18,7 @@ import {
 
 var moment = require('moment');
 
+import ReactUIDropdown from './ReactUIDropdown/components/ReactUIDropdown.js';
 import '../../../main.js';
 import '../../../../ui/react-datetime.css'
 
@@ -51,6 +52,7 @@ class CreatePoll extends Component {
     this.renderMovieOptions = this.renderMovieOptions.bind(this);
     this.renderMoviePopover = this.renderMoviePopover.bind(this);
     this.onSuccessMovieList = this.onSuccessMovieList.bind(this);
+		this.handleDropdownChange = this.handleDropdownChange.bind(this);
 
     // This is the same as doing getInitialState but the ES6 way
     this.state = {
@@ -71,7 +73,8 @@ class CreatePoll extends Component {
       error: '',
       moviePoll: true,
 			movieURLs: [],
-    };
+      movieData: [{id: 11, title: "Star Wars", image: "https://image.tmdb.org/t/p/w500//tvSlBzAdRE29bZe5yYWrJ2ds137.jpg"}, {id: 13475, title: "Star Trek", image: "https://image.tmdb.org/t/p/w500//xPihqTMhCh6b8DHYzE61jrIiNMS.jpg"}, {id: 188927, title: "Star Trek Beyond", image: "https://image.tmdb.org/t/p/w500//mLrQMqyZgLeP8FrT5LCobKAiqmK.jpg"}, {id: 54138, title: "Star Trek Into Darkness", image: "https://image.tmdb.org/t/p/w500//41mhrXASAW3sdn7LBWF49uCX0xi.jpg"}, {id: 140607, title: "Star Wars: The Force Awakens", image: "https://image.tmdb.org/t/p/w500//weUSwMdQIa3NaXVzwUoIIcAi85d.jpg"}],
+    }
   }
 
   getPollNameValidationState() {
@@ -163,13 +166,51 @@ class CreatePoll extends Component {
     });
   }
 
-  onSuccessMovieList(list){
-    this.renderMoviePopover(list);
+  handleMovieNameChange(e) {
 
-    //Get the list of movies
+    //If the user is creating a movie poll 
+    //treat each input as a movie
+    if(this.state.moviePoll){
+
+      //If there is no target value then exit
+      if( e == "" ) {
+        //Also clear any rendered objects
+        this.renderMovieOptions([]);
+        this.setState({
+            movieURLs: [],
+        });
+        return;
+      }
+
+      //Call the api lookup method to return an array of movies
+      //which is rendered using the passed in functions
+      //Otherwise log the value (error handling) TODO
+      Meteor.call('polls.getMovies', e, (val) => {this.onSuccessMovieList(val)},
+                  (val) => {console.log("Network Error be patient")});
+    }
+
     this.setState({
-      movieURLs: list,
+      optionName: e,
     });
+  }
+
+  onSuccessMovieList(list) {
+
+    var data = [];
+
+
+		for (i=0; i<list.length; i++) {
+      var movie = list[i];
+			data.push({
+				id: movie["id"],
+				title: movie["original_title"],
+        image:"https://image.tmdb.org/t/p/w500/" + movie["poster_path"],
+			});
+		}
+
+		this.setState({
+			movieData: data,
+		});
 
   }
 
@@ -289,6 +330,29 @@ class CreatePoll extends Component {
     
   }
 
+	handleDropdownChange(selectedItems){
+    //Access the option array and add the movie name to that
+    //array 
+    //NOTE this is trash repeatative code but idk a better
+    //way 
+    const { options } = this.state;
+    const newOptions = { ...options };
+
+    
+    newOptions[movieName] = 0;
+    
+    //Update the state to reflect the new option added
+    this.setState({
+      options: newOptions,
+      optionName: "",
+      movieURLs: [],
+    });
+
+    //Stop rendering movie posters
+    console.log("dropdown change");
+		console.log(selectedItems);
+	};
+
   // Function to remove an option from the options in state
   removeOption(option) {
     // This filters out the selected option to remove from the options in the
@@ -356,9 +420,17 @@ class CreatePoll extends Component {
   }
 
   renderMoviePopover(list){
+
+    if(list.length == 0){
+      console.log("empty list");
+      return (
+        <Popover className="hidden"></Popover>
+      );
+    }
+
     /* popover-trigger-click-root-close popover-positioned-top */
     return(
-      <Popover id="moviePopover" placement='top' max-width="800px" width="auto" title="Movies">
+      <Popover id="moviePopoverID" container={document.input} className="moviePopover" placement='top' title="Movies">
             {this.renderMovieOptions(list)}
       </Popover>
     );
@@ -541,14 +613,24 @@ class CreatePoll extends Component {
             <form onSubmit={this.handleOptionSubmit}>
 							{/*TODO: this is fucked. make it a separate thing?? I concur*/}
               <div className="CreatePoll__add-option">
-                <OverlayTrigger trigger="click" placement="top" overlay={this.renderMoviePopover(this.state.movieURLs)}>
+								{this.state.moviePoll
+								?
+                <div>
+                  <ReactUIDropdown
+                    label=""
+                    initialItems={this.state.movieData}
+                    onChange={this.handleDropdownChange}
+                    getSearch={(val) => this.handleMovieNameChange(val)}/>
+                </div>
+								:
                 <FormControl
+                  id="input"
                   onChange={this.handleOptionNameChange}
                   value={this.state.optionName}
                   type="text"
                   placeholder="Enter an option"
                 />
-                </OverlayTrigger>
+								}
                 <Button
                   className="CreatePoll__add-button"
                   bsStyle="success"
