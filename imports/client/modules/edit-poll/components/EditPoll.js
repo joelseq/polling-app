@@ -16,6 +16,7 @@ import {
   Button,
 } from 'react-bootstrap';
 import UrlBox from './UrlBox.js';
+import { withRouter, routerShape } from 'react-router';
 
 import '../../../main.js';
 
@@ -25,6 +26,7 @@ import Polls from '../../../../api/polls.js';
 const propTypes = {
   // Poll object in DB from createContainer
   poll: React.PropTypes.shape({
+    router: React.PropTypes.object,
     // Mongo ID for Poll
     _id: React.PropTypes.string,
     /* Whether the poll is weighted
@@ -79,7 +81,7 @@ class EditPoll extends Component {
     this.handleOptionSubmit = this.handleOptionSubmit.bind(this);
     this.handleDateChange = this.handleDateChange.bind(this);
     this.getPollNameValidationState =
-      this.getPollNameValidationState.bind(this);
+    this.getPollNameValidationState.bind(this);
     this.handleEditPassChange = this.handleEditPassChange.bind(this);
     this.checkEditPass = this.checkEditPass.bind(this);
 
@@ -95,8 +97,23 @@ class EditPoll extends Component {
       validated: false,
       editPass: '',
       passValidError: '',
-      loaded: false,
+      isLoading: true,
+      loaded: false
     };
+
+
+    setTimeout(() => {
+      if(this.props.poll._id == defaultProps.poll._id) {
+        this.props.router.push(`/404Error`);
+      }
+    }, 5000);
+
+
+    if(this.props.poll._id != defaultProps.poll._id) {
+        this.state = {
+          isLoading: false,
+        };
+    }
   }
 
   /* Here is a method for opening a poll name prompt for changing the poll name,
@@ -111,7 +128,7 @@ class EditPoll extends Component {
       isClosed: this.props.poll.isClosed,
     });
   }
-  
+
   /* Validate the length of the poll name to make sure it is not empty */
   getPollNameValidationState() {
     const length = this.state.pollName.length;
@@ -170,7 +187,7 @@ class EditPoll extends Component {
       expiresAt: expAt,
     });
   }
-  
+
   /* Handler for the edit pass change input */
   handleEditPassChange(e) {
     this.setState({
@@ -204,17 +221,17 @@ class EditPoll extends Component {
   //Function to blank out invalid dates (past days) for the user
   //calender input
   checkIfValid(currentDate, selectedDate) {
-    
+
     //If the user has selected a day then check if their time is valid
     //as well
     if( selectedDate && !(selectedDate.isAfter(Datetime.moment()))) {
       return currentDate.isAfter(Datetime.moment());
     }
-   
+
     //Otherwise just blank out any days before the current date
     return currentDate.isAfter(Datetime.moment().subtract(1, 'day'));
   }
-  
+
   /* Submission check for the edit password on the poll to check whether the
    * person asking this question has permission to access the edit poll page
    */
@@ -288,6 +305,16 @@ class EditPoll extends Component {
       });
   }
 
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.poll._id != defaultProps.poll._id) {
+        this.setState({
+          isLoading: false,
+        });
+    } else {
+      nextProps.router.push(`/404Error`);
+    }
+  }
+
   /* Function to remove an option from the options in state */
   removeOption(option) {
     /* From StackOverflow:
@@ -322,7 +349,7 @@ class EditPoll extends Component {
    */
   renderOptions() {
     return Object.keys(this.state.options).map(option => (
-      <Col key={option} className="CreatePoll__option" md={4} sm={6} xs={12}>
+      <Col key={option} className="CreatePoll__option" md={6} sm={6} xs={12}>
         <button
           onClick={() => this.removeOption(option)}
           className="CreatePoll__option-close-button"
@@ -363,9 +390,9 @@ class EditPoll extends Component {
                 access this poll's edit options: </ControlLabel>
                 <FormControl
                   onChange={this.handleEditPassChange}
-                  type="text"
+                  type="password"
                   value={this.state.editPass}
-                  placeholder="Please enter a handle"
+                  placeholder="Please enter the editing password."
                 />
                 <HelpBlock>{this.state.passValidError}</HelpBlock>
               </FormGroup>
@@ -386,12 +413,7 @@ class EditPoll extends Component {
   }
 
   render() {
-    if (!this.props.poll) {
-      // TODO: add a nice loading animation here instead of this
-      return <h4 className="text-center">Loading...</h4>;
-    }
-    
-    if (this.props.poll.isClosed == null) {
+    if (this.state.isLoading) {
       // TODO: add a nice loading animation here instead of this
       return <h4 className="text-center">Loading...</h4>;
     }
@@ -480,17 +502,17 @@ class EditPoll extends Component {
           </Modal.Body>
           <Modal.Footer>
             <Row>
-              <Button 
+              <Button
                 bsStyle="success"
                 onClick={() => this.handleEditDateButtonChange(!this.state.isTimed)}
-              > { this.state.isTimed ? "Remove Expiration Date" : 
+              > { this.state.isTimed ? "Remove Expiration Date" :
                                     "Add Expiration Date" }</Button>
               { this.state.isTimed
                 ?
-                <Button 
+                <Button
                   bsStyle="success"
                   onClick={() => this.handleExpDateShow(!this.state.showDatetime)}
-                > { !this.state.showDatetime ? "Edit Expiration Date" : 
+                > { !this.state.showDatetime ? "Edit Expiration Date" :
                                     "Hide Calendar" }</Button>
                 : null
               }
@@ -504,8 +526,8 @@ class EditPoll extends Component {
             <Row>
               { this.state.showDatetime
                 ?
-                <Datetime onChange={this.handleDateChange} 
-                            input={false} 
+                <Datetime onChange={this.handleDateChange}
+                            input={false}
                             defaultValue={this.state.expiresAt}
                             isValidDate={this.checkIfValid}/>
                 : null
@@ -532,4 +554,4 @@ export default createContainer(({ params }) => {
   return {
     poll: grabbedPoll,
   };
-}, EditPoll);
+}, withRouter(EditPoll));
