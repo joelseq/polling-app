@@ -11,8 +11,8 @@ export default function Header() {
         <IndexLinkContainer to="/">
             <NavItem id="sp__brand" eventKey={0}>SimPoll</NavItem>
         </IndexLinkContainer>
-        <Navbar.Toggle />
       </Nav>
+      <Navbar.Toggle />
       <Navbar.Collapse>
         <Nav pullRight>
           <LinkContainer to="create">
