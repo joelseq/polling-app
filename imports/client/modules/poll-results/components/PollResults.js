@@ -9,12 +9,15 @@ import {
   ControlLabel,
   HelpBlock,
   Col,
+  Modal,
 	Panel,
   FormGroup,
   FormControl,
   Checkbox,
   Button,
 } from 'react-bootstrap';
+import { withRouter, routerShape } from 'react-router';
+
 
 // Grabs chart from PollResults
 import PollChart from './PollChart';
@@ -22,11 +25,18 @@ import PollChart from './PollChart';
 // Grabs table from PollTable
 import PollTable from './PollTable';
 
+import Loading from '../../core/components/Loading';
+
 // Grab collection for polls
 import Polls, { voteHelper } from '../../../../api/polls.js';
 
+// Grabs ErrorPage component
+import ErrorPage from '../../error-page/components/ErrorPage';
+
+
 // Prop Types for this Component
 const propTypes = {
+  router: PropTypes.object,
   // Poll object in DB from createContainer
   poll: PropTypes.shape({
     // Mongo ID for Poll
@@ -41,7 +51,21 @@ const propTypes = {
     // Vote object for poll
     votes: PropTypes.array,
     comments: PropTypes.array,
+    isClosed: PropTypes.bool,
   }),
+};
+
+// Default Props if none are provided
+const defaultProps = {
+  poll: {
+    _id: '12345',
+    isWeighted: false,
+    name: 'Default Poll',
+    options: {
+      'Option 1': 0,
+      'Option 2': 0,
+    },
+  },
 };
 
 class PollResults extends Component {
@@ -57,14 +81,15 @@ class PollResults extends Component {
 
     this.state = {
       showExtraInfo: false,
+      isLoading: true,
       handleText: '',
       commentText: '',
       commentTextError: '',
       handleTextError: '',
       chatBotWanted: false,
-      amountToLoad: 5,
+      amountToLoad: 5
     };
-  }
+	}
 
   postComment(e) {
     e.preventDefault();
@@ -80,7 +105,7 @@ class PollResults extends Component {
       this.setState({
         handleTextError: "Please enter a handle",
       });
-    } 
+    }
     if ( commentText !== '' && handleText !== '' ) {
       // Create a new Poll object to be saved
       const updatedPoll = { ...this.props.poll };
@@ -153,6 +178,7 @@ class PollResults extends Component {
     }
   }
 
+
   renderComments() {
     const { comments } = this.props.poll;
 
@@ -160,7 +186,7 @@ class PollResults extends Component {
       return Object.keys(comments).reverse().map((comment, index) => {
         if ( index < this.state.amountToLoad ) {
           return (
-            <Panel 
+            <Panel
               key={index}
               header={comments[comment].handle + ':'}
               bsStyle="primary"
@@ -172,100 +198,123 @@ class PollResults extends Component {
       });
     }
   }
+
   // Layout of the page
   render() {
+    console.warn = function () {}
     // if there is no information to display
-    if (!this.props.poll) {
-      // TODO: add a nice loading animation here instead of this
-      return <h4 className="text-center">Loading...</h4>;
+		
+		if (this.props.loading) {
+      return <Loading />;
+    }
+
+    if (this.props.poll._id === defaultProps.poll._id) {
+      this.props.router.push('/404Error');
     }
 
     return (
-
       <div>
-        <div>
-          <PollChart options={this.props.poll.options} />
-        </div>
-        {/* Only shown if button has been pressed */}
-        { this.state.showExtraInfo
-          ?
-            <div>
-              <PollTable
-                votes={this.props.poll.votes}
-                isWeighted={this.props.poll.isWeighted}
-                options={this.props.poll.options}
-              />
-            </div>
-          : null
-        }
-        <Button
-          bsStyle="success"
-          disabled={this.state.showExtraInfo}
-          onClick={this.toggleExtraInfo}
-
-        >
-          View More
-        </Button>
 				<Grid>
-					<Row>
-						<Col md={10} mdOffset={1}>
-              <h2>Comments</h2>
-							<Col md={10} mdOffset={1}>
-							<Form horizontal onSubmit={this.postComment}>
-								<FormGroup
-								>
-									<ControlLabel>Name: </ControlLabel>
-									<FormControl
-										onChange={this.handleCommentNameChange}
-										type="text"
-										value={this.state.handleText}
-										placeholder="Enter Name"
-									/>
-                  <HelpBlock>{this.state.handleTextError}</HelpBlock>
-									<ControlLabel>Comment:</ControlLabel>
-									<FormControl 
-										onChange={this.handleCommentChange}
-										type="text"
-										value={this.state.commentText}
-										placeholder="Enter Comment"
-									/>
-									<FormControl.Feedback />
-									<HelpBlock>{this.state.commentTextError}</HelpBlock>
-                  <Col md={6}>
-                    <Checkbox
-                      onChange={this.toggleCheck}
-                      checked={this.state.chatBotWanted}
-                    >
-                      Get ChatBot Response
-                    </Checkbox>
-                  </Col>
-                  <Col md={6}>
+          <Row>
+            <Col md={12} xs={12} sm={12}>
+              <Well>
+                <PollChart options={this.props.poll.options} />
+              </Well>
+            </Col>
+          </Row>
+          <Well>
+            <Row>
+              <Col md={10} mdOffset={1}>
+                {/* Only shown if button has been pressed */}
+                <Modal
+                  show={this.state.showExtraInfo}
+                >
+                  <Modal.Header>
+                    <Modal.Title>Poll Results!</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <PollTable
+                      votes={this.props.poll.votes}
+                      isWeighted={this.props.poll.isWeighted}
+                      options={this.props.poll.options}
+                    />
+                  </Modal.Body>
+                  <Modal.Footer>
                     <Button
-                      onClick={this.postComment}
-                      bsStyle="success"
-                      type="submit"
-                      block
-                    >Post!</Button>
-                  </Col>
-								</FormGroup>
-							</Form>
-							</Col>
-						</Col>
-					</Row>
-					<h3></h3>
-					<Row>
-						<Col md={10} mdOffset={1}>
-							{this.renderComments()}
-              <Button
-                bsStyle="success"
-                onClick={this.loadMore}
-                block
-              >
-                Load More Comments
-              </Button>
-						</Col>
-					</Row>
-					<h3></h3>
+                      onClick={this.toggleExtraInfo}
+                    >
+                      Close
+                    </Button>
+                  </Modal.Footer>
+
+                </Modal>
+                <Button
+                  bsStyle="success"
+                  onClick={this.toggleExtraInfo}
+                  block
+                >
+                  View More
+                </Button>
+                <h2>Comments</h2>
+                <Col md={10} mdOffset={1}>
+                <Form horizontal onSubmit={this.postComment}>
+                  <FormGroup
+                  >
+                    <ControlLabel>Name: </ControlLabel>
+                    <FormControl
+                      onChange={this.handleCommentNameChange}
+                      type="text"
+                      value={this.state.handleText}
+                      placeholder="Enter Name"
+                    />
+                    <HelpBlock>{this.state.handleTextError}</HelpBlock>
+                    <ControlLabel>Comment:</ControlLabel>
+                    <FormControl
+                      onChange={this.handleCommentChange}
+                      type="text"
+                      value={this.state.commentText}
+                      placeholder="Enter Comment"
+                    />
+                    <FormControl.Feedback />
+                    <HelpBlock>{this.state.commentTextError}</HelpBlock>
+                    <Col md={6}>
+                      <Checkbox
+                        onChange={this.toggleCheck}
+                        checked={this.state.chatBotWanted}
+                      >
+                        Get ChatBot Response
+                      </Checkbox>
+                    </Col>
+                    <Col md={6}>
+                      <Button
+                        onClick={this.postComment}
+                        bsStyle="success"
+                        type="submit"
+                        block
+                      >Post!</Button>
+                    </Col>
+                  </FormGroup>
+                </Form>
+                </Col>
+              </Col>
+            </Row>
+            <h3></h3>
+            <Row>
+              <Col md={10} mdOffset={1}>
+                {this.renderComments()}
+                {this.props.poll.comments ? ( 
+                this.props.poll.comments.length > 5 ? (
+                <Button
+                  bsStyle="success"
+                  onClick={this.loadMore}
+                  block
+                >
+                  Load More Comments
+                </Button> ) : '' ) : '' }
+              </Col>
+            </Row>
+            <h3></h3>
+         </Well>
 				</Grid>
       </div>
     );
@@ -273,11 +322,15 @@ class PollResults extends Component {
 }
 
 PollResults.propTypes = propTypes;
+PollResults.defaultProps = defaultProps;
 
 export default createContainer(({ params }) => {
-  Meteor.subscribe('polls'); // get the poll database
+  const poll = Meteor.subscribe('polls'); // get the poll database
+  const loading = !poll.ready();
 
   return {
     poll: Polls.findOne(params.pollId),
+		loading,
   };
-}, PollResults);
+
+}, withRouter(PollResults));

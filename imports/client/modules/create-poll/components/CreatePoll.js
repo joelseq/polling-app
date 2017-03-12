@@ -10,6 +10,7 @@ import {
   FormControl,
   Radio,
   HelpBlock,
+  Well,
   Row,
   Col,
 } from 'react-bootstrap';
@@ -62,6 +63,7 @@ class CreatePoll extends Component {
       voterEditable: false,
       pollNameError: '',
       optionError: '',
+      passwordError: '',
       editPass: '',
       error: '',
     };
@@ -69,8 +71,15 @@ class CreatePoll extends Component {
 
   getPollNameValidationState() {
     const length = this.state.name.length;
-    if (length > 0) return 'success';
-    else if (length === 0) return 'error';
+		
+    if (length > 0) {
+      return 'success';
+    } else if (length === 0) {
+      if ( this.state.pollNameError === '' ) {
+        return null;
+      }
+      return 'error';
+    }
 
     return null;
   }
@@ -95,6 +104,7 @@ class CreatePoll extends Component {
   handlePasswordChange(e) {
     this.setState({
       password: e.target.value,
+      passwordError: '',
     });
   }
 
@@ -131,6 +141,7 @@ class CreatePoll extends Component {
   handleOptionNameChange(e) {
     this.setState({
       optionName: e.target.value,
+      optionError: '',
     });
   }
 
@@ -140,9 +151,13 @@ class CreatePoll extends Component {
 
     const { optionName, options } = this.state;
 
+    if (optionName in options) {
+      this.setState({ optionError: 'Please submit a non-duplicate option!' });
+      return;
+    }
+
     // Make sure the input isn't empty and the option hasn't already been added
-    // TODO: Show a warning when the user is trying to add the same option twice
-    if (optionName.length > 0 && !(optionName in options)) {
+    if (optionName.length > 0 ) {
       const newOptions = { ...options };
 
       newOptions[optionName] = 0;
@@ -153,6 +168,7 @@ class CreatePoll extends Component {
         optionError: '',
       });
     }
+
   }
 
   // Handler for creating a poll
@@ -187,7 +203,7 @@ class CreatePoll extends Component {
       });
     } else if (isPrivate && !password) {
       this.setState({
-        error: 'Please enter a password if the poll is private.',
+        passwordError: 'Please enter a password if the poll is private.',
       });
     } else {
       Meteor.call('polls.insert', {
@@ -267,7 +283,7 @@ class CreatePoll extends Component {
   // Helper function to render all the options
   renderOptions() {
     return Object.keys(this.state.options).map(option => (
-      <Col key={option} className="CreatePoll__option" md={4} sm={6} xs={12}>
+      <Col key={option} className="CreatePoll__option">
         <button
           onClick={() => this.removeOption(option)}
           className="CreatePoll__option-close-button"
@@ -287,214 +303,210 @@ class CreatePoll extends Component {
     return (
       <Grid>
         <h1 className="text-center">Create a Poll</h1>
-        <form onSubmit={(e) => { e.preventDefault(); }}>
-          <FormGroup
-            controlId={'question'}
-            validationState={this.getPollNameValidationState()}
-          >
-            <ControlLabel>Question: </ControlLabel>
-            {/* This component is now 'controlled'. Further reading:
-              * https://facebook.github.io/react/docs/forms.html
-              */}
-            <FormControl
-              onChange={this.handleQuestionChange}
-              type="text"
-              value={this.state.question}
-              placeholder="Enter question for poll"
-            />
-            <FormControl.Feedback />
-          </FormGroup>
-          <FormGroup
-            controlId={'editPass'}
-          >
-            <HelpBlock>{this.state.pollNameError}</HelpBlock>
-            <ControlLabel>Administration Password: </ControlLabel>
-            <FormControl
-              onChange={this.handleEditPassChange}
-              type="text"
-              value={this.state.editPass}
-              placeholder="Enter password for the poll's edit page (optional)"
-            />
-            <FormControl.Feedback />
-          </FormGroup>
+        <Well>
           <Row>
-            <Col md={4}>
-            <FormGroup controlId={'weighted'}>
-              <ControlLabel>Weighted?</ControlLabel>
-              <p className="CreatePoll__info">
-                Weighted: Votes for options can have weights ranging from 1 to 10 (both inclusive)
-              </p>
-              <p className="CreatePoll__info">
-                Unweighted: Votes for options are weighted equally
-              </p>
-              {/* These radio buttons are now 'controlled' as well
-                * Further reading: same link as above
-                */}
-              <Radio
-                onChange={() => this.handleWeightedChange(true)}
-                checked={this.state.isWeighted}
+          <Col md={6}>
+            <form onSubmit={(e) => { e.preventDefault(); }}>
+              <FormGroup
+                controlId={'question'}
+                validationState={this.getPollNameValidationState()}
               >
-                Yes
-              </Radio>
-              <Radio
-                onChange={() => this.handleWeightedChange(false)}
-                checked={!this.state.isWeighted}
-              >
-                No
-              </Radio>
-            </FormGroup>
-            <FormGroup controlId={'private'}>
-              <ControlLabel>Private?</ControlLabel>
-              <Radio
-                onChange={() => this.handlePrivateChange(true)}
-                checked={this.state.isPrivate}
-              >
-                Yes
-              </Radio>
-              <Radio
-                onChange={() => this.handlePrivateChange(false)}
-                checked={!this.state.isPrivate}
-              >
-                No
-              </Radio>
-            </FormGroup>
-            <FormGroup controlId={'voterEditable'}>
-              <ControlLabel>Allow Voters to Add and Remove Options?</ControlLabel>
-              <Radio
-                onChange={() => this.handleVoterEditChange(true)}
-                checked={this.state.voterEditable}
-              >
-                Yes
-              </Radio>
-              <Radio
-                onChange={() => this.handleVoterEditChange(false)}
-                checked={!this.state.voterEditable}
-              >
-                No
-              </Radio>
-            </FormGroup>
-              { this.state.isPrivate
-              ?
-              <FormGroup controlId={'password'}>
-                <ControlLabel>Password: </ControlLabel>
+                <ControlLabel>Question: </ControlLabel>
                 {/* This component is now 'controlled'. Further reading:
-                  * https://facebook.github.io/react/docs/forms.html */}
-                <Radio
-                  onChange={() => this.handleWeightedChange(true)}
-                  checked={this.state.isWeighted}
-                >
-                  Yes
-                </Radio>
-                <Radio
-                  onChange={() => this.handleWeightedChange(false)}
-                  checked={!this.state.isWeighted}
-                >
-                  No
-                </Radio>
-              </FormGroup>
-              : null
-              }
-            </Col>
-            <Col md={4}>
-              <FormGroup controlId={'private'}>
-                <ControlLabel>Private?</ControlLabel>
-                <Radio
-                  onChange={() => this.handlePrivateChange(true)}
-                  checked={this.state.isPrivate}
-                >
-                  Yes
-                </Radio>
-                <Radio
-                  onChange={() => this.handlePrivateChange(false)}
-                  checked={!this.state.isPrivate}
-                >
-                  No
-                </Radio>
-              </FormGroup>
-                { this.state.isPrivate
-                  ?
-                  <FormGroup controlId={'password'}>
-                    <ControlLabel>Password: </ControlLabel>
-                    {/* This component is now 'controlled'. Further reading:
-                      * https://facebook.github.io/react/docs/forms.html
-                      */}
-                    <FormControl
-                      onChange={this.handlePasswordChange}
-                      type="password"
-                      defaultValue={this.state.password}
-                      placeholder="Enter password for poll"
-                    />
-                  </FormGroup>
-                : null
-              }
-            </Col>
-            <Col md={4} className={"text-center container col-xs-4"}>
-              <Button 
-                className={"btn btn-primary center-block"}
-                bsStyle="success"
-                onClick={() => this.handleExpDateShow(!this.state.isTimed)}
-              > Add Expiration date </Button>
-              <br />
-              { this.state.isTimed
-                ?
-                <Datetime onChange={this.handleDateChange} input={false} isValidDate={this.checkIfValid}/>
-                : null
-              }
-            </Col>
-          </Row>
-        </form>
-        <Row>
-          <Col md={8} xs={10} mdOffset={2} xsOffset={1}>
-            <h3>Options:</h3>
-            {/* After some consideration I have decided to split up creating the poll into 2 forms.
-            The reasons are:
-            1) If everything is inside the parent form then if someone hits enter during any
-               stage of the process of creating a poll, it will submit and create the incomplete
-               poll.
-            2) Splitting up adding options into its own form allows for people to submit and add
-               options by hitting enter now which is good for UX. */}
-            <form onSubmit={this.handleOptionSubmit}>
-              <div className="CreatePoll__add-option">
+                  * https://facebook.github.io/react/docs/forms.html
+                  */}
                 <FormControl
-                  onChange={this.handleOptionNameChange}
-                  value={this.state.optionName}
+                  onChange={this.handleQuestionChange}
                   type="text"
-                  placeholder="Enter an option"
+                  value={this.state.question}
+                  placeholder="Enter question for poll"
                 />
-                <Button
-                  className="CreatePoll__add-button"
+                <FormControl.Feedback />
+                <HelpBlock>{this.state.pollNameError}</HelpBlock>
+              </FormGroup>
+              <FormGroup
+                controlId={'editPass'}
+              >
+                <ControlLabel>Administration Password: </ControlLabel>
+                <FormControl
+                  onChange={this.handleEditPassChange}
+                  type="password"
+                  value={this.state.editPass}
+                  placeholder="Enter password for the poll's edit page (optional)"
+                />
+                <FormControl.Feedback />
+              </FormGroup>
+							<h3></h3>
+              <Row>
+                <Col md={12}>
+                <FormGroup controlId={'weighted'}>
+                  <ControlLabel>Weighted?</ControlLabel>
+                  <p className="CreatePoll__info">
+                    Weighted: Votes for options can have weights ranging <br />
+                    from 1 to 10 (both inclusive)
+                  </p>
+                  <p className="CreatePoll__info">
+                    Unweighted: Votes for options are weighted equally
+                  </p>
+                  {/* These radio buttons are now 'controlled' as well
+                    * Further reading: same link as above
+                    */}
+                  <Radio
+                    onChange={() => this.handleWeightedChange(true)}
+                    checked={this.state.isWeighted}
+										inline
+                  >
+                    Yes
+                  </Radio>
+                  <Radio
+                    onChange={() => this.handleWeightedChange(false)}
+                    checked={!this.state.isWeighted}
+										inline
+                  >
+                    No
+                  </Radio>
+                </FormGroup>
+                </Col>
+              </Row>
+							<h3></h3>
+              <Row>
+                <FormGroup controlId={'voterEditable'}>
+									<Col md={6}>
+										<ControlLabel>Allow Voters to Add and Remove Options?</ControlLabel>
+									</Col>
+									<Col md={3}>
+										<Radio
+											onChange={() => this.handleVoterEditChange(true)}
+											checked={this.state.voterEditable}
+										>
+											Yes
+										</Radio>
+									</Col>
+									<Col md={3}>
+										<Radio
+											onChange={() => this.handleVoterEditChange(false)}
+											checked={!this.state.voterEditable}
+										>
+											No
+										</Radio>
+									</Col>
+                </FormGroup>
+              </Row>
+							<h3></h3>
+              <Row>
+                <FormGroup controlId={'private'}>
+									<Col md={6}>
+										<ControlLabel>Private?</ControlLabel>
+									</Col>
+									<Col md={3}>
+									<Radio
+										onChange={() => this.handlePrivateChange(true)}
+										checked={this.state.isPrivate}
+										inline
+									>
+										Yes
+									</Radio>
+									</Col>
+									<Col md={3}>
+									<Radio
+										onChange={() => this.handlePrivateChange(false)}
+										checked={!this.state.isPrivate}
+										inline
+									>
+										No
+									</Radio>
+									</Col>
+                </FormGroup>
+              </Row>
+							<h3></h3>
+              <Row>
+                <Col md={12}>
+                  { this.state.isPrivate
+                    ?
+                      <FormGroup controlId={'password'}
+                       validationState={this.state.passwordError === '' ?
+                       null : 'error' }
+                      >
+                        <ControlLabel>Password: </ControlLabel>
+                        {/* This component is now 'controlled'. Further reading:
+                          * https://facebook.github.io/react/docs/forms.html
+                          */}
+                        <FormControl
+                          onChange={this.handlePasswordChange}
+                          type="password"
+                          defaultValue={this.state.password}
+                          placeholder="Enter password for poll"
+                        />
+                        <HelpBlock>{this.state.passwordError}</HelpBlock>
+                      </FormGroup>
+                    : null
+                  }
+								</Col>
+							</Row>
+              <Row>
+                <Button 
+                  className={"btn btn-primary center-block"}
                   bsStyle="success"
-                  type="submit"
-                >
-                  Add Option
-                </Button>
-              </div>
-              <HelpBlock>{this.state.optionError}</HelpBlock>
+                  onClick={() => this.handleExpDateShow(!this.state.isTimed)}
+                > Add Expiration Date </Button>
+                <br />
+                { this.state.isTimed
+                  ?
+                  <Datetime onChange={this.handleDateChange} input={false} isValidDate={this.checkIfValid}/>
+                  : null
+                }
+              </Row>
             </form>
           </Col>
-        </Row>
-        <Grid>
-          <Row>
-            <Col xs={12}>
+          <Col md={6}>
               <Row>
-                {this.renderOptions()}
+                <Col md={12}>
+                  <ControlLabel>Options:</ControlLabel>
+                  {/* After some consideration I have decided to split up creating the poll into 2 forms.
+                  The reasons are:
+                  1) If everything is inside the parent form then if someone hits enter during any
+                     stage of the process of creating a poll, it will submit and create the incomplete
+                     poll.
+                  2) Splitting up adding options into its own form allows for people to submit and add
+                     options by hitting enter now which is good for UX. */}
+                  <form onSubmit={this.handleOptionSubmit}>
+                    <div className="CreatePoll__add-option">
+                      <FormControl
+                        onChange={this.handleOptionNameChange}
+                        value={this.state.optionName}
+                        type="text"
+                        placeholder="Enter an option"
+                      />
+                      <Button
+                        className="CreatePoll__add-button"
+                        bsStyle="success"
+                        type="submit"
+                      >
+                        Add Option
+                      </Button>
+                    </div>
+                    <HelpBlock>{this.state.optionError}</HelpBlock>
+                  </form>
+                </Col>
+                <Col xs={12}>
+                  <Row>
+                    {this.renderOptions()}
+                  </Row>
+                  </Col>
               </Row>
-            </Col>
+          </Col>
           </Row>
-          <Row>
-            <Col md={6} mdOffset={3} xs={8} xsOffset={2}>
-              <Button
-                className="margin-top"
-                bsStyle="primary"
-                block
-                disabled={disabled}
-                onClick={!this.state.loading ? this.handlePollCreate : null}
-              >
-                Create
-              </Button>
-            </Col>
-          </Row>
-        </Grid>
+        </Well>
+        <Button
+          className="margin-top"
+          bsStyle="primary"
+          block
+          //disabled={disabled}
+          onClick={!this.state.loading ? this.handlePollCreate : null}
+        >
+          Create
+        </Button>
+        <h3></h3>
       </Grid>
     );
   }

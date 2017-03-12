@@ -5,7 +5,7 @@ import Header from './Header';
 
 export default function App({ children }) {
   return (
-    <div>
+    <div className="App">
       <Helmet
         title="SimPoll"
         titleTemplate="%s"
