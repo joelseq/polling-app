@@ -57,7 +57,7 @@ Polls.attachSchema(PollSchema);
 export function dupVoteHelper(pollObject, handle) {
   let votes = pollObject.votes;
   votes = votes.filter( (obj) => {
-    return obj.handle !== handle;
+    return obj.handle != handle;
   });
 
   return votes;
@@ -242,11 +242,6 @@ Meteor.methods({
 
     let votes = dupVoteHelper( updatedPoll, vote.handle );
     votes.push( vote );
-
-    // Reset each of the options back to zero
-    Object.keys(options).forEach((option) => {
-      options[option] = 0;
-    });
 
     // iterate through each of the votes and count them for the current options
     for( let vote of votes ) {
