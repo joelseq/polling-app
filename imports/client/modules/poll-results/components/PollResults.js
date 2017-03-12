@@ -25,6 +25,8 @@ import PollChart from './PollChart';
 // Grabs table from PollTable
 import PollTable from './PollTable';
 
+import Loading from '../../core/components/Loading';
+
 // Grab collection for polls
 import Polls, { voteHelper } from '../../../../api/polls.js';
 
@@ -203,8 +205,7 @@ class PollResults extends Component {
     // if there is no information to display
 		
 		if (this.props.loading) {
-      // TODO: add a nice loading animation here instead of this
-      return <h4 className="text-center">Loading...</h4>;
+      return <Loading />;
     }
 
     if (this.props.poll._id === defaultProps.poll._id) {
@@ -213,20 +214,14 @@ class PollResults extends Component {
 
     return (
       <div>
-        <Col md={12} xs={12} sm={12}>
-          <Well>
-            <PollChart options={this.props.poll.options} />
-          </Well>
-        </Col>
-        <Button
-          bsStyle="success"
-          disabled={this.state.showExtraInfo}
-          onClick={this.toggleExtraInfo}
-
-        >
-          View More
-        </Button>
 				<Grid>
+          <Row>
+            <Col md={12} xs={12} sm={12}>
+              <Well>
+                <PollChart options={this.props.poll.options} poll={this.props.poll} />
+              </Well>
+            </Col>
+          </Row>
           <Well>
             <Row>
               <Col md={10} mdOffset={1}>

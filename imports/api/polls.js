@@ -59,9 +59,12 @@ Polls.attachSchema(PollSchema);
  */
 export function dupVoteHelper(pollObject, handle) {
   let votes = pollObject.votes;
-  votes = votes.filter( (obj) => {
-    return obj.handle != handle;
-  });
+
+  if ( Meteor.isServer ) {
+    votes = votes.filter( (obj) => {
+      return obj.handle != handle;
+    });
+  }
 
   return votes;
 }
@@ -160,7 +163,7 @@ Meteor.methods({
 
   // Add comments to an existing poll in the database
   'polls.comment': 
-	function votePoll(pollId, updatedPoll, commentText, chatBotWanted) {
+	function commentPoll(pollId, updatedPoll, commentText, chatBotWanted) {
     // Check if the vote object conforms with
     // the VoteSchema
     check(pollId, String );
@@ -177,7 +180,7 @@ Meteor.methods({
     
 		if ( chatBotWanted ) {
       comments.push({ 
-        handle: "anon28439", 
+        handle: "PoopBot", 
         text: "Wait a second, let me think about that...",
       });
       Polls.update(pollId, {
@@ -191,7 +194,7 @@ Meteor.methods({
 					(err, res) => { 
             if ( err ) {
 							comments.push({ 
-								handle: "anon28439", 
+								handle: "PoopBot", 
 								text: "Sorry, I can't talk right now, I'm too sleepy.",
 							});
               Polls.update(pollId, {
@@ -202,12 +205,12 @@ Meteor.methods({
             } else {
               if ( res.statusCode === 200 ) {
                 comments.push({ 
-                  handle: "anon28439", 
+                  handle: "PoopBot", 
                   text: (JSON.parse(res.content)).botsay,
                 });
               } else {
                 comments.push({ 
-                  handle: "anon28439", 
+                  handle: "PoopBot", 
                   text: "Sorry, I can't talk right now, I'm too sleepy.",
                 });
               }
@@ -241,7 +244,27 @@ Meteor.methods({
     check(vote, VoteSchema);
     let options = updatedPoll.options;
 
-    let votes = dupVoteHelper( updatedPoll, vote.handle );
+    if ( Meteor.isServer ) {
+      const poll = Polls.findOne(pollId);
+
+      if ( !poll.votes ) {
+        poll.votes = [];
+      }
+
+      const prevVote = poll.votes.filter( (obj) => {
+        return obj.handle === vote.handle;
+      });
+      if ( prevVote[0] ) {
+        if ( prevVote[0].password ) {
+          if ( vote.password !== prevVote[0].password ) {
+            console.log( vote.password );
+            console.log( prevVote[0] );
+            throw new Meteor.Error(501, 'Password is invalid!');
+          }
+        }
+      }
+
+    let votes = dupVoteHelper( updatedPoll, vote.handle  );
     votes.push( vote );
 
     // iterate through each of the votes and count them for the current options
@@ -260,6 +283,7 @@ Meteor.methods({
         votes,
       },
     });
+    }
   },
 
   'polls.checkEditPass':
@@ -288,7 +312,7 @@ Meteor.methods({
     // Check if the vote object conforms with
     // the VoteSchema
     check(data, Object);
-    const { pollId, pass } = data;
+    const { pollId, handle, pass, passwordForHandle } = data;
 
     // Database call
     if (Meteor.isServer) {
@@ -296,6 +320,20 @@ Meteor.methods({
       if (poll.isPrivate) {
         if (poll.password !== pass) {
           throw new Meteor.Error(501, 'Password is invalid!');
+        }
+      }
+      
+      if ( poll.votes ) {
+        const prevVote = poll.votes.filter( (obj) => {
+          return obj.handle === handle;
+        });
+
+        if ( prevVote[0] ) {
+          if ( prevVote[0].password ) {
+            if ( passwordForHandle !== prevVote[0].password ) {
+              throw new Meteor.Error(502, 'The password for this handle is invalid!');
+            }
+          }
         }
       }
     }
