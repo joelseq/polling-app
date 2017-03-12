@@ -33,6 +33,8 @@ const propTypes = {
     // A hashmap of key = option and
     // value = amount of votes
     options: PropTypes.object,
+    // Vote object for poll
+    votes: PropTypes.array,
   }),
 };
 
@@ -73,22 +75,28 @@ class PollResults extends Component {
     }
 
     return (
+
       <div>
         <div>
-          <PollChart options={this.props.poll.options}/>
+          <PollChart options={this.props.poll.options} />
         </div>
+        {/* Only shown if button has been pressed */}
         { this.state.showExtraInfo
           ?
             <div>
-              {/* TODO Organize extra info here */}
-              <PollTable/>
-              <p>This should show up</p>
+              <PollTable
+                votes={this.props.poll.votes}
+                isWeighted={this.props.poll.isWeighted}
+                options={this.props.poll.options}
+              />
             </div>
           : null
         }
         <Button
           bsStyle="success"
+          disabled={this.state.showExtraInfo}
           onClick={this.toggleExtraInfo}
+
         >
           View More
         </Button>

@@ -59,6 +59,7 @@ class CreatePoll extends Component {
       password: '',
       loading: false,
       expiresAt: new Date(0, 0, 0, 0, 0, 0),
+      voterEditable: false,
       pollNameError: '',
       optionError: '',
       editPass: '',
@@ -101,6 +102,13 @@ class CreatePoll extends Component {
   handleWeightedChange(isWeighted) {
     this.setState({
       isWeighted,
+    });
+  }
+
+  // Handler for the voter editable radio buttons
+  handleVoterEditChange(voterEditable) {
+    this.setState({
+      voterEditable,
     });
   }
 
@@ -150,7 +158,12 @@ class CreatePoll extends Component {
   // Handler for creating a poll
   handlePollCreate() {
     // Destructuring the state object
+<<<<<<< HEAD
     const { name, isWeighted, options, isPrivate, password, editPass, isTimed, expiresAt} =
+=======
+    const { name, isWeighted, options, isPrivate, 
+      password, editPass, voterEditable } =
+>>>>>>> development
       this.state;
     if (name === '') {
       this.setState({ pollNameError: 'No poll name provided!' });
@@ -188,8 +201,12 @@ class CreatePoll extends Component {
         isPrivate,
         password,
         editPassword: editPass,
+<<<<<<< HEAD
         isTimed,
         expiresAt,
+=======
+        isVoterEditable: voterEditable,
+>>>>>>> development
       }, (err, result) => {
         if (err || !result) {
           // TODO: add proper error handling
@@ -307,6 +324,7 @@ class CreatePoll extends Component {
             />
             <FormControl.Feedback />
           </FormGroup>
+<<<<<<< HEAD
           <Row>
             <Col md={4}>
               <FormGroup controlId={'weighted'}>
@@ -319,6 +337,68 @@ class CreatePoll extends Component {
                 </p>
                 {/* These radio buttons are now 'controlled' as well
                   * Further reading: same link as above
+=======
+          <FormGroup controlId={'weighted'}>
+            <ControlLabel>Weighted?</ControlLabel>
+            <p className="CreatePoll__info">
+              Weighted: Votes for options can have weights ranging from 1 to 10 (both inclusive)
+            </p>
+            <p className="CreatePoll__info">
+              Unweighted: Votes for options are weighted equally
+            </p>
+            {/* These radio buttons are now 'controlled' as well
+              * Further reading: same link as above
+              */}
+            <Radio
+              onChange={() => this.handleWeightedChange(true)}
+              checked={this.state.isWeighted}
+            >
+              Yes
+            </Radio>
+            <Radio
+              onChange={() => this.handleWeightedChange(false)}
+              checked={!this.state.isWeighted}
+            >
+              No
+            </Radio>
+          </FormGroup>
+          <FormGroup controlId={'private'}>
+            <ControlLabel>Private?</ControlLabel>
+            <Radio
+              onChange={() => this.handlePrivateChange(true)}
+              checked={this.state.isPrivate}
+            >
+              Yes
+            </Radio>
+            <Radio
+              onChange={() => this.handlePrivateChange(false)}
+              checked={!this.state.isPrivate}
+            >
+              No
+            </Radio>
+          </FormGroup>
+          <FormGroup controlId={'voterEditable'}>
+            <ControlLabel>Allow Voters to Add and Remove Options?</ControlLabel>
+            <Radio
+              onChange={() => this.handleVoterEditChange(true)}
+              checked={this.state.voterEditable}
+            >
+              Yes
+            </Radio>
+            <Radio
+              onChange={() => this.handleVoterEditChange(false)}
+              checked={!this.state.voterEditable}
+            >
+              No
+            </Radio>
+          </FormGroup>
+          { this.state.isPrivate
+            ?
+              <FormGroup controlId={'password'}>
+                <ControlLabel>Password: </ControlLabel>
+                {/* This component is now 'controlled'. Further reading:
+                  * https://facebook.github.io/react/docs/forms.html
+>>>>>>> development
                   */}
                 <Radio
                   onChange={() => this.handleWeightedChange(true)}

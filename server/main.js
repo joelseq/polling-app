@@ -9,6 +9,7 @@ Meteor.startup(() => {
       fields: {
         name: 1,
         isWeighted: 1,
+        isVoterEditable: 1,
         options: 1,
         votes: 1,
         isPrivate: 1,
