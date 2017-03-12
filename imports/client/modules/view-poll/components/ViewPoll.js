@@ -19,6 +19,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { withRouter, routerShape } from 'react-router';
 
+import Loading from '../../core/components/Loading';
 // Grab collection for polls
 import Polls from '../../../../api/polls.js';
 
@@ -418,7 +419,7 @@ class ViewPoll extends Component {
   render() {
     if (this.props.loading) {
       // TODO: add a nice loading animation here instead of this
-      return <h4 className="text-center">Loading...</h4>;
+      return <Loading />;
     }
 
     if (this.props.poll._id === defaultProps.poll._id) {
