@@ -19,7 +19,7 @@ import UrlBox from './UrlBox.js';
 import { withRouter, routerShape } from 'react-router';
 
 import '../../../main.js';
-
+import Loading from '../../core/components/Loading';
 import Polls from '../../../../api/polls.js';
 
 // Prop Types for this Component
@@ -404,24 +404,11 @@ class EditPoll extends Component {
   render() {
     if (this.props.loading) {
       // TODO: add a nice loading animation here instead of this
-      return <h4 className="text-center">Loading...</h4>;
+      return <Loading />;
     }
 
     if (this.props.poll._id === defaultProps.poll._id) {
       this.props.router.push('/404Error');
-    }
-
-    if (this.props.poll.isClosed) {
-      return (
-        <div>
-          <h4 className="text-center">Sorry, this poll has been closed</h4>
-          <Button
-            onClick={this.routeToResults}
-          >
-            View Results
-          </Button>
-        </div>
-      );
     }
 
     // Ensure the poll's details are populated in the state
