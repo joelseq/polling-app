@@ -18,13 +18,17 @@ es5-shim@4.6.15                # ECMAScript 5 compatibility for older browsers.
 ecmascript@0.6.1              # Enable ECMAScript2015+ syntax in app code
 shell-server@0.2.1            # Server-side component of the `meteor shell` command
 
-autopublish@1.0.7             # Publish all data to the clients (for prototyping)
-insecure@1.0.7                # Allow all DB writes from clients (for prototyping)
 practicalmeteor:chai
 practicalmeteor:mocha
 twbs:bootstrap
 fourseven:scss
 fortawesome:fontawesome
-service-configuration
+service-configuration@1.0.11
 dispatch:mocha-phantomjs
 dispatch:phantomjs-tests@=0.0.5
+react-meteor-data
+aldeed:collection2
+aldeed:simple-schema
+poetic:chatterbox
+http
+momentjs:moment

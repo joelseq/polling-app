@@ -3,3 +3,66 @@ html, body {
   height: 100%;
   width: 100%;
 }
+
+.sp__brand {
+  font-size: 1.5rem;
+}
+
+.CreatePoll__info {
+  font-size: 0.8rem;
+  color: grey;
+}
+
+.CreatePoll__add-option {
+  display: flex;
+}
+
+.CreatePoll__add-button {
+  margin-left: 5px;
+}
+
+.CreatePoll__option {
+  min-height: 75px;
+  display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+	-ms-flex-align: center;
+	-webkit-align-items: center;
+	-webkit-box-align: center;
+	align-items: center;
+  border: 1px solid #FEFEFE;
+  background: #999;
+  color: #FEFEFE;
+  margin-top: 10px;
+  position: relative;
+
+  > p {
+    margin: 0 auto;
+  }
+}
+
+.CreatePoll__option-close-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(0,0,0,0);
+  border: none;
+  color: black;
+  font-size: 1.5rem;
+}
+
+.margin-top {
+  margin-top: 50px;
+}
+
+.margin-left {
+  margin-left: 50px;
+}
+
+.margin-bottom {
+  margin-bottom: 50px;
+}
+
+.ViewPoll__options-container {
+  margin-bottom: 20px;
+}
