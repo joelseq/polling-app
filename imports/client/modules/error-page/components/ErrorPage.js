@@ -13,8 +13,8 @@ export default class ErrorPage extends Component {
   render() {
     return(
       <div>
-        <h3 className="margin-left">Error: Poll Not Found</h3>
-        <h4 className="margin-left">Poll may have been deleted or not created</h4>
+				<img src={'http://i.imgur.com/gbDypc4.png'} />
+        <h4 className="center">Sorry! Looks like you've found a page that doesn't exist</h4>
       </div>
     );
   }
