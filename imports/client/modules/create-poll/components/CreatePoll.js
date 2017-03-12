@@ -44,6 +44,7 @@ class CreatePoll extends Component {
     this.removeOption = this.removeOption.bind(this);
     this.handleEditPassChange = this.handleEditPassChange.bind(this);
     this.renderMovieOptions = this.renderMovieOptions.bind(this);
+    this.renderMoviePopover = this.renderMoviePopover.bind(this);
 
     // This is the same as doing getInitialState but the ES6 way
     this.state = {
@@ -114,7 +115,7 @@ class CreatePoll extends Component {
     //If the user is creating a movie poll 
     //treat each input as a movie
     if(this.state.moviePoll){
-        
+
       //If there is no target value then exit
       if( e.target.value == "" ) {
         //Also clear any rendered objects
@@ -293,6 +294,15 @@ class CreatePoll extends Component {
     ));
   }
 
+  renderMoviePopover(list){
+    /* popover-trigger-click-root-close popover-positioned-top */
+    return(
+      <Popover id="moviePopover" placement='top' max-width="800px" width="auto" title="Movies">
+            {this.renderMovieOptions(this.state.movieURLs)}
+      </Popover>
+    );
+  }
+
   render() {
     const { options, loading, name, isPrivate, password } = this.state;
     const disabled = Object.keys(options).length < 2 || loading ||
@@ -332,7 +342,7 @@ class CreatePoll extends Component {
             <FormControl.Feedback />
           </FormGroup>
           <FormGroup controlId={'weighted'}>
-            <ControlLabel>Weighted?</ControlLabel>
+            <ControlLabel>Weighted?</ControlLabel>;
             <p className="CreatePoll__info">
               Weighted: Votes for options can have weights ranging from 1 to 10 (both inclusive)
             </p>
@@ -399,16 +409,15 @@ class CreatePoll extends Component {
                options by hitting enter now which is good for UX. */}
             <form onSubmit={this.handleOptionSubmit}>
 							{/*TODO: this is fucked. make it a separate thing?? I concur*/}
-							<Popover id="popover-positioned-top" placement='top' title="Movies">
-								    {this.renderMovieOptions(this.state.movieURLs)}
-							</Popover>
               <div className="CreatePoll__add-option">
+                <OverlayTrigger trigger="click" placement="top" overlay={this.renderMoviePopover(this.state.movieURLs)}>
                 <FormControl
                   onChange={this.handleOptionNameChange}
                   value={this.state.optionName}
                   type="text"
                   placeholder="Enter an option"
                 />
+                </OverlayTrigger>
                 <Button
                   className="CreatePoll__add-button"
                   bsStyle="success"
