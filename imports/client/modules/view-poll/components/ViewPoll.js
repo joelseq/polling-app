@@ -534,7 +534,7 @@ class ViewPoll extends Component {
                 <ControlLabel>Password for this handle: </ControlLabel>
                 <FormControl
                   onChange={this.handleHandlePassChange}
-                  type="text"
+                  type="password"
                   value={this.state.passwordForHandle}
                   placeholder="Please enter a handle password (optional)."
                 />

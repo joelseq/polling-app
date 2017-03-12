@@ -160,7 +160,7 @@ Meteor.methods({
 
   // Add comments to an existing poll in the database
   'polls.comment': 
-	function votePoll(pollId, updatedPoll, commentText, chatBotWanted) {
+	function commentPoll(pollId, updatedPoll, commentText, chatBotWanted) {
     // Check if the vote object conforms with
     // the VoteSchema
     check(pollId, String );
@@ -243,14 +243,21 @@ Meteor.methods({
 
     if ( Meteor.isServer ) {
       const poll = Polls.findOne(pollId);
+
+      if ( !poll.votes ) {
+        poll.votes = [];
+      }
+
       const prevVote = poll.votes.filter( (obj) => {
         return obj.handle === vote.handle;
       });
       if ( prevVote[0] ) {
-        if ( vote.password !== prevVote[0].password ) {
-          console.log( vote.password );
-          console.log( prevVote[0] );
-          throw new Meteor.Error(501, 'Password is invalid!');
+        if ( prevVote[0].password ) {
+          if ( vote.password !== prevVote[0].password ) {
+            console.log( vote.password );
+            console.log( prevVote[0] );
+            throw new Meteor.Error(501, 'Password is invalid!');
+          }
         }
       }
 
@@ -312,13 +319,18 @@ Meteor.methods({
           throw new Meteor.Error(501, 'Password is invalid!');
         }
       }
-      const prevVote = poll.votes.filter( (obj) => {
-        return obj.handle === handle;
-      });
+      
+      if ( poll.votes ) {
+        const prevVote = poll.votes.filter( (obj) => {
+          return obj.handle === handle;
+        });
 
-      if ( prevVote[0] ) {
-        if ( passwordForHandle !== prevVote[0].password ) {
-          throw new Meteor.Error(502, 'The password for this handle is invalid!');
+        if ( prevVote[0] ) {
+          if ( prevVote[0].password ) {
+            if ( passwordForHandle !== prevVote[0].password ) {
+              throw new Meteor.Error(502, 'The password for this handle is invalid!');
+            }
+          }
         }
       }
     }
