@@ -49,6 +49,7 @@ const propTypes = {
     // Vote object for poll
     votes: PropTypes.array,
     comments: PropTypes.array,
+    isClosed: PropTypes.bool,
   }),
 };
 
@@ -314,13 +315,15 @@ class PollResults extends Component {
 					<Row>
 						<Col md={10} mdOffset={1}>
 							{this.renderComments()}
+              {this.props.poll.comments ? ( 
+              this.props.poll.comments.length > 5 ? (
               <Button
                 bsStyle="success"
                 onClick={this.loadMore}
                 block
               >
                 Load More Comments
-              </Button>
+              </Button> ) : '' ) : '' }
 						</Col>
 					</Row>
 					<h3></h3>
