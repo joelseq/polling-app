@@ -9,6 +9,7 @@ import {
   ControlLabel,
   HelpBlock,
   Col,
+  Modal,
 	Panel,
   FormGroup,
   FormControl,
@@ -175,6 +176,7 @@ class PollResults extends Component {
   }
   // Layout of the page
   render() {
+    console.warn = function () {}
     // if there is no information to display
     if (!this.props.poll) {
       // TODO: add a nice loading animation here instead of this
@@ -187,29 +189,39 @@ class PollResults extends Component {
         <div>
           <PollChart options={this.props.poll.options} />
         </div>
-        {/* Only shown if button has been pressed */}
-        { this.state.showExtraInfo
-          ?
-            <div>
-              <PollTable
-                votes={this.props.poll.votes}
-                isWeighted={this.props.poll.isWeighted}
-                options={this.props.poll.options}
-              />
-            </div>
-          : null
-        }
-        <Button
-          bsStyle="success"
-          disabled={this.state.showExtraInfo}
-          onClick={this.toggleExtraInfo}
-
-        >
-          View More
-        </Button>
 				<Grid>
 					<Row>
 						<Col md={10} mdOffset={1}>
+              {/* Only shown if button has been pressed */}
+              <Modal
+                show={this.state.showExtraInfo}
+              >
+                <Modal.Header>
+                  <Modal.Title>Poll Results!</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <PollTable
+                    votes={this.props.poll.votes}
+                    isWeighted={this.props.poll.isWeighted}
+                    options={this.props.poll.options}
+                  />
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button
+                    onClick={this.toggleExtraInfo}
+                  >
+                    Close
+                  </Button>
+                </Modal.Footer>
+
+              </Modal>
+              <Button
+                bsStyle="success"
+                onClick={this.toggleExtraInfo}
+                block
+              >
+                View More
+              </Button>
               <h2>Comments</h2>
 							<Col md={10} mdOffset={1}>
 							<Form horizontal onSubmit={this.postComment}>
