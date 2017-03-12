@@ -13,7 +13,6 @@ export default (
   <Route path="/" component={App}>
     <IndexRoute component={Main} />
     <Route path="create" component={CreatePoll} />
-    <Route path="404Error" component={ErrorPage} />
     <Route path="polls/">
       <Route path=":pollId" component={ViewPoll} />
       <Route path=":pollId/results" component={PollResults} />

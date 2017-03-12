@@ -20,6 +20,10 @@ import PollTable from './PollTable';
 // Grab collection for polls
 import Polls, { voteHelper } from '../../../../api/polls.js';
 
+// Grabs ErrorPage component
+import ErrorPage from '../../error-page/components/ErrorPage';
+
+
 // Prop Types for this Component
 const propTypes = {
   // Poll object in DB from createContainer
@@ -38,9 +42,24 @@ const propTypes = {
   }),
 };
 
+// Default Props if none are provided
+const defaultProps = {
+  poll: {
+    _id: '123',
+    isWeighted: false,
+    name: 'Default Poll',
+    options: {
+      'Option 1': 0,
+      'Option 2': 0,
+    },
+  },
+};
+
 class PollResults extends Component {
   constructor(props) {
     super(props);
+
+    this.counter = 0;
 
     this.toggleExtraInfo = this.toggleExtraInfo.bind(this);
 
@@ -66,16 +85,28 @@ class PollResults extends Component {
     }
   }
 
+
   // Layout of the page
   render() {
+
+    this.counter++;
+
     // if there is no information to display
-    if (!this.props.poll) {
-      // TODO: add a nice loading animation here instead of this
+    if (this.props.poll._id == defaultProps.poll._id && this.counter == 0) {
+      // TODO: add a nice loading animation here instead of
       return <h4 className="text-center">Loading...</h4>;
     }
 
-    return (
+    // if the poll isn't found, it displays the 404 error
+    if (this.props.poll._id == defaultProps.poll._id && this.counter > 1) {
+      this.counter = 10;
+      return(
+        <ErrorPage/>
+      );
+    }
 
+    if (this.props.poll._id)
+    return (
       <div>
         <div>
           <PollChart options={this.props.poll.options} />
@@ -106,6 +137,7 @@ class PollResults extends Component {
 }
 
 PollResults.propTypes = propTypes;
+PollResults.defaultProps = defaultProps;
 
 export default createContainer(({ params }) => {
   Meteor.subscribe('polls'); // get the poll database

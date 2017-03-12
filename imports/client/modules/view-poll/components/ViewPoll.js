@@ -21,6 +21,9 @@ import { withRouter, routerShape } from 'react-router';
 // Grab collection for polls
 import Polls from '../../../../api/polls.js';
 
+// Grabs ErrorPage component
+import ErrorPage from '../../error-page/components/ErrorPage';
+
 const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const SliderWithTooltip = createSliderWithTooltip(Slider);
 
@@ -401,13 +404,16 @@ class ViewPoll extends Component {
 
   // Actual layout
   render() {
+    // if the poll isn't found, it displays the 404 error
+    if (this.props.poll._id == defaultProps.poll._id) {
+      return(
+        <ErrorPage/>
+      );
+    }
+
     if (!this.props.poll) {
       // TODO: add a nice loading animation here instead of this
       return <h4 className="text-center">Loading...</h4>;
-    }
-
-    if (this.props.poll._id == defaultProps.poll._id) {
-      this.props.router.push(`/404Error`);
     }
 
     return (
