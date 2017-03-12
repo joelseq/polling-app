@@ -260,6 +260,11 @@ class ViewPoll extends Component {
       // Remove the _id key to pass validation
       delete updatedPoll._id;
 
+      // Reset each of the options back to zero
+      Object.keys(updatedPoll.options).forEach((option) => {
+        updatedPoll.options[option] = 0;
+      });
+
       // The vote object for this user
       const vote = {
         handle,
@@ -404,7 +409,8 @@ class ViewPoll extends Component {
         <Col key={option} md={7} xs={8} className="margin-bottom">
           <p>{option}</p>
           <SliderWithTooltip
-            onAfterChange={val => this.handleSliderChange(val, option)}
+            onChange={val => this.handleSliderChange(val, option)}
+            value={this.state.selectedOptions[option]}
             min={0}
             max={10}
           />
@@ -431,6 +437,19 @@ class ViewPoll extends Component {
     if (this.state.isLoading) {
       // TODO: add a nice loading animation here instead of this
       return <h4 className="text-center">Loading...</h4>;
+    }
+
+    if (this.props.poll.isClosed) {
+      return <h4 className="text-center">um fuck you...</h4>;
+    }
+
+    if( this.props.poll.isTimed ){ 
+
+         console.log("Not the default");
+         if( this.props.poll.expiresAt.getTime() < (new Date()).getTime() ) {
+      
+            return <h4 className="text-center">um fuck you...</h4>;
+         }
     }
 
     return (

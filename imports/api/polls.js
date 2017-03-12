@@ -2,9 +2,17 @@ import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
 import { SimpleSchema } from 'meteor/aldeed:simple-schema';
+import { HTTP } from 'meteor/http'
 
 // Collection of all polls
 const Polls = new Mongo.Collection('polls');
+const Comments = new Mongo.Collection('collections');
+
+// Schema for Comments
+const CommentSchema = new SimpleSchema({
+  handle: { type: String },
+  text: { type: String },
+});
 
 // Schema for Votes
 const VoteSchema = new SimpleSchema({
@@ -22,11 +30,15 @@ const PollSchema = new SimpleSchema({
     blackbox: true,
   },
   votes: { type: [VoteSchema], optional: true },
+  comments: { type: [CommentSchema], optional: true},
   isPrivate: { type: Boolean },
   isVoterEditable: { type: Boolean, optional: true },
   password: { type: String, optional: true },
   editPassword: { type: String, optional: true },
   createdAt: { type: Date, defaultValue: new Date() },
+  isClosed: { type: Boolean, defaultValue: false },
+  isTimed: {type: Boolean, defaultValue: false },
+  expiresAt: { type: Date, defaultValue: new Date()},
 });
 
 // Automatically validate the schema for us
@@ -45,7 +57,7 @@ Polls.attachSchema(PollSchema);
 export function dupVoteHelper(pollObject, handle) {
   let votes = pollObject.votes;
   votes = votes.filter( (obj) => {
-    return obj.handle !== handle;
+    return obj.handle != handle;
   });
 
   return votes;
@@ -66,6 +78,20 @@ Meteor.methods({
     // Database call
     return Polls.insert(poll);
   },
+
+  'polls.changePollStatus': function closePoll(pollId, pollStatus) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(pollId, String);
+    check(pollStatus, Boolean);
+
+    // Database call
+    return Polls.update(pollId, {
+      $set: {
+        isClosed: pollStatus,
+      },
+    });
+  },    
 
   // Suggest new options & change options for poll
   'polls.suggestOptions': function changeName(pollId, updatedPoll) {
@@ -103,7 +129,7 @@ Meteor.methods({
     check(pollId, String);
     check(inputPass, String);
 
-    const { name, options } = updatedPoll;
+    const { name, options, isTimed, expiresAt } = updatedPoll;
 
     // check to make sure that we are not updating the poll without proper
     // credentials
@@ -123,8 +149,86 @@ Meteor.methods({
       $set: {
         name,
         options,
+        isTimed,
+        expiresAt,
       },
     });
+  },
+
+  // Add comments to an existing poll in the database
+  'polls.comment': 
+	function votePoll(pollId, updatedPoll, commentText, chatBotWanted) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(pollId, String );
+    check(commentText, String );
+    check(updatedPoll, PollSchema);
+    check(chatBotWanted, Boolean);
+
+    const { comments } = updatedPoll;
+		Polls.update(pollId, {
+			$set: {
+				comments,
+			},
+		});
+    
+		if ( chatBotWanted ) {
+      comments.push({ 
+        handle: "anon28439", 
+        text: "Wait a second, let me think about that...",
+      });
+      Polls.update(pollId, {
+        $set: {
+          comments,
+        },
+      });
+			if ( Meteor.isServer ) {
+				HTTP.get("http://api.program-o.com/v2/chatbot/",
+					{params: {bot_id: 6, say: commentText.substring(0,200), format: 'json'}},
+					(err, res) => { 
+            if ( err ) {
+              comments.pop();
+							comments.push({ 
+								handle: "anon28439", 
+								text: "Sorry, I can't talk right now, I'm too sleepy.",
+							});
+              Polls.update(pollId, {
+                $set: {
+                  comments,
+                },
+              });
+            } else {
+              comments.pop();
+              if ( res.statusCode === 200 ) {
+                comments.push({ 
+                  handle: "anon28439", 
+                  text: (JSON.parse(res.content)).botsay,
+                });
+              } else {
+                comments.push({ 
+                  handle: "anon28439", 
+                  text: "Sorry, I can't talk right now, I'm too sleepy.",
+                });
+              }
+              Polls.update(pollId, {
+                $set: {
+                  comments,
+                },
+              });
+            }
+					}
+				);
+			}
+		}
+
+    // TODODOODODODODOO!!!!!
+    /* Database call
+    return Polls.update(pollId, {
+      $set: {
+        comments,
+      },
+    }); */
+
   },
 
   // Update an existing poll in the database
@@ -138,11 +242,6 @@ Meteor.methods({
 
     let votes = dupVoteHelper( updatedPoll, vote.handle );
     votes.push( vote );
-
-    // Reset each of the options back to zero
-    Object.keys(options).forEach((option) => {
-      options[option] = 0;
-    });
 
     // iterate through each of the votes and count them for the current options
     for( let vote of votes ) {
