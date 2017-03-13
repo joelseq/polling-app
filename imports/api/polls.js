@@ -351,7 +351,6 @@ Meteor.methods({
           var data = result.data;
           var list = data["results"];
           list = list.slice(0,5);
-          console.log(list);
           onSuccess(list);
         }
         else {
