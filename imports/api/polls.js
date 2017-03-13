@@ -1,8 +1,18 @@
-import { Meteor } from 'meteor/meteor';
-import { Mongo } from 'meteor/mongo';
-import { check } from 'meteor/check';
-import { SimpleSchema } from 'meteor/aldeed:simple-schema';
-import { HTTP } from 'meteor/http';
+import {
+    Meteor
+} from 'meteor/meteor';
+import {
+    Mongo
+} from 'meteor/mongo';
+import {
+    check
+} from 'meteor/check';
+import {
+    SimpleSchema
+} from 'meteor/aldeed:simple-schema';
+import {
+    HTTP
+} from 'meteor/http';
 
 // Collection of all polls
 const Polls = new Mongo.Collection('polls');
@@ -10,30 +20,69 @@ const Polls = new Mongo.Collection('polls');
 const baseURL = "https://api.themoviedb.org/3/search/movie";
 const apiKey = "811e991877f0df19ab022a0b81ac7bc5";
 
+
 // Schema for Votes
 const VoteSchema = new SimpleSchema({
-  handle: { type: String },
-  password: { type: String, optional: true },
-  selectedOptions: { type: Object, blackbox: true },
+    handle: {
+        type: String
+    },
+    password: {
+        type: String,
+        optional: true
+    },
+    selectedOptions: {
+        type: Object,
+        blackbox: true
+    },
 });
 
 // Schema for Polls
 const PollSchema = new SimpleSchema({
-  name: { type: String },
-  isWeighted: { type: Boolean },
-  options: {
-    type: Object,
-    blackbox: true,
-  },
-  votes: { type: [VoteSchema], optional: true },
-  isPrivate: { type: Boolean },
-  isVoterEditable: { type: Boolean, optional: true },
-  password: { type: String, optional: true },
-  editPassword: { type: String, optional: true },
-  createdAt: { type: Date, defaultValue: new Date() },
-  isClosed: { type: Boolean, defaultValue: false },
-  isTimed: {type: Boolean, defaultValue: false },
-  expiresAt: { type: Date, defaultValue: new Date()},
+    name: {
+        type: String
+    },
+    isWeighted: {
+        type: Boolean
+    },
+    options: {
+        type: Object,
+        blackbox: true,
+    },
+    votes: {
+        type: [VoteSchema],
+        optional: true
+    },
+    isPrivate: {
+        type: Boolean
+    },
+    isVoterEditable: {
+        type: Boolean,
+        optional: true
+    },
+    password: {
+        type: String,
+        optional: true
+    },
+    editPassword: {
+        type: String,
+        optional: true
+    },
+    createdAt: {
+        type: Date,
+        defaultValue: new Date()
+    },
+    isClosed: {
+        type: Boolean,
+        defaultValue: false
+    },
+    isTimed: {
+        type: Boolean,
+        defaultValue: false
+    },
+    expiresAt: {
+        type: Date,
+        defaultValue: new Date()
+    },
 });
 
 // Automatically validate the schema for us
@@ -50,12 +99,12 @@ Polls.attachSchema(PollSchema);
  * there are duplicates.
  */
 export function dupVoteHelper(pollObject, handle) {
-  let votes = pollObject.votes;
-  votes = votes.filter( (obj) => {
-    return obj.handle !== handle;
-  });
+    let votes = pollObject.votes;
+    votes = votes.filter((obj) => {
+        return obj.handle !== handle;
+    });
 
-  return votes;
+    return votes;
 }
 
 // Meteor methods are the secure way of making database calls
@@ -63,188 +112,256 @@ export function dupVoteHelper(pollObject, handle) {
 // possible calls we want to make on the client.
 Meteor.methods({
 
-  // Insert a new poll in the database
-  'polls.insert': function dataInsertion(poll) {
-    // Trivial check to suppress linter warning.
-    // We are already validating schema from the
-    // schema.
-    check(poll, Object);
+    // Insert a new poll in the database
+    'polls.insert': function dataInsertion(poll) {
+        // Trivial check to suppress linter warning.
+        // We are already validating schema from the
+        // schema.
+        check(poll, Object);
 
-    // Database call
-    return Polls.insert(poll);
-  },
+        // Database call
+        return Polls.insert(poll);
+    },
 
-  'polls.changePollStatus': function closePoll(pollId, pollStatus) {
-    // Check if the vote object conforms with
-    // the VoteSchema
-    check(pollId, String);
-    check(pollStatus, Boolean);
+    'polls.changePollStatus': function closePoll(pollId, pollStatus) {
+        // Check if the vote object conforms with
+        // the VoteSchema
+        check(pollId, String);
+        check(pollStatus, Boolean);
 
-    // Database call
-    return Polls.update(pollId, {
-      $set: {
-        isClosed: pollStatus,
-      },
-    });
-  },    
+        // Database call
+        return Polls.update(pollId, {
+            $set: {
+                isClosed: pollStatus,
+            },
+        });
+    },
 
-  // Suggest new options & change options for poll
-  'polls.suggestOptions': function changeName(pollId, updatedPoll) {
-    // Check if the vote object conforms with
-    // the VoteSchema
-    check(updatedPoll, PollSchema);
-    check(pollId, String);
+    // Suggest new options & change options for poll
+    'polls.suggestOptions': function changeName(pollId, updatedPoll) {
+        // Check if the vote object conforms with
+        // the VoteSchema
+        check(updatedPoll, PollSchema);
+        check(pollId, String);
 
-    const { options } = updatedPoll;
+        const {
+            options
+        } = updatedPoll;
 
-    // check to make sure that we are not updating the poll without proper
-    // credentials
-    if (Meteor.isServer) {
-      const poll = Polls.findOne(pollId);
-      // check if poll's edit password exists
-      if (!poll.isVoterEditable) {
-          throw new Meteor.Error(501,
-            'This poll is not voter editable!');
-      }
-    }
-
-      // Database call
-    return Polls.update(pollId, {
-      $set: {
-        options,
-      },
-    });
-  },
-
-  // Update an existing poll in the database
-  'polls.editPoll': function changeName(pollId, updatedPoll, inputPass) {
-    // Check if the vote object conforms with
-    // the VoteSchema
-    check(updatedPoll, PollSchema);
-    check(pollId, String);
-    check(inputPass, String);
-
-    const { name, options, isTimed, expiresAt } = updatedPoll;
-
-    // check to make sure that we are not updating the poll without proper
-    // credentials
-    if (Meteor.isServer) {
-      const poll = Polls.findOne(pollId);
-      // check if poll's edit password exists
-      if (poll.editPassword) {
-        if (poll.editPassword !== inputPass) {
-          throw new Meteor.Error(501,
-            'An error occured, the password given is invalid, please reload the page!');
+        // check to make sure that we are not updating the poll without proper
+        // credentials
+        if (Meteor.isServer) {
+            const poll = Polls.findOne(pollId);
+            // check if poll's edit password exists
+            if (!poll.isVoterEditable) {
+                throw new Meteor.Error(501,
+                    'This poll is not voter editable!');
+            }
         }
-      }
-    }
 
-      // Database call
-    return Polls.update(pollId, {
-      $set: {
-        name,
-        options,
-        isTimed,
-        expiresAt,
-      },
-    });
-  },
+        // Database call
+        return Polls.update(pollId, {
+            $set: {
+                options,
+            },
+        });
+    },
 
-  // Update an existing poll in the database
-  'polls.vote': function votePoll(pollId, updatedPoll, vote) {
-    // Check if the vote object conforms with
-    // the VoteSchema
-    check(updatedPoll, PollSchema);
-    check(pollId, String);
-    check(vote, VoteSchema);
-    let options = updatedPoll.options;
+    // Update an existing poll in the database
+    'polls.editPoll': function changeName(pollId, updatedPoll, inputPass) {
+        // Check if the vote object conforms with
+        // the VoteSchema
+        check(updatedPoll, PollSchema);
+        check(pollId, String);
+        check(inputPass, String);
 
-    let votes = dupVoteHelper( updatedPoll, vote.handle );
-    votes.push( vote );
+        const {
+            name,
+            options,
+            isTimed,
+            expiresAt
+        } = updatedPoll;
 
-    // Reset each of the options back to zero
-    Object.keys(options).forEach((option) => {
-      options[option] = 0;
-    });
-
-    // iterate through each of the votes and count them for the current options
-    for( let vote of votes ) {
-      Object.keys(options).forEach((option) => {
-        if ( vote.selectedOptions[option] ) {
-          options[option] += vote.selectedOptions[option];
+        // check to make sure that we are not updating the poll without proper
+        // credentials
+        if (Meteor.isServer) {
+            const poll = Polls.findOne(pollId);
+            // check if poll's edit password exists
+            if (poll.editPassword) {
+                if (poll.editPassword !== inputPass) {
+                    throw new Meteor.Error(501,
+                        'An error occured, the password given is invalid, please reload the page!');
+                }
+            }
         }
-      });
-    }
 
-    // Database call
-    return Polls.update(pollId, {
-      $set: {
-        options,
-        votes,
-      },
-    });
-  },
+        // Database call
+        return Polls.update(pollId, {
+            $set: {
+                name,
+                options,
+                isTimed,
+                expiresAt,
+            },
+        });
+    },
 
-  'polls.checkEditPass':
-  function checkEditPass(pollId, inputPass) {
-    // Check if the vote object conforms with
-    // the VoteSchema
-    check(pollId, String);
-    check(inputPass, String);
+    // Update an existing poll in the database
+    'polls.vote': function votePoll(pollId, updatedPoll, vote) {
+        // Check if the vote object conforms with
+        // the VoteSchema
+        check(updatedPoll, PollSchema);
+        check(pollId, String);
+        check(vote, VoteSchema);
+        let options = updatedPoll.options;
 
-    // Database call
-    if (Meteor.isServer) {
-      const poll = Polls.findOne(pollId);
+        let votes = dupVoteHelper(updatedPoll, vote.handle);
+        votes.push(vote);
 
-      if (poll.editPassword) {
-        if (poll.editPassword !== inputPass) {
-          throw new Meteor.Error(501, 'Password is invalid!');
+        // Reset each of the options back to zero
+        Object.keys(options).forEach((option) => {
+            options[option] = 0;
+        });
+
+        // iterate through each of the votes and count them for the current options
+        for (let vote of votes) {
+            Object.keys(options).forEach((option) => {
+                if (vote.selectedOptions[option]) {
+                    options[option] += vote.selectedOptions[option];
+                }
+            });
         }
-      }
-    }
 
-    return true;
-  },
+        // Database call
+        return Polls.update(pollId, {
+            $set: {
+                options,
+                votes,
+            },
+        });
+    },
 
-  'polls.checkPassAndHandle':
-  function checkPassAndHandle(data) {
-    // Check if the vote object conforms with
-    // the VoteSchema
-    check(data, Object);
-    const { pollId, pass } = data;
+    'polls.checkEditPass': function checkEditPass(pollId, inputPass) {
+        // Check if the vote object conforms with
+        // the VoteSchema
+        check(pollId, String);
+        check(inputPass, String);
 
-    // Database call
-    if (Meteor.isServer) {
-      const poll = Polls.findOne(pollId);
-      if (poll.isPrivate) {
-        if (poll.password !== pass) {
-          throw new Meteor.Error(501, 'Password is invalid!');
+        // Database call
+        if (Meteor.isServer) {
+            const poll = Polls.findOne(pollId);
+
+            if (poll.editPassword) {
+                if (poll.editPassword !== inputPass) {
+                    throw new Meteor.Error(501, 'Password is invalid!');
+                }
+            }
         }
-      }
-    }
-  },
 
-  'polls.getMovies':
-  function getList(search, onSuccess, onError) {
-    check(search, String);
+        return true;
+    },
 
-    search = search + " ";
+    'polls.checkPassAndHandle': function checkPassAndHandle(data) {
+        // Check if the vote object conforms with
+        // the VoteSchema
+        check(data, Object);
+        const {
+            pollId,
+            pass
+        } = data;
 
-    HTTP.call("GET", "https://api.themoviedb.org/3/search/movie?api_key=811e991877f0df19ab022a0b81ac7bc5", {params: {query: search}},
-      (error, result) => {
-        if (!error) {
-          var data = result.data;
-          var list = data["results"];
-          list = list.slice(0,5);
-          console.log(list);
-          onSuccess(list);
+        // Database call
+        if (Meteor.isServer) {
+            const poll = Polls.findOne(pollId);
+            if (poll.isPrivate) {
+                if (poll.password !== pass) {
+                    throw new Meteor.Error(501, 'Password is invalid!');
+                }
+            }
         }
-        else {
-          onError("Network Error");
+    },
+
+    'polls.getMovies': function getList(search, onSuccess, onError) {
+        check(search, String);
+
+        search = search + " ";
+
+        HTTP.call("GET", "https://api.themoviedb.org/3/search/movie?api_key=811e991877f0df19ab022a0b81ac7bc5", {
+                params: {
+                    query: search
+                }
+            },
+            (error, result) => {
+                if (!error) {
+                    var data = result.data;
+                    var list = data["results"];
+                    list = list.slice(0, 5);
+                    console.log(list);
+                    onSuccess(list);
+                } else {
+                    onError("Network Error");
+                }
+            }
+        );
+    },
+
+    'polls.getFood': function getFood(search) {
+
+        var retVal;
+
+        if (Meteor.isServer) {
+            HTTP.post("https://api.yelp.com/oauth2/token", {
+                    params: {
+                        grant_type: 'client_credentials',
+                        client_id: 'BDpLh2LnjDcpbTBlD1Tk7g',
+                        client_secret: 'Ha7QLKjWKb8kfbcjaJFn5LrjQOjXnrhK6p56II0gjlfVAhrn7hvptjJHiBx0Ry0u',
+                        headers: {
+                            'content-type': 'application/x-www-form-urlencoded',
+                        }
+                    }
+                },
+                (err, res) => {
+                    if (err) {
+                        //console.log("YIKES");
+                        //console.log(err)
+                    } else {
+                        //console.log(res);
+                        //console.log('hi');
+                        const token = "Bearer " + res.data.access_token;
+                        //console.log(res.data.access_token);
+                    }
+                });
+
+
+
+            HTTP.get("https://api.yelp.com/v3/businesses/search", {
+                    headers: {
+                        'Authorization': "Bearer qHelQX6r03HAW_msn7ZdtEFAdKnRYLxTPjIPc7gPPen6DX-DKnEsEWQdQa8Zt7zb-kx_njNsxkrWqWRgiotj6DP27jyWufuEtBqUvJSb2mhiNGXnG63d7ADPtE7FWHYx",
+                    },
+                    params: {
+                        term: search,
+                        location: 'san diego, ca'
+                    }
+                },
+                (err, res) => {
+                    if (err) {
+
+                        //console.log(err)
+                    } else {
+                        //console.log('presenting');
+                        console.log(res.data.businesses);
+                        return res.data.businesses;
+                    }
+                }
+            );
         }
-      }
-    );
-	},
+
+
+
+
+
+
+    },
 
 });
 
