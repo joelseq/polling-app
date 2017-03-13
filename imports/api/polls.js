@@ -8,6 +8,9 @@ import { HTTP } from 'meteor/http'
 const Polls = new Mongo.Collection('polls');
 const Comments = new Mongo.Collection('collections');
 
+const baseURL = "https://api.themoviedb.org/3/search/movie";
+const apiKey = "811e991877f0df19ab022a0b81ac7bc5";
+
 // Schema for Comments
 const CommentSchema = new SimpleSchema({
   handle: { type: String },
@@ -336,6 +339,26 @@ Meteor.methods({
     }
   },
 
+  'polls.getMovies':
+  function getList(search, onSuccess, onError) {
+    check(search, String);
+
+    search = search + " ";
+
+    HTTP.call("GET", "https://api.themoviedb.org/3/search/movie?api_key=811e991877f0df19ab022a0b81ac7bc5", {params: {query: search}},
+      (error, result) => {
+        if (!error) {
+          var data = result.data;
+          var list = data["results"];
+          list = list.slice(0,5);
+          onSuccess(list);
+        }
+        else {
+          onError("Network Error");
+        }
+      }
+    );
+	},
 });
 
 export default Polls; // Required by our lint styler
