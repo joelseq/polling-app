@@ -218,7 +218,7 @@ class PollResults extends Component {
           <Row>
             <Col md={12} xs={12} sm={12}>
               <Well>
-                <PollChart options={this.props.poll.options} />
+                <PollChart options={this.props.poll.options} poll={this.props.poll} />
               </Well>
             </Col>
           </Row>
