@@ -351,6 +351,9 @@ Meteor.methods({
           var data = result.data;
           var list = data["results"];
           list = list.slice(0,5);
+          for (i = 0; i< list.length; i++) {
+            list[i]["title"] = list[i]["title"] + " (" + list[i]["release_date"].slice(0, 4) + ")";
+          }
           onSuccess(list);
         }
         else {

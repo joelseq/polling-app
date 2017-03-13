@@ -62,10 +62,11 @@ export default class ReactUIDropdown extends Component {
     const items = this.transformArrayToItems(props.initialItems, props.maxDisplayedItems);
 
     this.state = {
-      dropdownId: uniqueId("dropdown-") + "-",
+      dropdownId: "dropdown-",
       items,
       focusedItem: items.keys.displayed[0] || null,
-      searchValue: ""
+      searchValue: "",
+      hidden: false,
     };
 
     this.sendRequest = debounce(this.sendRequest, 500);
@@ -120,6 +121,13 @@ export default class ReactUIDropdown extends Component {
   }
 
   handleMovieNameChange(movieName) {
+
+    if(this.state.hidden){
+      var link = document.getElementById('dropdown-items');
+      link.style.display = 'inline'; 
+      this.state.hidden = false;
+    }
+
     //Call the api lookup method to return an array of movies
     //which is rendered using the passed in functions
     //Otherwise log the value (error handling) TODO
@@ -137,7 +145,7 @@ export default class ReactUIDropdown extends Component {
       var movie = list[i];
 			data.push({
 				id: movie["id"],
-				title: movie["original_title"],
+				title: movie["original_title"] + " (" + movie["release_date"].slice(0,4) + ")",
         image:"https://image.tmdb.org/t/p/w500/" + movie["poster_path"],
 			});
 		}
@@ -237,7 +245,12 @@ export default class ReactUIDropdown extends Component {
       return selectedItems;
     }, []));
 
-    this.onSuccessMovieList("");
+    if(!this.state.hidden){
+      var link = document.getElementById('dropdown-items');
+      link.style.display = 'none'; 
+      this.state.hidden = true;
+    }
+
   }
 
   /**
