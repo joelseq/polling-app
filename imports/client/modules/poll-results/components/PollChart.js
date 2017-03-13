@@ -11,24 +11,46 @@ export default class PollChart extends Component {
 
   render() {
     const poll_options = this.props.options; // options from poll collection
-    let chartOptions = []; // array of option names
+		
+		let chartOptions = []; // array of option names
     let chartData = []; //
+		const weighted = this.props.poll.isWeighted;
+		const numVotes = this.props.poll.votes.length;
+		var max = 0;
+		var key;
+
 
     // Grabs names and values for each poll option from options hashmap
     for (let i = 0, keys = Object.keys(poll_options), ii = keys.length; i < ii; i++) {
       chartOptions.push(keys[i]);
-      chartData.push(poll_options[keys[i]]);
-    }
+      
+			if(weighted) {
+				chartData.push(poll_options[keys[i]]/numVotes);
+			} else {
+				chartData.push(poll_options[keys[i]]);
+			}
+			
+			if(poll_options[keys[i]] > max) {
+				max = poll_options[keys[i]];
+				key = keys[i];
+			}
+		}
+		
+		var labeltext = "Vote Totals";
+
+		if(weighted) {
+			labeltext = "Average Rating";
+		}
 
     // chart containing the poll results
     var pollBarChart = {
       data: {
           labels: chartOptions,
           datasets: [{
-              label: 'Number of Votes',
+              label: labeltext,
               data: chartData,
               backgroundColor:
-                  'rgba(0, 153, 255, 0.2)'
+                  'rgba(0, 153, 255, 0.6)'
               ,
               borderColor:
                   'rgba(0, 152, 255, 1)'
@@ -50,7 +72,8 @@ export default class PollChart extends Component {
     // layout of what is rendered
     return (
       <div>
-        <Bar data={pollBarChart.data} options={pollBarChart.options} width={600} height={200}/>
+        <h3 className="text-center">"{key}" is the winner!</h3>
+				<Bar data={pollBarChart.data} options={pollBarChart.options} width={600} height={200}/>
       </div>
     );
 
