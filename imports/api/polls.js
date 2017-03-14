@@ -354,7 +354,9 @@ Meteor.methods({
           for (i = 0; i< list.length; i++) {
             list[i]["title"] = list[i]["title"] + " (" + list[i]["release_date"].slice(0, 4) + ")";
           }
-          onSuccess(list);
+          if ( Meteor.isClient ) {
+            onSuccess(list);
+          }
         }
         else {
           onError("Network Error");
