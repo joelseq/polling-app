@@ -75,6 +75,8 @@ class EditPoll extends Component {
     this.closePollNamePrompt = this.closePollNamePrompt.bind(this);
     this.handlePollNameChange = this.handlePollNameChange.bind(this);
     this.updatePoll = this.updatePoll.bind(this);
+    this.toggleEnsureModal = this.toggleEnsureModal.bind(this);
+    this.deletePoll = this.deletePoll.bind(this);
     this.renderOptions = this.renderOptions.bind(this);
     this.removeOption = this.removeOption.bind(this);
     this.handleOptionNameChange = this.handleOptionNameChange.bind(this);
@@ -98,6 +100,7 @@ class EditPoll extends Component {
       validated: false,
       editPass: '',
       passValidError: '',
+      ensureModal: false,
     };
   }
 
@@ -180,6 +183,21 @@ class EditPoll extends Component {
       editPass: e.target.value,
       passValidError: '',
     });
+  }
+
+  toggleEnsureModal(e) {
+    this.setState({ ensureModal: !this.state.ensureModal });
+  }
+
+  togglePollDeleted(e) {
+    this.setState({ deletedModal: !this.state.deletedModal });
+  }
+
+  deletePoll() {
+
+    this.props.router.push( '/' );
+    Meteor.call('polls.delete', this.props.poll._id,);
+
   }
 
   /* Handler for adding an option, in the modal window provided */
@@ -426,6 +444,69 @@ class EditPoll extends Component {
             block
           >Edit Poll Details</Button>
         </Well>
+        <Well>
+          <Button
+            bsStyle="primary"
+            bsSize="large"
+            onClick={this.toggleEnsureModal}
+            block
+          >Delete Poll</Button>
+        </Well>
+
+        <Modal
+          show={this.state.deletedModal}
+        >
+
+          <Modal.Header>
+            <Modal.Title>Poll Deleted!
+            </Modal.Title>
+          </Modal.Header> 
+          <Modal.Body>
+            <Row>
+              <Col md={6} mdOffset={3}>
+                <Button
+                  onClick={this.deletePoll}
+                  bsStyle="success"
+                  type="submit"
+                  block
+                >Sick!</Button>
+              </Col>
+            </Row>
+          </Modal.Body>
+        </Modal>
+
+        <Modal
+          show={this.state.ensureModal}
+        >
+
+          <Modal.Header closeButton>
+            <Modal.Title>Are you sure you would like to delete this poll?
+            </Modal.Title>
+          </Modal.Header> 
+          <Modal.Body>
+            <Row>
+              <Col md={6}>
+                <Button
+                  onClick={() => {
+                    this.toggleEnsureModal();
+                    this.togglePollDeleted();
+                  }}
+                  bsStyle="success"
+                  type="submit"
+                  block
+                >Yes</Button>
+              </Col>
+              <Col md={6}>
+                <Button
+                  onClick={this.toggleEnsureModal}
+                  bsStyle="success"
+                  type="submit"
+                  block
+                >No</Button>
+              </Col>
+            </Row>
+          </Modal.Body>
+        </Modal>
 
         {/* Using this modal to handle updating the poll information, but
           * this UI may be changed as we move forward

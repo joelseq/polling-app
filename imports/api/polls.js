@@ -286,6 +286,15 @@ Meteor.methods({
     }
   },
 
+  'polls.delete':
+  function deletePoll(pollId) {
+    check(pollId, String);
+
+    if (Meteor.isServer) {
+      Polls.remove(pollId);
+    }
+  },
+
   'polls.checkEditPass':
   function checkEditPass(pollId, inputPass) {
     // Check if the vote object conforms with
