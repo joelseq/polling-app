@@ -286,6 +286,15 @@ Meteor.methods({
     }
   },
 
+  'polls.delete':
+  function deletePoll(pollId) {
+    check(pollId, String);
+
+    if (Meteor.isServer) {
+      Polls.remove(pollId);
+    }
+  },
+
   'polls.checkEditPass':
   function checkEditPass(pollId, inputPass) {
     // Check if the vote object conforms with
@@ -354,7 +363,9 @@ Meteor.methods({
           for (i = 0; i< list.length; i++) {
             list[i]["title"] = list[i]["title"] + " (" + list[i]["release_date"].slice(0, 4) + ")";
           }
-          onSuccess(list);
+          if ( Meteor.isClient ) {
+            onSuccess(list);
+          }
         }
         else {
           onError("Network Error");
