@@ -13,8 +13,8 @@ export default class PollChart extends Component {
     // checks to see if any votes have been cast
     if (!this.props.poll.votes) {
       return (
-        <div>
-          <p>No votes have been cast, please vote to see results</p>
+        <div className="text-center">
+          <h4>No votes have been cast, please vote to see results</h4>
         </div>
       );
     }

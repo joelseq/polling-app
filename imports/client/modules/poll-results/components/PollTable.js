@@ -35,8 +35,8 @@ class PollTable extends Component {
     // if no votes have been cast
     if (!poll_votes) {
       return (
-        <div>
-          <p>No votes have been cast, please vote to see results</p>
+        <div className="text-center">
+          <h4>No votes have been cast, please vote to see results</h4>
         </div>
       );
     }
