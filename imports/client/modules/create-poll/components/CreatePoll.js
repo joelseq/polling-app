@@ -24,7 +24,7 @@ import '../../../../ui/react-datetime.css'
 /**
  * CreatePoll - component that handles the creation of polls. There are
  * no props passed in to this component which is why propTypes and defaultProps
- * aren't specified. 
+ * aren't specified.  
  */
 class CreatePoll extends Component {
   constructor(props) {
@@ -150,7 +150,8 @@ class CreatePoll extends Component {
   handleOptionSubmit(e) {
     e.preventDefault();
 
-    const { optionName, options } = this.state;
+    let { optionName, options } = this.state;
+    optionName = optionName.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
 
     if (optionName in options) {
       this.setState({ optionError: 'Please submit a non-duplicate option!' });

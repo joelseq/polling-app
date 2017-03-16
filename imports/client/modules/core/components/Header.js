@@ -9,13 +9,13 @@ export default function Header() {
     <Navbar inverse collapseOnSelect>
       <Nav>
         <IndexLinkContainer to="/">
-            <NavItem id="sp__brand" eventKey={0}>SimPoll</NavItem>
+          <NavItem id="sp__brand" eventKey={0}>SimPoll</NavItem>
         </IndexLinkContainer>
       </Nav>
       <Navbar.Toggle />
       <Navbar.Collapse>
         <Nav pullRight>
-          <LinkContainer to="create">
+          <LinkContainer to="/create">
             <NavItem id="sp__create-button" eventKey={1}>CREATE POLL</NavItem>
           </LinkContainer>
         </Nav>
