@@ -10,32 +10,40 @@ export default class PollChart extends Component {
   }
 
   render() {
+    // checks to see if any votes have been cast
+    if (!this.props.poll.votes) {
+      return (
+        <div>
+          <p>No votes have been cast, please vote to see results</p>
+        </div>
+      );
+    }
+
     const poll_options = this.props.options; // options from poll collection
-		
+
 		let chartOptions = []; // array of option names
-    let chartData = []; //
-		const weighted = this.props.poll.isWeighted;
-		const numVotes = this.props.poll.votes.length;
+    let chartData = []; // number of votes for each option
 		var max = 0;
 		var key;
-
+    const weighted = this.props.poll.isWeighted;
+    const numVotes = this.props.poll.votes.length;
 
     // Grabs names and values for each poll option from options hashmap
     for (let i = 0, keys = Object.keys(poll_options), ii = keys.length; i < ii; i++) {
       chartOptions.push(keys[i]);
-      
+
 			if(weighted) {
 				chartData.push(poll_options[keys[i]]/numVotes);
 			} else {
 				chartData.push(poll_options[keys[i]]);
 			}
-			
+
 			if(poll_options[keys[i]] > max) {
 				max = poll_options[keys[i]];
 				key = keys[i];
 			}
 		}
-		
+
 		var labeltext = "Vote Totals";
 
 		if(weighted) {
