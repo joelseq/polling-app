@@ -150,7 +150,8 @@ class CreatePoll extends Component {
   handleOptionSubmit(e) {
     e.preventDefault();
 
-    const { optionName, options } = this.state;
+    let { optionName, options } = this.state;
+    optionName = optionName.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
 
     if (optionName in options) {
       this.setState({ optionError: 'Please submit a non-duplicate option!' });

@@ -432,9 +432,10 @@ class EditPoll extends Component {
     // Ensure the poll's details are populated in the state
     return (
       <Grid>
-        <PageHeader className="text-center">
+        <h1 className="text-center">
           Success! Here is your unique poll URL:
-        </PageHeader>
+        </h1>
+        <p className="text-center">(Save this page URL for future reference and poll editing!)</p>
         <UrlBox isClosed={this.props.poll.isClosed}/>
         <Well>
           <Button
