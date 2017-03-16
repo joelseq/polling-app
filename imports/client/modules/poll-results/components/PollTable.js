@@ -32,6 +32,15 @@ class PollTable extends Component {
     let rows = [];
     let voterOptions = [];
 
+    // if no votes have been cast
+    if (!poll_votes) {
+      return (
+        <div className="text-center">
+          <h4>No votes have been cast, please vote to see results</h4>
+        </div>
+      );
+    }
+
     // Grabs names and values for each poll option from options hashmap
     for (let i = 0, keys = Object.keys(poll_options), ii = keys.length; i < ii; i++) {
       voterOptions.push(keys[i]);
@@ -92,8 +101,8 @@ class PollTable extends Component {
             width={this.props.containerWidth/3}
           />
         </Table>
-      ); 
-    } else 
+      );
+    } else
     {
       return (
           <Table
