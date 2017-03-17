@@ -440,6 +440,15 @@ class ViewPoll extends Component {
       this.props.router.push('/404Error');
     }
 
+    if (this.props.poll.isTimed) {
+      if (this.props.poll.expiresAt.getTime() < (new Date()).getTime()) {
+         this.props.poll.isClosed = true;
+         Meteor.call('polls.changePollStatus', this.props.poll._id, true); 
+         Meteor.call('polls.removeExpire', this.props.poll._id);
+         this.props.poll.isTimed = false;
+      }
+    }
+
     if (this.props.poll.isClosed) {
       return (
         <Grid className='text-center'>
@@ -462,21 +471,6 @@ class ViewPoll extends Component {
       );
     }
 
-    if (this.props.poll.isTimed) {
-      if (this.props.poll.expiresAt.getTime() < (new Date()).getTime()) {
-        return (
-          <div>
-            <h4 className="text-center">Sorry, this poll has been closed</h4>
-            <Button
-              onClick={this.routeToResults}
-              bsStyle="success"
-            >
-              View Results
-            </Button>
-          </div>
-        );
-      }
-    }
 
     return (
       <Grid>
