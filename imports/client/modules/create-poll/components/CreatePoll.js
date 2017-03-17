@@ -56,6 +56,7 @@ class CreatePoll extends Component {
       isWeighted: false,
       isPrivate: false,
       isTimed: false,
+      showTimed: false,
       optionName: '',
       options: {},
       password: '',
@@ -131,10 +132,17 @@ class CreatePoll extends Component {
   }
 
   // Handler for the show add exp date input
-  handleExpDateShow(isTimed) {
+  handleExpDateShow(showTimed) {
+    if(!showTimed){
+      this.setState({
+        ...this.state,
+        isTimed: false,
+      });
+    }
+
     this.setState({
       ...this.state,
-      isTimed,
+      showTimed,
     });
   }
 
@@ -458,10 +466,10 @@ class CreatePoll extends Component {
                 <Button 
                   className={"btn btn-primary center-block"}
                   bsStyle="success"
-                  onClick={() => this.handleExpDateShow(!this.state.isTimed)}
+                  onClick={() => this.handleExpDateShow(!this.state.showTimed)}
                 > Add Expiration Date </Button>
                 <br />
-                { this.state.isTimed
+                { this.state.showTimed
                   ?
                   <Datetime onChange={this.handleDateChange} input={false} isValidDate={this.checkIfValid}/>
                   : null
