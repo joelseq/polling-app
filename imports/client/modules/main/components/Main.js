@@ -19,6 +19,10 @@ export default function () {
                 <LinkContainer to="/create">
                   <Button block className="Main__landing-button" bsStyle="primary">CREATE POLL</Button>
                 </LinkContainer>
+                <br/>
+                <LinkContainer to="/createMoviePoll">
+                  <Button block className="Main__landing-button" bsStyle="primary">CREATE MOVIE POLL</Button>
+                </LinkContainer>
               </Col>
             </Row>
           </Col>
