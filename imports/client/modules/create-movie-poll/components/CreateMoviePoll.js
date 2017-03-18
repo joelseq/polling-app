@@ -158,6 +158,14 @@ class CreateMoviePoll extends Component {
   // Handler for when an option is submitted, but not a movie object
   handleOptionSubmitWithoutDropdown(name) {
     const { options } = this.state;
+    optionName = name.replace(/[.]/g,"");
+
+    console.log("one then two");
+
+    if (name in options) {
+      this.setState({ optionError: 'Please submit a non-duplicate option!' });
+      return;
+    }
 
     // Make sure the input isn't empty and the option hasn't already been added
     // TODO: Show a warning when the user is trying to add the same option twice
@@ -186,9 +194,16 @@ class CreateMoviePoll extends Component {
     const movieName = selectedItems[0]["title"];
     newOptions[movieName] = 0;
     
+    if (movieName in options) {
+      this.setState({ optionError: 'Please submit a non-duplicate option!' });
+      return;
+    }
+
     //Update the state to reflect the new option added
     this.setState({
       options: newOptions,
+      optionName: '',
+      optionError: '',
     });
 	}
 

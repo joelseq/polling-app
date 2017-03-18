@@ -194,7 +194,6 @@ export default class ReactUIDropdown extends Component {
         updateState((focusedItemIndex == 0) ? (displayedItems.length - 1) : (focusedItemIndex - 1));
         break;*/
       case "Enter":
-        this.props.addOption(this.state.searchValue);
         /*this.addItemToSelected(focusedItem);
 
         updateState(focusedItemIndex < (displayedItems.length - 1) ? (focusedItemIndex + 1) : (focusedItemIndex - 1));
@@ -205,6 +204,12 @@ export default class ReactUIDropdown extends Component {
   handleOptionAdded(e) {
     e.preventDefault();
     this.props.addOption(this.state.searchValue);
+
+    if(!this.state.hidden){
+      var link = document.getElementById('dropdown-items');
+      link.style.display = 'none'; 
+      this.state.hidden = true;
+    }
   }
 
   handleSearchInputFocus() {
