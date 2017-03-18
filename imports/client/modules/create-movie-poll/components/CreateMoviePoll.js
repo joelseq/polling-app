@@ -62,6 +62,7 @@ class CreateMoviePoll extends Component {
       isWeighted: false,
       isPrivate: false,
       isTimed: false,
+      showTimed: false,
       optionName: '',
       options: {},
       password: '',
@@ -133,10 +134,17 @@ class CreateMoviePoll extends Component {
   }
 
   // Handler for the show add exp date input
-  handleExpDateShow(isTimed) {
+  handleExpDateShow(showTimed) {
+    if(!showTimed){
+      this.setState({
+        ...this.state,
+        isTimed: false,
+      });
+    }
+
     this.setState({
       ...this.state,
-      isTimed,
+      showTimed ,
     });
   }
 
@@ -471,10 +479,11 @@ class CreateMoviePoll extends Component {
                 <Button 
                   className={"btn btn-primary center-block"}
                   bsStyle="success"
-                  onClick={() => this.handleExpDateShow(!this.state.isTimed)}
-                > Add Expiration Date </Button>
+                  onClick={() => this.handleExpDateShow(!this.state.showTimed)}
+                > {this.state.showTimed ? "Remove Expiration Date"
+                    : "Add Expiration Date"} </Button>
                 <br />
-                { this.state.isTimed
+                { this.state.showTimed
                   ?
                   <Datetime onChange={this.handleDateChange} input={false} isValidDate={this.checkIfValid}/>
                   : null
