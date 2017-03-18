@@ -85,6 +85,18 @@ Meteor.methods({
     return Polls.insert(poll);
   },
 
+  'polls.removeExpire': function unExpirePoll(pollId) {
+    // Check if the vote object conforms with
+    // the VoteSchema
+    check(pollId, String);
+
+    // Database call
+    return Polls.update(pollId, {
+      $set: {
+        isTimed: false,
+      },
+    });
+  },    
   'polls.changePollStatus': function closePoll(pollId, pollStatus) {
     // Check if the vote object conforms with
     // the VoteSchema
