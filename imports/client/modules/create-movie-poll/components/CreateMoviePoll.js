@@ -50,8 +50,8 @@ class CreateMoviePoll extends Component {
     this.handleDateChange = this.handleDateChange.bind(this);
     this.handleEditPassChange = this.handleEditPassChange.bind(this);
     this.handleDropdownChange = this.handleDropdownChange.bind(this);
-    this.handleOptionSubmitFromDropdown =
-      this.handleOptionSubmitFromDropdown.bind(this);
+    this.handleOptionSubmitWithoutDropdown =
+      this.handleOptionSubmitWithoutDropdown.bind(this);
 
 		this.initialcheck = 1;
 
@@ -156,9 +156,16 @@ class CreateMoviePoll extends Component {
   }
 
   // Handler for when an option is submitted, but not a movie object
-  handleOptionSubmitFromDropdown(name) {
-    console.log("got the call");
+  handleOptionSubmitWithoutDropdown(name) {
     const { options } = this.state;
+    name = name.replace(/[.]/g,"");
+
+    console.log("one then two");
+
+    if (name in options) {
+      this.setState({ optionError: 'Please submit a non-duplicate option!' });
+      return;
+    }
 
     // Make sure the input isn't empty and the option hasn't already been added
     // TODO: Show a warning when the user is trying to add the same option twice
@@ -184,19 +191,22 @@ class CreateMoviePoll extends Component {
     const { options } = this.state;
     const newOptions = { ...options };
     
-    const movieName = selectedItems[0]["title"];
-    console.log(movieName); 
+    var movieName = selectedItems[0]["title"];
+    movieName = movieName.replace(/[.]/g,"");
     newOptions[movieName] = 0;
     
+    if (movieName in options) {
+      this.setState({ optionError: 'Please submit a non-duplicate option!' });
+      return;
+    }
+
     //Update the state to reflect the new option added
     this.setState({
       options: newOptions,
+      optionName: '',
+      optionError: '',
     });
-
-    //Stop rendering movie posters
-    console.log("dropdown change");
-		console.log(selectedItems);
-	};
+	}
 
   // Handler for creating a poll
   handlePollCreate() {
@@ -505,8 +515,9 @@ class CreateMoviePoll extends Component {
                   <ReactUIDropdown
                     label=""
                     initialItems={[]}
-                    addOption={this.handleOptionSubmitFromDropdown}
+                    addOption={this.handleOptionSubmitWithoutDropdown}
                     onChange={this.handleDropdownChange}/>
+                  <HelpBlock>{this.state.optionError}</HelpBlock>
                 </Col>
                 <Col xs={12}>
                   <Row>
