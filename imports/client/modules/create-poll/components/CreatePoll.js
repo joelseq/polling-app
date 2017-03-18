@@ -352,7 +352,7 @@ class CreatePoll extends Component {
                 <Row>
                   <FormGroup controlId={'weighted'}>
                     <Col md={6}>
-                      <ControlLabel>Weighted</ControlLabel>
+                      <ControlLabel>Weighted</ControlLabel>{' '}
                       <PopOver />
                     </Col>
                       {/*<p className="CreatePoll__info">
