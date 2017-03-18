@@ -111,6 +111,7 @@ class EditPoll extends Component {
       pollName: this.props.poll.name,
       options: this.props.poll.options,
       showPollNameModal: true,
+      showDatetime: false,
       isTimed: this.props.poll.isTimed,
       expiresAt: this.props.poll.expiresAt,
       isClosed: this.props.poll.isClosed,
