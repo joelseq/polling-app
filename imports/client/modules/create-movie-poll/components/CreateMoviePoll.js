@@ -50,8 +50,8 @@ class CreateMoviePoll extends Component {
     this.handleDateChange = this.handleDateChange.bind(this);
     this.handleEditPassChange = this.handleEditPassChange.bind(this);
     this.handleDropdownChange = this.handleDropdownChange.bind(this);
-    this.handleOptionSubmitFromDropdown =
-      this.handleOptionSubmitFromDropdown.bind(this);
+    this.handleOptionSubmitWithoutDropdown =
+      this.handleOptionSubmitWithoutDropdown.bind(this);
 
 		this.initialcheck = 1;
 
@@ -156,8 +156,7 @@ class CreateMoviePoll extends Component {
   }
 
   // Handler for when an option is submitted, but not a movie object
-  handleOptionSubmitFromDropdown(name) {
-    console.log("got the call");
+  handleOptionSubmitWithoutDropdown(name) {
     const { options } = this.state;
 
     // Make sure the input isn't empty and the option hasn't already been added
@@ -185,18 +184,13 @@ class CreateMoviePoll extends Component {
     const newOptions = { ...options };
     
     const movieName = selectedItems[0]["title"];
-    console.log(movieName); 
     newOptions[movieName] = 0;
     
     //Update the state to reflect the new option added
     this.setState({
       options: newOptions,
     });
-
-    //Stop rendering movie posters
-    console.log("dropdown change");
-		console.log(selectedItems);
-	};
+	}
 
   // Handler for creating a poll
   handlePollCreate() {
@@ -505,8 +499,9 @@ class CreateMoviePoll extends Component {
                   <ReactUIDropdown
                     label=""
                     initialItems={[]}
-                    addOption={this.handleOptionSubmitFromDropdown}
+                    addOption={this.handleOptionSubmitWithoutDropdown}
                     onChange={this.handleDropdownChange}/>
+                  <HelpBlock>{this.state.optionError}</HelpBlock>
                 </Col>
                 <Col xs={12}>
                   <Row>
