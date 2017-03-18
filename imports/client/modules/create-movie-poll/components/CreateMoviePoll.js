@@ -480,7 +480,8 @@ class CreateMoviePoll extends Component {
                   className={"btn btn-primary center-block"}
                   bsStyle="success"
                   onClick={() => this.handleExpDateShow(!this.state.showTimed)}
-                > Add Expiration Date </Button>
+                > {this.state.showTimed ? "Remove Expiration Date"
+                    : "Add Expiration Date"} </Button>
                 <br />
                 { this.state.showTimed
                   ?
