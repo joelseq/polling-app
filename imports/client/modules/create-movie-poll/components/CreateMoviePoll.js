@@ -158,7 +158,7 @@ class CreateMoviePoll extends Component {
   // Handler for when an option is submitted, but not a movie object
   handleOptionSubmitWithoutDropdown(name) {
     const { options } = this.state;
-    optionName = name.replace(/[.]/g,"");
+    name = name.replace(/[.]/g,"");
 
     console.log("one then two");
 
@@ -191,7 +191,8 @@ class CreateMoviePoll extends Component {
     const { options } = this.state;
     const newOptions = { ...options };
     
-    const movieName = selectedItems[0]["title"];
+    var movieName = selectedItems[0]["title"];
+    movieName = movieName.replace(/[.]/g,"");
     newOptions[movieName] = 0;
     
     if (movieName in options) {
