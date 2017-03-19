@@ -272,6 +272,7 @@ class CreatePoll extends Component {
     this.setState({
       ...this.state,
       expiresAt: expAt,
+      isTimed: true,
     });
     
   }
