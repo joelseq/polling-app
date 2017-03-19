@@ -299,6 +299,7 @@ class CreateMoviePoll extends Component {
     this.setState({
       ...this.state,
       expiresAt: expAt,
+      isTimed: true,
     });
     
   }
