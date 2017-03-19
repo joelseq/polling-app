@@ -24,7 +24,7 @@ import '../../../../ui/react-datetime.css'
 /**
  * CreatePoll - component that handles the creation of polls. There are
  * no props passed in to this component which is why propTypes and defaultProps
- * aren't specified. 
+ * aren't specified.  
  */
 class CreatePoll extends Component {
   constructor(props) {
@@ -56,6 +56,7 @@ class CreatePoll extends Component {
       isWeighted: false,
       isPrivate: false,
       isTimed: false,
+      showTimed: false,
       optionName: '',
       options: {},
       password: '',
@@ -131,10 +132,17 @@ class CreatePoll extends Component {
   }
 
   // Handler for the show add exp date input
-  handleExpDateShow(isTimed) {
+  handleExpDateShow(showTimed) {
+    if(!showTimed){
+      this.setState({
+        ...this.state,
+        isTimed: false,
+      });
+    }
+
     this.setState({
       ...this.state,
-      isTimed,
+      showTimed,
     });
   }
 
@@ -150,7 +158,8 @@ class CreatePoll extends Component {
   handleOptionSubmit(e) {
     e.preventDefault();
 
-    const { optionName, options } = this.state;
+    let { optionName, options } = this.state;
+    optionName = optionName.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
 
     if (optionName in options) {
       this.setState({ optionError: 'Please submit a non-duplicate option!' });
@@ -343,7 +352,7 @@ class CreatePoll extends Component {
                 <Row>
                   <FormGroup controlId={'weighted'}>
                     <Col md={6}>
-                      <ControlLabel>Weighted</ControlLabel>
+                      <ControlLabel>Weighted</ControlLabel>{' '}
                       <PopOver />
                     </Col>
                       {/*<p className="CreatePoll__info">
@@ -457,10 +466,11 @@ class CreatePoll extends Component {
                 <Button 
                   className={"btn btn-primary center-block"}
                   bsStyle="success"
-                  onClick={() => this.handleExpDateShow(!this.state.isTimed)}
-                > Add Expiration Date </Button>
+                  onClick={() => this.handleExpDateShow(!this.state.showTimed)}
+                > {this.state.showTimed ? "Remove Expiration Date"
+                    : "Add Expiration Date"} </Button>
                 <br />
-                { this.state.isTimed
+                { this.state.showTimed
                   ?
                   <Datetime onChange={this.handleDateChange} input={false} isValidDate={this.checkIfValid}/>
                   : null
